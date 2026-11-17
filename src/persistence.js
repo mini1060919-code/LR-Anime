@@ -1,4 +1,4 @@
-// Save/load and best-run record, persisted in localStorage (save v4).
+// Validated v5 dawn checkpoints with read-only v4 compatibility and archival writes.
 // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
 // from the save data, saveGame serializes them back. The endless mode has no
 // victory: the record is the number of nights survived, kept apart from the
@@ -12,12 +12,16 @@ import {
   addSurvivor,
 } from './sim/state.js';
 import { levelMultiplier, effectiveCaps } from './sim/economy.js';
-import { createGrid, occupy, occupyTrap, getCell } from './world/grid.js';
+import { GRID_SIZE, createGrid, occupy, occupyTrap, getCell } from './world/grid.js';
 import { generateMap } from './world/mapgen.js';
 import { BUILDING_DEFS, getDef } from './buildings/definitions.js';
+import { TECHS } from './sim/research.js';
 
 export const SAVE_KEY = 'cbs-save';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
+export const SLOT_KEYS = [1, 2, 3].map(n => `cbs-slot-${n}`);
+export const BACKUP_PREFIX = 'cbs-backup:';
+export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 export const RECORD_KEY = 'cbs-record'; // best nights survived, across runs
 const RESOURCE_KEYS = ['food', 'water', 'wood', 'metal', 'energy', 'fuel'];
 
@@ -40,72 +44,226 @@ export function writeRecord(n) {
   }
 }
 
-// Wipes the save (restart, defeat): the next load starts a fresh game.
+// Every operation returns an explicit result. No failed read is treated as empty.
+const fail = (error) => ({ ok: false, error: String(error.message ?? error) });
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const finite = value => typeof value === 'number' && Number.isFinite(value);
+
+/** Validate before restoration, rejecting data the legacy loader would discard. */
+export function validateSave(data) {
+  assert(object(data) && data.version === 4, 'Unsupported save payload version.');
+  assert(Number.isSafeInteger(data.seed), 'Invalid map seed.');
+  assert(Number.isSafeInteger(data.day) && data.day >= 1, 'Invalid day.');
+  assert(object(data.resources), 'Invalid resources.');
+  for (const [key, value] of Object.entries(data.resources)) {
+    assert(RESOURCE_KEYS.includes(key) && finite(value), 'Invalid resource value.');
+  }
+  for (const key of ['researchPoints', 'kills', 'reputation']) {
+    assert(data[key] === undefined || finite(data[key]), `Invalid ${key}.`);
+  }
+  assert(data.researched === undefined || (Array.isArray(data.researched) &&
+    data.researched.every(id => Object.hasOwn(TECHS, id))), 'Unknown research.');
+  assert(Array.isArray(data.buildings) && data.buildings.length <= GRID_SIZE ** 2,
+    'Invalid buildings.');
+  const ids = new Set();
+  const occupied = new Set();
+  let refuges = 0;
+  for (const b of data.buildings) {
+    assert(object(b) && Object.hasOwn(BUILDING_DEFS, b.defId), 'Unknown building.');
+    const def = getDef(b.defId);
+    if (b.defId === 'hq') refuges++;
+    assert(Number.isInteger(b.x) && Number.isInteger(b.z) && b.x >= 0 && b.z >= 0 &&
+      b.x + def.w <= GRID_SIZE && b.z + def.h <= GRID_SIZE, 'Building outside map.');
+    if (b.id !== undefined) {
+      assert(Number.isSafeInteger(b.id) && b.id > 0 && !ids.has(b.id), 'Invalid/duplicate building ID.');
+      ids.add(b.id);
+    }
+    for (let z = b.z; z < b.z + def.h; z++) {
+      for (let x = b.x; x < b.x + def.w; x++) {
+        const tile = `${x},${z}`;
+        assert(!occupied.has(tile), 'Overlapping buildings.');
+        occupied.add(tile);
+      }
+    }
+    for (const key of ['hp', 'extracted', 'efficiency']) {
+      assert(b[key] === undefined || finite(b[key]), `Invalid building ${key}.`);
+    }
+    for (const key of ['autoAssign', 'enabled', 'repairing']) {
+      assert(b[key] === undefined || typeof b[key] === 'boolean', `Invalid building ${key}.`);
+    }
+    assert(b.level === undefined || (Number.isInteger(b.level) && b.level >= 1 && b.level <= MAX_LEVEL), 'Invalid level.');
+    assert(b.priority === undefined || (Number.isInteger(b.priority) && b.priority >= 0 && b.priority <= 2), 'Invalid priority.');
+  }
+  assert(refuges === 1, 'Save must contain exactly one Refuge.');
+  assert(data.survivors === undefined || (Array.isArray(data.survivors) && data.survivors.length <= 10000), 'Invalid survivors.');
+  const survivors = new Set();
+  for (const s of data.survivors ?? []) {
+    assert(object(s), 'Invalid survivor.');
+    assert(Number.isSafeInteger(s.id) && s.id > 0 && !survivors.has(s.id), 'Invalid/duplicate survivor ID.');
+    survivors.add(s.id);
+    for (const key of ['hunger', 'thirst']) assert(s[key] === undefined || finite(s[key]), `Invalid ${key}.`);
+    assert(s.buildingId == null || ids.has(s.buildingId), 'Unknown workplace.');
+  }
+  assert(data.changedTiles === undefined || (Array.isArray(data.changedTiles) && data.changedTiles.length <= GRID_SIZE ** 2), 'Invalid changed tiles.');
+  for (const t of data.changedTiles ?? []) {
+    assert(object(t) && Number.isInteger(t.x) && Number.isInteger(t.z) &&
+      t.x >= 0 && t.z >= 0 && t.x < GRID_SIZE && t.z < GRID_SIZE &&
+      ['grass', 'forest', 'trail'].includes(t.toType), 'Invalid changed tile.');
+  }
+  return data;
+}
+
+/** Pure migration: does not mutate the input or touch storage. */
+export function migrateSave(data) {
+  if (data?.version === SAVE_VERSION) {
+    assert(data.format === 'last-refuge' && data.checkpoint === 'dawn' &&
+      typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
+    validateSave(data.payload);
+    return structuredClone(data);
+  }
+  validateSave(data);
+  return {
+    format: 'last-refuge', version: SAVE_VERSION, checkpoint: 'dawn',
+    savedAt: new Date().toISOString(), payload: structuredClone(data),
+  };
+}
+
+export function decodeSave(raw) {
+  assert(typeof raw === 'string' && new Blob([raw]).size <= MAX_SAVE_BYTES, 'Save exceeds 2 MiB limit.');
+  const envelope = migrateSave(JSON.parse(raw));
+  // Exercise the same reconstruction used by the game before committing data.
+  restoreSave(envelope.payload);
+  return envelope;
+}
+
+export function inspectSave(key = SAVE_KEY) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return { ok: true, empty: true };
+    try { return { ok: true, raw, data: decodeSave(raw) }; }
+    catch (error) { return { ...fail(error), raw }; }
+  } catch (error) { return fail(error); }
+}
+
+/** Immutable, byte-for-byte backup. A quota failure prevents the replacement. */
+function backup(key, raw, reason) {
+  const id = `${BACKUP_PREFIX}${crypto.randomUUID()}`;
+  assert(localStorage.getItem(id) === null, 'Backup ID collision; original retained.');
+  const value = JSON.stringify({ key, raw, reason, savedAt: new Date().toISOString() });
+  localStorage.setItem(id, value);
+  assert(localStorage.getItem(id) === value, 'Backup verification failed.');
+  return id;
+}
+
+function writeSave(key, raw, reason, recoverProtected = false) {
+  try {
+    decodeSave(raw);
+    const previous = inspectSave(key);
+    assert(previous.ok || (recoverProtected && typeof previous.raw === 'string'), `Existing save protected: ${previous.error}`);
+    if (previous.raw === raw) return { ok: true };
+    if (!previous.empty) backup(key, previous.raw, reason);
+    localStorage.setItem(key, raw);
+    assert(localStorage.getItem(key) === raw, 'Save verification failed; recover from backup.');
+    return { ok: true };
+  } catch (error) { return fail(error); }
+}
+
+// Restart/defeat archive known data before removal; unrecognized data stays put.
 export function clearSave() {
   try {
-    localStorage.removeItem(SAVE_KEY);
-  } catch {
-    // ignore
-  }
+    const existing = inspectSave();
+    assert(existing.ok, `Existing save protected: ${existing.error}`);
+    if (!existing.empty) {
+      backup(SAVE_KEY, existing.raw, 'restart/defeat');
+      localStorage.removeItem(SAVE_KEY);
+    }
+    return { ok: true };
+  } catch (error) { return fail(error); }
 }
 
 export function readSave() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    // Only v4 saves load; older versions silently start a fresh game.
-    if (!data || data.version !== SAVE_VERSION) return null;
-    if (typeof data.seed !== 'number' || !Array.isArray(data.buildings)) {
-      return null;
-    }
-    return data;
-  } catch {
-    return null;
-  }
+  const result = inspectSave();
+  return result.ok && !result.empty ? result.data.payload : null;
 }
 
-// Serializes the run (state + map seed + the changed-tile log) to a v4 save.
-// Silently does nothing when storage is unavailable: keep playing without
-// saves.
+export function listSlots() { return SLOT_KEYS.map(key => ({ key, ...inspectSave(key) })); }
+export function saveSlot(slot) {
+  if (!SLOT_KEYS.includes(slot)) return fail('Invalid slot.');
+  const current = inspectSave();
+  if (!current.ok || current.empty) return fail(current.error ?? 'No dawn checkpoint available.');
+  return writeSave(slot, JSON.stringify(current.data), 'manual slot replacement');
+}
+export function loadSlot(slot) {
+  if (!SLOT_KEYS.includes(slot)) return fail('Invalid slot.');
+  const current = inspectSave(slot);
+  if (!current.ok || current.empty) return fail(current.error ?? 'Slot is empty.');
+  return writeSave(SAVE_KEY, JSON.stringify(current.data), 'load manual slot');
+}
+export function importSave(raw, { recoverProtected = false } = {}) {
+  try { return writeSave(SAVE_KEY, JSON.stringify(decodeSave(raw)), 'JSON import', recoverProtected); }
+  catch (error) { return fail(error); }
+}
+// Export raw bytes even when unknown/corrupt; recovery must remain possible.
+export function exportSave(key = SAVE_KEY) {
+  try {
+    const raw = localStorage.getItem(key);
+    assert(raw !== null, 'No save available.');
+    return { ok: true, raw };
+  } catch (error) { return fail(error); }
+}
+export function listBackups() {
+  try {
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(BACKUP_PREFIX)) entries.push({ backupKey: key, ...JSON.parse(localStorage.getItem(key)) });
+    }
+    return { ok: true, entries };
+  } catch (error) { return fail(error); }
+}
+
+// Serialize the legacy-compatible payload. Only call at dawn; combat is not serialized.
+export function createSaveData(state, seed, changedTiles) {
+  return {
+    version: 4,
+    seed,
+    day: state.day,
+    resources: { ...state.resources },
+    survivors: state.survivors.map((s) => ({
+      id: s.id,
+      hunger: s.hunger,
+      thirst: s.thirst,
+      buildingId: s.buildingId,
+    })),
+    buildings: state.buildings.map((b) => ({
+      id: b.id,
+      defId: b.defId,
+      x: b.x,
+      z: b.z,
+      hp: Math.round(b.hp),
+      workers: [...b.workers],
+      autoAssign: b.autoAssign,
+      extracted: b.extracted,
+      efficiency: b.efficiency,
+      enabled: b.enabled !== false,
+      repairing: b.repairing === true,
+      priority: b.priority ?? 1,
+      level: b.level ?? 1,
+    })),
+    changedTiles: changedTiles.map((t) => ({ ...t })),
+    researchPoints: state.researchPoints,
+    researched: [...state.researched],
+    kills: state.kills,
+    reputation: state.reputation ?? 0,
+  };
+}
+
 export function saveGame(state, seed, changedTiles) {
   try {
-    const data = {
-      version: SAVE_VERSION,
-      seed,
-      day: state.day,
-      resources: { ...state.resources },
-      survivors: state.survivors.map((s) => ({
-        id: s.id,
-        hunger: s.hunger,
-        thirst: s.thirst,
-        buildingId: s.buildingId,
-      })),
-      buildings: state.buildings.map((b) => ({
-        id: b.id,
-        defId: b.defId,
-        x: b.x,
-        z: b.z,
-        hp: Math.round(b.hp),
-        workers: [...b.workers],
-        autoAssign: b.autoAssign,
-        extracted: b.extracted,
-        efficiency: b.efficiency,
-        enabled: b.enabled !== false,
-        repairing: b.repairing === true,
-        priority: b.priority ?? 1,
-        level: b.level ?? 1,
-      })),
-      changedTiles: changedTiles.map((t) => ({ ...t })),
-      researchPoints: state.researchPoints,
-      researched: [...state.researched],
-      kills: state.kills,
-      reputation: state.reputation ?? 0,
-    };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-  } catch {
-    // Storage unavailable: keep playing without saves.
-  }
+    const data = migrateSave(createSaveData(state, seed, changedTiles));
+    return writeSave(SAVE_KEY, JSON.stringify(data), 'autosave/migration');
+  } catch (error) { return fail(error); }
 }
 
 // Rebuilds grid + state from a v4 save. Throws on inconsistent data; the
