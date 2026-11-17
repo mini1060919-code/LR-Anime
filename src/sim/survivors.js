@@ -1,3 +1,6 @@
+import {runAutonomy} from '../autonomy/scheduler.js';
+import {REST_RULES} from '../autonomy/rules.js';
+import {writeManualMode} from '../autonomy/control.js';
 import {completeWork,supportingBuilding,careProof} from '../progression/work.js';
 // Survivor lifecycle: hunger, thirst, eating, drinking, death, jobs,
 // recruitment. Pure logic.
@@ -98,6 +101,7 @@ function jobPriority(def) {
 // manually managed buildings (autoAssign === false).
 // Also reconciles stale references (dead workers, demolished buildings).
 export function assignJobs(state, DEFS) {
+  if(runAutonomy(state,DEFS))return;
   const survivorsById = new Map(state.survivors.map((s) => [s.id, s]));
 
   // Drop worker references that no longer point back to this building.
@@ -152,14 +156,12 @@ export function assignWorker(state, buildingId, DEFS) {
   const def = b && DEFS[b.defId];
   if (!def || !(def.jobs > 0) || b.workers.length >= def.jobs) return false;
   if (b.enabled === false) return false; // spento: niente personale
-  const buildingIds = new Set(state.buildings.map((x) => x.id));
-  const s = state.survivors.find(
-    (x) => x.buildingId === null || !buildingIds.has(x.buildingId)
-  );
+  const s = state.survivors.find(x => availableForManualWork(state,x));
   if (!s) return false;
   b.autoAssign = false;
   s.buildingId = b.id;
   b.workers.push(s.id);
+  writeManualMode(state,s.id,true);
   return true;
 }
 
@@ -172,7 +174,7 @@ export function unassignWorker(state, buildingId) {
   b.autoAssign = false;
   const id = b.workers.pop();
   const s = state.survivors.find((x) => x.id === id);
-  if (s) s.buildingId = null;
+  if (s) {s.buildingId = null;writeManualMode(state,s.id,true);}
   return true;
 }
 
@@ -201,6 +203,16 @@ export function setBuildingEnabled(state, b, on) {
   b.enabled = on !== false;
   if (!b.enabled) unassignAll(state, b.id);
   return true;
+}
+
+// UI availability is separate from idleCount: resting residents retain original HQ defense.
+function availableForManualWork(state,s) {
+  const record=state.characters?.records?.[s.id];
+  return !record?.autonomy?.resting && (!record?.needs || record.needs.fatigue<REST_RULES.fatigueEnter)
+    && (s.buildingId===null || !state.buildings.some(b=>b.id===s.buildingId));
+}
+export function availableWorkerCount(state) {
+  return state.survivors.filter(s=>availableForManualWork(state,s)).length;
 }
 
 // Number of survivors without a job.

@@ -164,3 +164,7 @@
 .needs-row meter { width: 100%; }
 .resident-needs small { color: #a9c7d5; }
 .needs-efficiency { color: #9bd5ce; font-size: 13px; }
+
+.resident-autonomy { display: grid; gap: 8px; margin-top: 12px; border-top: 1px solid var(--ui-line); padding-top: 10px; }
+.resident-autonomy small { color: #a9c7d5; }
+.autonomy-status { color: #a4dcd1; }

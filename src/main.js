@@ -1,3 +1,4 @@
+import {setResidentControl} from './autonomy/control.js';
 import {tickNeeds,setNeedsEffects} from './needs/simulation.js';
 import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
 import {setAbilityEffects} from './progression/work.js';
@@ -290,6 +291,7 @@ function startGame({ engine, screens, assets, params }) {
   let pausedBeforeSaves = false;
   let pausedBeforeCharacters = false;
   createCharacterPanel(uiRoot, {
+    onControl:(id,mode)=>{const result=setResidentControl(state,id,mode);if(result.ok)assignJobs(state,BUILDING_DEFS);return result;},
     onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
     onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
     onEffects:enabled=>setAbilityEffects(state,enabled),

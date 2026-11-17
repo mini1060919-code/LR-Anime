@@ -95,7 +95,7 @@ describe('bounded real output and long-running simulation',()=>{
   setNeedsEffects(s,false);s.resources.food=0;tickEconomy(s,90,DEFS);expect(s.resources.food).toBe(4);
  });
  it('uses average crew needs, preserves skills, and affects research/extraction',()=>{
-  const s=game(),b=build(s,'lab');put(s,1,b);record(s).needs={fatigue:100,health:0,morale:0};expect(crewEfficiency(s,b)).toBe(.4);
+  const s=game(),b=build(s,'lab');put(s,1,b);record(s).needs={fatigue:84,health:0,morale:0};expect(crewEfficiency(s,b)).toBe(.4);
   tickResearch(s,1,DEFS);const poor=s.researchPoints;setNeedsEffects(s,false);s.researchPoints=0;tickResearch(s,1,DEFS);expect(poor/s.researchPoints).toBeCloseTo(.4);
   const l=build(s,'lumber',24,20);put(s,1,l);const grid=createGrid(64);grid.cells[19][24].type='forest';setNeedsEffects(s,true);s.resources.wood=0;tickExtraction(s,grid,1,DEFS);expect(s.resources.wood).toBeCloseTo(10*.5*.4/90);
  });
@@ -112,10 +112,10 @@ describe('bounded real output and long-running simulation',()=>{
  },20000);
 });
 describe('v4/v5/M3/M4 v6 migration and safe protection',()=>{
- function m4(){const s=game(),b=build(s);put(s,1,b);const d=createCheckpoint(s,42,[]);d.requiredFeatures=d.requiredFeatures.filter(f=>f!==NEEDS_FEATURE);delete d.characters.survival;for(const r of Object.values(d.characters.records))delete r.needs;return d;}
+ function m4(){const s=game(),b=build(s);put(s,1,b);const d=createCheckpoint(s,42,[]);d.requiredFeatures=d.requiredFeatures.filter(f=>f!==NEEDS_FEATURE&&f!=='autonomy-v1');delete d.characters.survival;delete d.characters.autonomy;for(const r of Object.values(d.characters.records)){delete r.needs;delete r.autonomy;}return d;}
  it('preserves every M4 identity, XP, skill, work and art reference while adding safe defaults',()=>{
   const old=m4(),copy=structuredClone(old),d=migrateSave(old);expect(old).toEqual(copy);expect(d.version).toBe(6);expect(d.run).toEqual(old.run);expect(d.core).toEqual(old.core);expect(d.characters.progression).toEqual(old.characters.progression);
-  for(const [id,r] of Object.entries(d.characters.records)){const {needs,...rest}=r;expect(needs).toEqual(DEFAULT_NEEDS);expect(rest).toEqual(old.characters.records[id]);}
+  for(const [id,r] of Object.entries(d.characters.records)){const {needs,autonomy,...rest}=r;expect(needs).toEqual(DEFAULT_NEEDS);expect(rest).toEqual(old.characters.records[id]);}
   expect(migrateSave(d)).toEqual(d);
  });
  it('loads v4/v5/M3 v6 and permanently backs up exact pre-needs v6 import bytes',()=>{
