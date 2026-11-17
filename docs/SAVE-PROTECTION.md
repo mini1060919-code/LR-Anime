@@ -33,7 +33,7 @@ The abbreviated payload above is illustrative, not an importable fixture. The ac
 - `readSave` reads either v4 or v5 without writing. Migration creates a new envelope without mutating the input. Boot's normal dawn write backs up the exact original v4 bytes before writing v5.
 - Validation checks versions, finite numbers, day/seed, building definitions/footprints/IDs/overlap, survivor IDs/workplaces, research definitions and changed tiles, then exercises actual restoration. Unrecognized/inconsistent input is protected instead of silently dropping buildings or research.
 - `cbs-save` remains the active key; manual slots use `cbs-slot-1` through `cbs-slot-3`; `cbs-record` is unaffected.
-- Before replacement or explicit restart/defeat removal, the prior raw bytes are archived in a new `cbs-backup:<UUID>` record with source key, timestamp and reason. The archive write is verified before modifying the active/slot key. Read, backup, quota or validation failure returns an error and blocks replacement. There is no automatic backup pruning or deletion.
+- Before replacement or explicit restart/defeat removal, prior raw bytes are archived under `cbs-backup:<UUID>` with source key, timestamp, reason, sequence and retention metadata. The archive write is verified before modifying the active/slot key. Read, backup, quota or validation failure blocks replacement. Normal v5 archives share a three-record rotation pool; an atomic write replaces the oldest eligible record. Permanent pins, pre-review legacy archives, original v4 migrations and unknown/corrupt recovery originals do not rotate. See `docs/M1-PREMERGE-REVIEW.md` for the updated retention policy and evidence.
 - Unknown/corrupt existing saves block autosave, normal imports, slot loading and restart. A visible warning explains the problem. Raw JSON export remains available. Only the user's explicit recovery checkbox plus confirmed valid JSON import allows replacement of protected data, and only after its exact raw bytes have been backed up successfully.
 - JSON imports are limited to 2 MiB and pass the same validation/restoration path. Export downloads the exact stored bytes, including corrupt/unknown data. Recovery backups can be exported separately and re-imported if valid.
 - Existing old-version inputs with unknown definitions/invalid coordinates are intentionally rejected rather than partly loaded. This is a safety restriction, not a silent migration.
@@ -42,7 +42,7 @@ The abbreviated payload above is illustrative, not an importable fixture. The ac
 
 Open **Saves** during gameplay. The modal pauses the simulation and restores its previous pause state when closed. Choose a slot to save/load, export autosave/slot JSON, or choose an import file. Slot replacement and loading/importing require confirmation. Recovery archives appear in the same modal.
 
-If an autosave is protected, first export its raw bytes. Investigate/correct a separate copy or select a known-good exported checkpoint. To restore it, explicitly select the recovery checkbox, import the valid JSON and confirm. If backup storage is full/unavailable, recovery refuses to overwrite; export backups to independent files before deciding what browser storage to manage. The application does not remove backups on your behalf.
+If an autosave is protected, first export its raw bytes. Investigate/correct a separate copy or select a known-good exported checkpoint. To restore it, explicitly select the recovery checkbox, import the valid JSON and confirm. If backup storage is full/unavailable, recovery refuses to overwrite; export backups to independent files before deciding what browser storage to manage. Automatic rotation only replaces known, unpinned archives. Use **Keep permanently** to exclude an archive indefinitely from rotation; **Allow rotation** requires confirmation before releasing that protection. No protected backup is evicted to make room. Export important copies off-browser.
 
 Local storage is per browser origin; changing host/port does not transfer saves. JSON transfer supports that workflow. Backups in the same localStorage are not independent protection against browser profile deletion, disk loss or manual clearing; export important checkpoints off-browser. Multiple simultaneous tabs are not a transactionally synchronized game session. Each replacement archives the preceding observed value, but use one playing tab to avoid conflicting progress.
 
@@ -66,7 +66,7 @@ Rollback has two independent parts:
 
 No merge to main or production deployment is part of this change. Test results and PR delivery status are recorded in the phase-1 delivery report.
 
-## Phase-1 validation results
+## Initial phase-1 validation results (before pre-merge review)
 
 - Final unit suite: **440 passed**, 23 files (416 original tests plus 24 save-protection cases).
 - Final production build: **passed**; the existing large-chunk warning remains. No dependency/lockfile or rendering/simulation changes were made.
@@ -86,4 +86,7 @@ Changed files:
 - `docs/SAVE-PROTECTION.md`: baseline, license review, compatibility, evidence, risks and rollback.
 - `docs/PHASE1-PR.md`: reviewable PR description and validation summary.
 
-Remaining limitations: checkpoints are dawn-only, backups consume browser quota and are never automatically pruned, localStorage is not cloud storage, and multi-tab synchronization is not implemented. A plain HTTP non-localhost origin may not expose `crypto.randomUUID`; use HTTPS or localhost. The system browser differs from Playwright's pinned CI browser, so local results do not claim a GitHub-hosted CI run. No production deployment, environment publication or fresh-task restoration has been performed.
+Remaining limitations: checkpoints are dawn-only, the three normal rotating backups plus permanent/legacy archives and manual slots still consume finite browser quota, localStorage is not cloud storage, and multi-tab synchronization is not implemented. A plain HTTP non-localhost origin may not expose `crypto.randomUUID`; use HTTPS or localhost. The system browser differs from Playwright's pinned CI browser, so local results do not claim a GitHub-hosted CI run. No production deployment, environment publication or fresh-task restoration has been performed.
+
+
+The follow-up PR #1 pre-merge audit, revised retention contract, current test results and merge recommendation are in [M1-PREMERGE-REVIEW.md](M1-PREMERGE-REVIEW.md).

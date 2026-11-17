@@ -1,7 +1,7 @@
 // Save management UI. Slots store dawn checkpoints, never incomplete combat state.
 import {
   SAVE_KEY, MAX_SAVE_BYTES, inspectSave, listSlots, saveSlot, loadSlot,
-  importSave, exportSave, listBackups,
+  importSave, exportSave, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
 } from '../persistence.js';
 
 function el(tag, text) {
@@ -31,7 +31,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
   }
   function result(outcome, success) {
     if (!outcome.ok) notify(`Save protected: ${outcome.error} Original data was retained. Export it before recovery.`);
-    else { status.textContent = success; refresh(); }
+    else { status.textContent = success; refresh(); if (outcome.warning) notify(outcome.warning); }
     return outcome.ok;
   }
   function button(parent, label, action, disabled = false) {
@@ -56,6 +56,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
   }
   const body = el('div');
   function refresh() {
+    const backupsOpen = body.querySelector('details')?.open ?? false;
     body.replaceChildren();
     const active = inspectSave();
     body.append(el('p', active.ok
@@ -79,15 +80,28 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
     }
     const backups = listBackups();
     const details = el('details');
+    details.open = backupsOpen;
     details.append(el('summary', `Recovery backups (${backups.ok ? backups.entries.length : 'unavailable'})`));
     if (!backups.ok) details.append(el('p', backups.error));
-    for (const entry of backups.entries ?? []) {
-      button(details, `Export backup ${entry.savedAt} (${entry.reason})`, () => download(entry.raw, 'last-refuge-backup.json'));
+    for (const entry of [...(backups.entries ?? [])].sort((a, b) => (b.sequence ?? 0) - (a.sequence ?? 0))) {
+      const row = el('div');
+      row.className = 'save-backup';
+      row.append(el('p', `${entry.pinned ? 'Permanent' : 'Rotating'} backup: ${entry.savedAt} (${entry.reason})`));
+      if (entry.error) row.append(el('p', entry.error));
+      button(row, 'Export backup JSON', () => download(entry.raw, 'last-refuge-backup.json'));
+      if (entry.mutable) {
+        button(row, entry.pinned ? 'Allow rotation' : 'Keep permanently', () => {
+          if (entry.pinned && !window.confirm('Allow this backup to be replaced by future saves? Export a copy first if it is important.')) return;
+          result(setBackupPinned(entry.backupKey, !entry.pinned),
+            entry.pinned ? 'Backup may now rotate.' : 'Backup kept permanently. Automatic rotation cannot replace it.');
+        });
+      }
+      details.append(row);
     }
     body.append(details);
   }
   dialog.append(el('h2', 'Save management'), el('p',
-    'Three manual slots preserve the latest dawn checkpoint. Loading restarts that day; current battles are not saved. Backups are retained until you explicitly manage browser storage.'));
+    `Three manual slots preserve the latest dawn checkpoint. Loading restarts that day; current battles are not saved. Up to ${ROLLING_BACKUP_LIMIT} normal backups rotate. Permanent backups, existing archives, and migration/recovery originals are excluded. Browser storage is finite: export important backups off-browser.`));
   status = el('p');
   status.setAttribute('role', 'status');
   dialog.append(status, body);

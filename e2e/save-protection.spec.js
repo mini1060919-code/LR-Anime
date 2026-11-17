@@ -67,3 +67,80 @@ test('v4 migration, three slots, JSON transfers and protected corrupt saves', as
     .some(k => JSON.parse(localStorage.getItem(k)).raw === raw), unknown)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('permanent backup survives reload and actual browser quota failure protects saved data', async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize({ width: 480, height: 360 });
+  await page.goto(`${BASE}?autostart=1&seed=42`);
+  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
+  const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
+  await page.getByRole('button', { name: 'Saves', exact: true }).click();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByLabel('Import save JSON').setInputFiles({
+    name: 'day2.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 2 })),
+  });
+  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Start game', exact: true }).click();
+  await expect(page.locator('.hud-day')).toHaveText('Day 2', { timeout: 30_000 });
+  await page.getByRole('button', { name: 'Saves', exact: true }).click();
+  await page.getByText(/Recovery backups/).click();
+  await page.getByRole('button', { name: 'Keep permanently', exact: true }).first().click();
+  await expect(page.getByRole('status')).toContainText('Backup kept permanently');
+  const permanent = await page.evaluate(() => {
+    const key = Object.keys(localStorage).find(key => key.startsWith('cbs-backup:') && JSON.parse(localStorage.getItem(key)).pinned === true);
+    return { key, value: localStorage.getItem(key) };
+  });
+  // Cancelling unpin must leave the saved retention setting untouched.
+  page.once('dialog', dialog => dialog.dismiss());
+  await page.getByRole('button', { name: 'Allow rotation', exact: true }).first().click();
+  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
+  await page.reload();
+  await page.getByRole('button', { name: 'Start game', exact: true }).click();
+  await expect(page.locator('.hud-day')).toHaveText('Day 2', { timeout: 30_000 });
+  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
+  await page.getByRole('button', { name: 'Saves', exact: true }).click();
+  const original = await page.evaluate(() => localStorage.getItem('cbs-save'));
+  // Fill this isolated test context's real localStorage, refining to the quota.
+  await page.evaluate(() => {
+    let filler = '';
+    for (const size of [65536, 1024, 32, 1]) {
+      const chunk = 'x'.repeat(size);
+      while (true) {
+        try {
+          if (filler.length > 8 * 1024 * 1024) throw new Error('Expected browser quota was not reached.');
+          localStorage.setItem('m1-test-quota', filler + chunk);
+          filler += chunk;
+        } catch (error) {
+          if (error.name !== 'QuotaExceededError') throw error;
+          break;
+        }
+      }
+    }
+  });
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByLabel('Import save JSON').setInputFiles({
+    name: 'day3.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 3 })),
+  });
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Storage full');
+  expect(await page.evaluate(() => localStorage.getItem('cbs-save'))).toBe(original);
+  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
+  await page.evaluate(() => localStorage.removeItem('m1-test-quota'));
+  await page.getByText(/Recovery backups/).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export backup JSON', exact: true }).first().click();
+  const stream = await (await downloadPromise).createReadStream();
+  const parts = [];
+  for await (const part of stream) parts.push(part);
+  expect(Buffer.concat(parts).toString('utf8')).toBe(JSON.parse(permanent.value).raw);
+  // Freeing only the test filler permits a normal retry; pins remain unchanged.
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByLabel('Import save JSON').setInputFiles({
+    name: 'retry-day3.json', mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 3 })),
+  });
+  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload.day)).toBe(3);
+  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
+});

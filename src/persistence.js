@@ -21,6 +21,8 @@ export const SAVE_KEY = 'cbs-save';
 export const SAVE_VERSION = 5;
 export const SLOT_KEYS = [1, 2, 3].map(n => `cbs-slot-${n}`);
 export const BACKUP_PREFIX = 'cbs-backup:';
+export const ROLLING_BACKUP_LIMIT = 3;
+const BACKUP_FORMAT = 'last-refuge-backup';
 export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 export const RECORD_KEY = 'cbs-record'; // best nights survived, across runs
 const RESOURCE_KEYS = ['food', 'water', 'wood', 'metal', 'energy', 'fuel'];
@@ -45,7 +47,12 @@ export function writeRecord(n) {
 }
 
 // Every operation returns an explicit result. No failed read is treated as empty.
-const fail = (error) => ({ ok: false, error: String(error.message ?? error) });
+const fail = (error) => ({
+  ok: false,
+  error: error?.name === 'QuotaExceededError' || String(error?.message ?? error).includes('QuotaExceededError')
+    ? 'Storage full (QuotaExceededError). Saving stopped; the previous save and permanent backups are retained. Export important saves and free browser storage before retrying.'
+    : String(error?.message ?? error),
+});
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -96,6 +103,7 @@ export function validateSave(data) {
     assert(b.priority === undefined || (Number.isInteger(b.priority) && b.priority >= 0 && b.priority <= 2), 'Invalid priority.');
   }
   assert(refuges === 1, 'Save must contain exactly one Refuge.');
+  assert(ids.size === 0 || ids.size === data.buildings.length, 'Mixed missing and explicit building IDs.');
   assert(data.survivors === undefined || (Array.isArray(data.survivors) && data.survivors.length <= 10000), 'Invalid survivors.');
   const survivors = new Set();
   for (const s of data.survivors ?? []) {
@@ -146,14 +154,113 @@ export function inspectSave(key = SAVE_KEY) {
   } catch (error) { return fail(error); }
 }
 
-/** Immutable, byte-for-byte backup. A quota failure prevents the replacement. */
+// Only explicitly managed, valid, unpinned records may enter the rotation pool.
+// Legacy, malformed and future-format archives are protected by default.
+function parseBackup(backupKey, stored) {
+  const fallback = { backupKey, raw: stored, savedAt: 'Unknown date', reason: 'Unreadable archive',
+    pinned: true, mutable: false, stored };
+  try {
+    const record = JSON.parse(stored);
+    assert(object(record) && typeof record.raw === 'string', 'Invalid backup record.');
+    const entry = { ...fallback, raw: record.raw,
+      savedAt: typeof record.savedAt === 'string' ? record.savedAt : 'Unknown date',
+      reason: typeof record.reason === 'string' ? record.reason : 'Unknown archive' };
+    assert([SAVE_KEY, ...SLOT_KEYS].includes(record.key) &&
+      typeof record.reason === 'string' && typeof record.savedAt === 'string' &&
+      Number.isFinite(Date.parse(record.savedAt)), 'Invalid backup metadata.');
+    const legacy = record.format === undefined && record.version === undefined && record.pinned === undefined;
+    const managed = record.format === BACKUP_FORMAT && record.version === 1 &&
+      typeof record.pinned === 'boolean' && Number.isSafeInteger(record.sequence) && record.sequence >= 1;
+    // Keep the raw save downloadable even if the archive belongs to a future format.
+    if (!legacy && !managed) return { ...entry, error: 'Unsupported backup format; permanently protected.' };
+    try { decodeSave(record.raw); }
+    catch (error) { return { ...entry, error: `Unrestorable archive; permanently protected: ${error.message}` }; }
+    return { ...entry, key: record.key, pinned: legacy || record.pinned,
+      mutable: true, sequence: managed ? record.sequence : 0 };
+  } catch (error) { return { ...fallback, error: String(error.message ?? error) }; }
+}
+
+export function listBackups() {
+  try {
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(BACKUP_PREFIX)) entries.push(parseBackup(key, localStorage.getItem(key)));
+    }
+    return { ok: true, entries };
+  } catch (error) { return fail(error); }
+}
+
+function backupSequence(entries) {
+  const sequence = entries.reduce((max, entry) => Math.max(max, entry.sequence ?? 0), 0) + 1;
+  assert(Number.isSafeInteger(sequence), 'Backup sequence limit reached; original retained.');
+  return sequence;
+}
+
+/** Persist a player's retention choice atomically; never report a failed pin as saved. */
+export function setBackupPinned(backupKey, pinned) {
+  try {
+    assert(typeof backupKey === 'string' && backupKey.startsWith(BACKUP_PREFIX) &&
+      typeof pinned === 'boolean', 'Invalid backup selection.');
+    const stored = localStorage.getItem(backupKey);
+    assert(stored !== null, 'Backup no longer exists.');
+    const entry = parseBackup(backupKey, stored);
+    assert(entry.mutable, 'This archive is permanently protected; export it for manual recovery.');
+    const backups = listBackups();
+    assert(backups.ok, backups.error);
+    const value = JSON.stringify({ format: BACKUP_FORMAT, version: 1, key: entry.key,
+      raw: entry.raw, reason: entry.reason, savedAt: entry.savedAt,
+      sequence: backupSequence(backups.entries), pinned });
+    assert(localStorage.getItem(backupKey) === stored, 'Backup changed in another tab; reload first.');
+    localStorage.setItem(backupKey, value);
+    assert(localStorage.getItem(backupKey) === value, 'Retention change could not be verified.');
+    return { ok: true };
+  } catch (error) { return fail(error); }
+}
+
+/** Archive before touching the active key. setItem is atomic on quota failure.
+ * Only an old unpinned archive may be replaced; never evict pins to make room.
+ */
 function backup(key, raw, reason) {
-  const id = `${BACKUP_PREFIX}${crypto.randomUUID()}`;
-  assert(localStorage.getItem(id) === null, 'Backup ID collision; original retained.');
-  const value = JSON.stringify({ key, raw, reason, savedAt: new Date().toISOString() });
+  const result = listBackups();
+  assert(result.ok, result.error);
+  const entries = result.entries;
+  let pinned = true;
+  try { decodeSave(raw); pinned = JSON.parse(raw).version !== SAVE_VERSION; }
+  catch { /* A recovery original is never automatically rotated. */ }
+  const duplicate = entries.find(entry => entry.key === key && entry.raw === raw &&
+    (entry.pinned || !pinned));
+  if (duplicate?.pinned) return duplicate.backupKey;
+  const rotating = entries.filter(entry => entry.mutable && !entry.pinned)
+    .sort((a, b) => a.sequence - b.sequence);
+  const replaced = duplicate ?? (!pinned && rotating.length >= ROLLING_BACKUP_LIMIT ? rotating[0] : null);
+  const id = replaced?.backupKey ?? `${BACKUP_PREFIX}${crypto.randomUUID()}`;
+  const value = JSON.stringify({ format: BACKUP_FORMAT, version: 1, key, raw, reason,
+    savedAt: new Date().toISOString(), sequence: backupSequence(entries), pinned });
+  assert(localStorage.getItem(id) === (replaced?.stored ?? null), 'Backup changed; original retained.');
   localStorage.setItem(id, value);
   assert(localStorage.getItem(id) === value, 'Backup verification failed.');
   return id;
+}
+
+// This only runs after the primary write/removal succeeds. Explicitly unpinning
+// legacy archives can temporarily create >3 candidates; unknown entries stay put.
+function trimBackups(keep) {
+  try {
+    const result = listBackups();
+    assert(result.ok, result.error);
+    const rotating = result.entries.filter(entry => entry.mutable && !entry.pinned)
+      .sort((a, b) => a.sequence - b.sequence);
+    let extra = rotating.length - ROLLING_BACKUP_LIMIT;
+    for (const entry of rotating) {
+      if (extra <= 0) break;
+      if (entry.backupKey === keep) continue;
+      assert(localStorage.getItem(entry.backupKey) === entry.stored, 'Backup changed; cleanup stopped.');
+      localStorage.removeItem(entry.backupKey);
+      extra--;
+    }
+    return {};
+  } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
 }
 
 function writeSave(key, raw, reason, recoverProtected = false) {
@@ -162,10 +269,15 @@ function writeSave(key, raw, reason, recoverProtected = false) {
     const previous = inspectSave(key);
     assert(previous.ok || (recoverProtected && typeof previous.raw === 'string'), `Existing save protected: ${previous.error}`);
     if (previous.raw === raw) return { ok: true };
-    if (!previous.empty) backup(key, previous.raw, reason);
+    // A reload of an unchanged v5 checkpoint must not consume storage. v4 still
+    // goes through migration and an exact, permanently retained original backup.
+    if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
+      JSON.parse(previous.raw).version === SAVE_VERSION &&
+      JSON.stringify(previous.data.payload) === JSON.stringify(JSON.parse(raw).payload)) return { ok: true };
+    const archived = !previous.empty ? backup(key, previous.raw, reason) : null;
     localStorage.setItem(key, raw);
     assert(localStorage.getItem(key) === raw, 'Save verification failed; recover from backup.');
-    return { ok: true };
+    return { ok: true, ...trimBackups(archived) };
   } catch (error) { return fail(error); }
 }
 
@@ -175,8 +287,9 @@ export function clearSave() {
     const existing = inspectSave();
     assert(existing.ok, `Existing save protected: ${existing.error}`);
     if (!existing.empty) {
-      backup(SAVE_KEY, existing.raw, 'restart/defeat');
+      const archived = backup(SAVE_KEY, existing.raw, 'restart/defeat');
       localStorage.removeItem(SAVE_KEY);
+      return { ok: true, ...trimBackups(archived) };
     }
     return { ok: true };
   } catch (error) { return fail(error); }
@@ -212,17 +325,6 @@ export function exportSave(key = SAVE_KEY) {
     return { ok: true, raw };
   } catch (error) { return fail(error); }
 }
-export function listBackups() {
-  try {
-    const entries = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(BACKUP_PREFIX)) entries.push({ backupKey: key, ...JSON.parse(localStorage.getItem(key)) });
-    }
-    return { ok: true, entries };
-  } catch (error) { return fail(error); }
-}
-
 // Serialize the legacy-compatible payload. Only call at dawn; combat is not serialized.
 export function createSaveData(state, seed, changedTiles) {
   return {

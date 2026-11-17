@@ -131,6 +131,7 @@ function startGame({ engine, screens, assets, params }) {
   const persist = () => {
     const result = saveGame(state, seed, changedTiles);
     if (!result.ok) savePanel?.notify(`Autosave stopped: ${result.error} Existing data is retained. Open Saves to export it.`);
+    else if (result.warning) savePanel?.notify(result.warning);
     return result;
   };
 
@@ -405,6 +406,7 @@ function startGame({ engine, screens, assets, params }) {
       savePanel.notify(`Restart stopped: ${result.error} Existing data is retained.`);
       return;
     }
+    if (result.warning) savePanel.notify(result.warning);
     window.location.href = window.location.pathname + '?new=1';
   }
 
@@ -412,6 +414,7 @@ function startGame({ engine, screens, assets, params }) {
     gameOverHandled = true;
     const result = clearSave();
     if (!result.ok) savePanel.notify(`Could not archive the save: ${result.error} Existing data is retained.`);
+    else if (result.warning) savePanel.notify(result.warning);
     // Endless mode: the only ending is defeat, scored by nights survived.
     const record = Math.max(readRecord(), state.day - 1);
     writeRecord(record);

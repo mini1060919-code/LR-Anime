@@ -41,3 +41,5 @@ body {
 .save-slot { border-top: 1px solid #8294a8; padding: 10px 0; }
 .save-slot strong { display: block; }
 .save-dialog details button { display: block; }
+.save-backup { border-top: 1px solid #8294a8; padding: 6px 0; }
+.save-dialog .save-backup button { display: inline-block; }
