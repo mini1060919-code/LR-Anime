@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "packId": "lr-original-cast",
+  "packVersion": 1,
+  "portraitSets": {
+    "pset.chr_isumi_rin.standard.v001": {
+      "characterArchetypeId": "chr_isumi_rin",
+      "neutralAssetId": "portrait.chr_isumi_rin.standard.neutral.v001",
+      "avatarAssetId": "avatar.chr_isumi_rin.standard.v001",
+      "expressions": {
+        "neutral": "portrait.chr_isumi_rin.standard.neutral.v001",
+        "focused": "portrait.chr_isumi_rin.standard.focused.v001",
+        "worried": "portrait.chr_isumi_rin.standard.worried.v001",
+        "smile": "portrait.chr_isumi_rin.standard.smile.v001",
+        "fatigued": "portrait.chr_isumi_rin.standard.fatigued.v001"
+      }
+    },
+    "pset.chr_asagiri_mio.standard.v001": {
+      "characterArchetypeId": "chr_asagiri_mio",
+      "neutralAssetId": "portrait.chr_asagiri_mio.standard.neutral.v001",
+      "avatarAssetId": "avatar.chr_asagiri_mio.standard.v001",
+      "expressions": {
+        "neutral": "portrait.chr_asagiri_mio.standard.neutral.v001",
+        "focused": "portrait.chr_asagiri_mio.standard.focused.v001",
+        "worried": "portrait.chr_asagiri_mio.standard.worried.v001",
+        "smile": "portrait.chr_asagiri_mio.standard.smile.v001",
+        "fatigued": "portrait.chr_asagiri_mio.standard.fatigued.v001"
+      }
+    },
+    "pset.chr_tachibana_yuma.standard.v001": {
+      "characterArchetypeId": "chr_tachibana_yuma",
+      "neutralAssetId": "portrait.chr_tachibana_yuma.standard.neutral.v001",
+      "avatarAssetId": "avatar.chr_tachibana_yuma.standard.v001",
+      "expressions": {
+        "neutral": "portrait.chr_tachibana_yuma.standard.neutral.v001",
+        "focused": "portrait.chr_tachibana_yuma.standard.focused.v001",
+        "worried": "portrait.chr_tachibana_yuma.standard.worried.v001",
+        "smile": "portrait.chr_tachibana_yuma.standard.smile.v001",
+        "fatigued": "portrait.chr_tachibana_yuma.standard.fatigued.v001"
+      }
+    },
+    "pset.chr_shiraishi_tsumugi.standard.v001": {
+      "characterArchetypeId": "chr_shiraishi_tsumugi",
+      "neutralAssetId": "portrait.chr_shiraishi_tsumugi.standard.neutral.v001",
+      "avatarAssetId": "avatar.chr_shiraishi_tsumugi.standard.v001",
+      "expressions": {
+        "neutral": "portrait.chr_shiraishi_tsumugi.standard.neutral.v001",
+        "focused": "portrait.chr_shiraishi_tsumugi.standard.focused.v001",
+        "worried": "portrait.chr_shiraishi_tsumugi.standard.worried.v001",
+        "smile": "portrait.chr_shiraishi_tsumugi.standard.smile.v001",
+        "fatigued": "portrait.chr_shiraishi_tsumugi.standard.fatigued.v001"
+      }
+    },
+    "pset.chr_generic.standard.v001": {
+      "characterArchetypeId": "chr_generic",
+      "neutralAssetId": "portrait.chr_generic.standard.neutral.v001",
+      "avatarAssetId": "avatar.chr_generic.standard.v001",
+      "expressions": {
+        "neutral": "portrait.chr_generic.standard.neutral.v001",
+        "focused": "portrait.chr_generic.standard.focused.v001",
+        "worried": "portrait.chr_generic.standard.worried.v001",
+        "smile": "portrait.chr_generic.standard.smile.v001",
+        "fatigued": "portrait.chr_generic.standard.fatigued.v001"
+      }
+    }
+  },
+  "assets": {
+    "portrait.chr_isumi_rin.standard.neutral.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/neutral_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_isumi_rin.standard.focused.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/focused_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_isumi_rin.standard.worried.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/worried_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_isumi_rin.standard.smile.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/smile_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_isumi_rin.standard.fatigued.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/fatigued_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "avatar.chr_isumi_rin.standard.v001": {
+      "path": "assets/portraits/chr_isumi_rin/standard/avatar_v001.png",
+      "width": 128,
+      "height": 128,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色頭像（尚未提供）",
+        "en": "Character avatar (not supplied)"
+      },
+      "licenseRef": "rights.chr_isumi_rin.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_asagiri_mio.standard.neutral.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/neutral_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_asagiri_mio.standard.focused.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/focused_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_asagiri_mio.standard.worried.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/worried_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_asagiri_mio.standard.smile.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/smile_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_asagiri_mio.standard.fatigued.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/fatigued_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "avatar.chr_asagiri_mio.standard.v001": {
+      "path": "assets/portraits/chr_asagiri_mio/standard/avatar_v001.png",
+      "width": 128,
+      "height": 128,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色頭像（尚未提供）",
+        "en": "Character avatar (not supplied)"
+      },
+      "licenseRef": "rights.chr_asagiri_mio.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_tachibana_yuma.standard.neutral.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/neutral_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_tachibana_yuma.standard.focused.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/focused_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_tachibana_yuma.standard.worried.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/worried_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_tachibana_yuma.standard.smile.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/smile_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_tachibana_yuma.standard.fatigued.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/fatigued_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "avatar.chr_tachibana_yuma.standard.v001": {
+      "path": "assets/portraits/chr_tachibana_yuma/standard/avatar_v001.png",
+      "width": 128,
+      "height": 128,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色頭像（尚未提供）",
+        "en": "Character avatar (not supplied)"
+      },
+      "licenseRef": "rights.chr_tachibana_yuma.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_shiraishi_tsumugi.standard.neutral.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/neutral_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_shiraishi_tsumugi.standard.focused.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/focused_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_shiraishi_tsumugi.standard.worried.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/worried_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_shiraishi_tsumugi.standard.smile.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/smile_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_shiraishi_tsumugi.standard.fatigued.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/fatigued_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "avatar.chr_shiraishi_tsumugi.standard.v001": {
+      "path": "assets/portraits/chr_shiraishi_tsumugi/standard/avatar_v001.png",
+      "width": 128,
+      "height": 128,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色頭像（尚未提供）",
+        "en": "Character avatar (not supplied)"
+      },
+      "licenseRef": "rights.chr_shiraishi_tsumugi.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_generic.standard.neutral.v001": {
+      "path": "assets/portraits/chr_generic/standard/neutral_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_generic.standard.focused.v001": {
+      "path": "assets/portraits/chr_generic/standard/focused_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_generic.standard.worried.v001": {
+      "path": "assets/portraits/chr_generic/standard/worried_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_generic.standard.smile.v001": {
+      "path": "assets/portraits/chr_generic/standard/smile_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "portrait.chr_generic.standard.fatigued.v001": {
+      "path": "assets/portraits/chr_generic/standard/fatigued_v001.webp",
+      "width": 1024,
+      "height": 1536,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色立繪（尚未提供）",
+        "en": "Character portrait (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    },
+    "avatar.chr_generic.standard.v001": {
+      "path": "assets/portraits/chr_generic/standard/avatar_v001.png",
+      "width": 128,
+      "height": 128,
+      "byteLength": null,
+      "alt": {
+        "zh-TW": "角色頭像（尚未提供）",
+        "en": "Character avatar (not supplied)"
+      },
+      "licenseRef": "rights.chr_generic.v001",
+      "status": "draft",
+      "sha256": null
+    }
+  }
+}

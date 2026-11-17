@@ -10,6 +10,7 @@
 // Later additions: building repair (tickRepairs), the on/off switch, worker
 // priorities and building upgrade levels.
 
+import { reconcileCharacters } from './characters/state.js';
 import { t } from './ui/i18n/index.js';
 import { createCharacterPanel } from './ui/characterpanel.js';
 import * as THREE from 'three';
@@ -119,6 +120,7 @@ function startGame({ engine, screens, assets, params }) {
     for (let i = 0; i < CONFIG.startSurvivors; i++) addSurvivor(state);
   }
   state.mapSeed = seed;
+  reconcileCharacters(state);
   advanceWeather(state); // roll this day's forecast (deterministic per seed+day)
 
   // Records a tile type change for the save file; the latest state of a tile
@@ -560,6 +562,7 @@ function startGame({ engine, screens, assets, params }) {
       if (dt > 0) simulate(dt, mods);
     }
 
+    reconcileCharacters(state);
     drainEvents();
 
     // Tutorial: watches state deltas (phase, buildings, staffing) and the

@@ -13,12 +13,12 @@ test('v4 migration, three slots, JSON transfers and protected corrupt saves', as
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${BASE}?autostart=1&seed=42`);
   await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
-  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
+  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).core);
   await page.evaluate(data => localStorage.setItem('cbs-save', JSON.stringify(data)), legacy);
   await page.goto(BASE);
   await page.getByRole('button', { name: 'Start game', exact: true }).click();
   await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(6);
   expect(await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('cbs-backup:'))
     .some(k => JSON.parse(JSON.parse(localStorage.getItem(k)).raw).version === 4))).toBe(true);
 
@@ -37,7 +37,7 @@ test('v4 migration, three slots, JSON transfers and protected corrupt saves', as
     name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{broken'),
   });
   await expect(dialog.getByRole('status')).toContainText('Save protected');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(6);
   await page.getByLabel('Import save JSON').setInputFiles({
     name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)),
   });
@@ -67,7 +67,7 @@ test('v4 migration, three slots, JSON transfers and protected corrupt saves', as
     name: 'recovery.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)),
   });
   await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(6);
   expect(await page.evaluate(raw => Object.keys(localStorage).filter(k => k.startsWith('cbs-backup:'))
     .some(k => JSON.parse(localStorage.getItem(k)).raw === raw), unknown)).toBe(true);
   expect(errors).toEqual([]);
@@ -78,7 +78,7 @@ test('permanent backup survives reload and actual browser quota failure protects
   await page.setViewportSize({ width: 480, height: 360 });
   await page.goto(`${BASE}?autostart=1&seed=42`);
   await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
-  const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
+  const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).core);
   await page.getByRole('button', { name: 'Saves', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
   await page.getByLabel('Import save JSON').setInputFiles({
@@ -93,7 +93,7 @@ test('permanent backup survives reload and actual browser quota failure protects
   await page.getByRole('button', { name: 'Keep permanently', exact: true }).first().click();
   await expect(page.getByRole('status')).toContainText('Backup kept permanently');
   const permanent = await page.evaluate(() => {
-    const key = Object.keys(localStorage).find(key => key.startsWith('cbs-backup:') && JSON.parse(localStorage.getItem(key)).pinned === true);
+    const key = Object.keys(localStorage).find(key => key.startsWith('cbs-backup:') && JSON.parse(localStorage.getItem(key)).pinned === true && JSON.parse(JSON.parse(localStorage.getItem(key)).raw).version === 6);
     return { key, value: localStorage.getItem(key) };
   });
   // Cancelling unpin must leave the saved retention setting untouched.
@@ -146,6 +146,6 @@ test('permanent backup survives reload and actual browser quota failure protects
     buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 3 })),
   });
   await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload.day)).toBe(3);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).core.day)).toBe(3);
   expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
 });
