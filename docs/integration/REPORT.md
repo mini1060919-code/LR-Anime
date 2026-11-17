@@ -117,3 +117,5 @@ M1 增加安全存檔；M2 增加語系／主題與角色面板；M3 增加角�
 - [合併樹試算](evidence/merge-tree-preflight.json)、[提交圖](evidence/history-graph.txt)、[舊 M3 等價比較](evidence/m3-alternate-range-diff.txt)
 - [首次安裝失敗](evidence/npm-ci.log)、[安裝成功](evidence/npm-ci-retry.log)、[單元逐項輸出](evidence/npm-test.log)、[建置輸出](evidence/npm-build.log)、[完整瀏覽器輸出](evidence/playwright.log)
 - [效能原始數值](evidence/benchmark.json)、[診斷腳本](evidence/benchmark.mjs)
+
+原始日誌、Git graph 與 patch 保留原樣（含 patch context 空格及命令輸出的尾空白），全證據 `git diff --check` 因此會提示格式空白；未修改原始輸出來消除提示。審查 Markdown 與診斷腳本另行 whitespace check 通過。所有證據可在此目錄執行 `sha256sum -c SHA256SUMS` 核對。
