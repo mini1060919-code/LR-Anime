@@ -30,3 +30,16 @@ body {
   pointer-events: none;
   z-index: 10;
 }
+
+/* Save controls live above the canvas and remain available after a load error. */
+.save-launch { position: fixed; right: 12px; bottom: 40px; z-index: 110; pointer-events: auto; }
+.save-warning { position: fixed; left: 10%; right: 10%; top: 100px; z-index: 120; padding: 12px; background: #682c27; color: white; pointer-events: auto; }
+.save-dialog { color: #e5eaf0; background: #19232d; border: 1px solid #8294a8; border-radius: 8px; width: min(620px, 90vw); max-height: 80vh; overflow: auto; pointer-events: auto; }
+.save-dialog::backdrop { background: #0009; }
+.save-dialog button { margin: 5px; padding: 8px; cursor: pointer; }
+.save-dialog button:disabled { cursor: default; opacity: .5; }
+.save-slot { border-top: 1px solid #8294a8; padding: 10px 0; }
+.save-slot strong { display: block; }
+.save-dialog details button { display: block; }
+.save-backup { border-top: 1px solid #8294a8; padding: 6px 0; }
+.save-dialog .save-backup button { display: inline-block; }

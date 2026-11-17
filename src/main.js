@@ -47,6 +47,7 @@ import { createBuildingVisuals } from './buildings/visuals.js';
 import { createOverlay } from './world/overlay.js';
 import { createFx } from './core/fx.js';
 import { createAudio } from './core/audio.js';
+import { createSavePanel } from './ui/savepanel.js';
 import { createHud } from './ui/hud.js';
 import { createBuildMenu } from './ui/buildmenu.js';
 import { createInspector } from './ui/inspector.js';
@@ -58,6 +59,7 @@ import {
   writeRecord,
   clearSave,
   readSave,
+  inspectSave,
   restoreSave,
   saveGame,
 } from './persistence.js';
@@ -87,6 +89,8 @@ function startGame({ engine, screens, assets, params }) {
   let grid = null;
   let state = null;
   let changedTiles = []; // [{ x, z, toType }] — extraction/planting since mapgen
+  const initialSave = inspectSave();
+  let savePanel;
   let loadedSave = false; // true when state comes from a v4 save
 
   if (!forceNew) {
@@ -124,7 +128,12 @@ function startGame({ engine, screens, assets, params }) {
   }
 
   // Autosave with the current run's data (see persistence.js).
-  const persist = () => saveGame(state, seed, changedTiles);
+  const persist = () => {
+    const result = saveGame(state, seed, changedTiles);
+    if (!result.ok) savePanel?.notify(`Autosave stopped: ${result.error} Existing data is retained. Open Saves to export it.`);
+    else if (result.warning) savePanel?.notify(result.warning);
+    return result;
+  };
 
   // --- camera, input, lighting, terrain ---
   const iso = createIsoCamera(window.innerWidth / window.innerHeight);
@@ -271,6 +280,13 @@ function startGame({ engine, screens, assets, params }) {
   // --- run state ---
   let speed = 1; // 1 | 2 | 3; pause is tracked separately (timeScale 0)
   let paused = false;
+  let pausedBeforeSaves = false;
+  savePanel = createSavePanel(uiRoot, {
+    onOpen: () => { pausedBeforeSaves = paused; paused = true; input.keys.clear(); },
+    onClose: () => { paused = pausedBeforeSaves; },
+    onLoad: () => { window.location.href = window.location.pathname; },
+  });
+  if (!initialSave.ok) savePanel.notify(`Saved data could not be loaded: ${initialSave.error} Autosave is blocked; use Saves to export the original.`);
   let jobTimer = JOB_INTERVAL; // staff the buildings on the first frame
   let menuTimer = 0;
   // Day/night transitions and the wave plan (currentWave + spawnSchedule).
@@ -385,13 +401,20 @@ function startGame({ engine, screens, assets, params }) {
 
   // Wipes the save and starts a fresh run on a new random seed.
   function restartRun() {
-    clearSave();
+    const result = clearSave();
+    if (!result.ok) {
+      savePanel.notify(`Restart stopped: ${result.error} Existing data is retained.`);
+      return;
+    }
+    if (result.warning) savePanel.notify(result.warning);
     window.location.href = window.location.pathname + '?new=1';
   }
 
   function handleGameOver() {
     gameOverHandled = true;
-    clearSave();
+    const result = clearSave();
+    if (!result.ok) savePanel.notify(`Could not archive the save: ${result.error} Existing data is retained.`);
+    else if (result.warning) savePanel.notify(result.warning);
     // Endless mode: the only ending is defeat, scored by nights survived.
     const record = Math.max(readRecord(), state.day - 1);
     writeRecord(record);
