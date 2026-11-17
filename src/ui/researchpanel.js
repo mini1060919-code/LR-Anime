@@ -4,13 +4,14 @@
 // onResearch(id). No DOM access at import time: every element is built
 // inside createResearchPanel().
 
+import { t } from './i18n/index.js';
 import { TECHS, canResearch } from '../sim/research.js';
 import { BUILDING_DEFS } from '../buildings/definitions.js';
 
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -70,7 +71,7 @@ export function createResearchPanel(root, { onResearch } = {}) {
   head.appendChild(pointsEl);
   const closeBtn = h('button', 'research-close', '✖');
   closeBtn.type = 'button';
-  closeBtn.title = 'Close';
+  closeBtn.title = t('Close');
   closeBtn.addEventListener('click', close);
   head.appendChild(closeBtn);
 
@@ -101,7 +102,7 @@ export function createResearchPanel(root, { onResearch } = {}) {
   /** Re-evaluates every tech card against the current game state. */
   function update(state) {
     lastState = state;
-    pointsEl.textContent = `🔬 ${Math.floor(state?.researchPoints ?? 0)}`;
+    pointsEl.textContent = t(`🔬 ${Math.floor(state?.researchPoints ?? 0)}`);
     for (const [id, tech] of Object.entries(TECHS)) {
       const { card, iconEl, costEl } = cards.get(id);
       const done = state?.researched?.includes(id) ?? false;
@@ -109,8 +110,8 @@ export function createResearchPanel(root, { onResearch } = {}) {
       card.classList.toggle('research-tech--done', done);
       card.classList.toggle('research-tech--available', !done && available);
       card.classList.toggle('research-tech--locked', !done && !available);
-      iconEl.textContent = done ? '✓' : available ? '🔬' : '🔒';
-      costEl.textContent = done ? 'Completed' : `🔬 ${tech.cost}`;
+      iconEl.textContent = t(done ? '✓' : available ? '🔬' : '🔒');
+      costEl.textContent = t(done ? 'Completed' : `🔬 ${tech.cost}`);
     }
   }
 

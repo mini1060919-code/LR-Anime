@@ -8,6 +8,7 @@
 // No DOM access at import time — everything is built inside
 // createTutorial().
 
+import { t } from './i18n/index.js';
 import { BUILDING_DEFS } from '../buildings/definitions.js';
 
 const SEEN_KEY = 'cbs-tutorial-seen';
@@ -35,7 +36,7 @@ function markTutorialSeen() {
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -83,8 +84,8 @@ export function createTutorial(root) {
   root.appendChild(rootEl);
 
   function render() {
-    stepEl.textContent = `Step ${index + 1} / ${steps.length}`;
-    textEl.textContent = steps[index];
+    stepEl.textContent = t(`Step ${index + 1} / ${steps.length}`);
+    textEl.textContent = t(steps[index]);
   }
 
   function dismiss(persist) {

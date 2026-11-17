@@ -8,6 +8,7 @@
 // is no room above). No DOM access at import time — everything is built
 // inside createBuildMenu().
 
+import { t } from './i18n/index.js';
 import { BUILDING_DEFS, BUILD_MENU_ORDER, CATEGORIES } from '../buildings/definitions.js';
 import { canAfford } from '../sim/economy.js';
 import { isUnlocked, TECHS } from '../sim/research.js';
@@ -75,7 +76,7 @@ const icon = (resource) => RESOURCE_ICONS[resource] ?? resource;
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -245,9 +246,9 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
   }
 
   for (const cat of CATEGORIES) {
-    const tab = h('button', 'build-tab', `${cat.icon} ${cat.name}`);
+    const tab = h('button', 'build-tab', `${cat.icon} ${t(cat.name)}`);
     tab.type = 'button';
-    tab.title = cat.name;
+    tab.title = t(cat.name);
     tab.addEventListener('click', () => {
       if (activeCategoryId === cat.id) return;
       activeCategoryId = cat.id;
@@ -261,7 +262,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
   const side = h('div', 'build-side');
   const demolishBtn = h('button', 'build-btn build-btn--side');
   demolishBtn.type = 'button';
-  demolishBtn.title = 'Demolish a building';
+  demolishBtn.title = t('Demolish a building');
   demolishBtn.append(
     h('span', 'build-btn-icon', '🔨'),
     h('span', 'build-btn-name', 'Demolish')
@@ -270,7 +271,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
 
   const cancelBtn = h('button', 'build-btn build-btn--side');
   cancelBtn.type = 'button';
-  cancelBtn.title = 'Cancel (ESC)';
+  cancelBtn.title = t('Cancel (ESC)');
   cancelBtn.append(
     h('span', 'build-btn-icon', '✖'),
     h('span', 'build-btn-name', 'Cancel')
@@ -281,6 +282,10 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
   body.append(list, side);
   rootEl.append(tabs, body);
   root.appendChild(rootEl);
+  const measureMenu = () => document.documentElement.style.setProperty('--build-height', `${rootEl.offsetHeight}px`);
+  const resizeObserver = new ResizeObserver(measureMenu);
+  resizeObserver.observe(rootEl);
+  measureMenu();
 
   // Recomputes disabled (affordability/tech lock) and active (mode)
   // highlighting.
@@ -298,7 +303,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
       btn.classList.toggle('active', mode === 'build' && defId === activeDefId);
       lockTip.style.display = locked ? '' : 'none';
       if (locked) {
-        lockTip.textContent = `🔒 Requires research: ${techNameFor(defId) ?? 'unknown'}`;
+        lockTip.textContent = t(`🔒 Requires research: ${techNameFor(defId) ?? 'unknown'}`);
       }
     }
     demolishBtn.classList.toggle('active', mode === 'demolish');

@@ -1,4 +1,5 @@
 // Save management UI. Slots store dawn checkpoints, never incomplete combat state.
+import { t } from './i18n/index.js';
 import {
   SAVE_KEY, MAX_SAVE_BYTES, inspectSave, listSlots, saveSlot, loadSlot,
   importSave, exportSave, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
@@ -6,7 +7,7 @@ import {
 
 function el(tag, text) {
   const node = document.createElement(tag);
-  if (text !== undefined) node.textContent = text;
+  if (text !== undefined) node.textContent = t(text);
   return node;
 }
 
@@ -20,18 +21,19 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
   warning.hidden = true;
   const dialog = el('dialog');
   dialog.className = 'save-dialog';
-  dialog.setAttribute('aria-label', 'Save management');
-  root.append(launch, warning, dialog);
+  dialog.setAttribute('aria-label', t('Save management'));
+  (root.querySelector('.interface-tools') ?? root).append(launch);
+  root.append(warning, dialog);
   let status;
 
   function notify(message) {
-    warning.textContent = message;
+    warning.textContent = t(message);
     warning.hidden = false;
-    if (status) status.textContent = message;
+    if (status) status.textContent = t(message);
   }
   function result(outcome, success) {
     if (!outcome.ok) notify(`Save protected: ${outcome.error} Original data was retained. Export it before recovery.`);
-    else { status.textContent = success; refresh(); if (outcome.warning) notify(outcome.warning); }
+    else { status.textContent = t(success); refresh(); if (outcome.warning) notify(outcome.warning); }
     return outcome.ok;
   }
   function button(parent, label, action, disabled = false) {
@@ -68,11 +70,11 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
       row.className = 'save-slot';
       row.append(el('strong', `Slot ${i + 1}: ${!slot.ok ? 'Protected / unreadable' : slot.empty ? 'Empty' : `Day ${slot.data.payload.day}`}`));
       button(row, `Save slot ${i + 1}`, () => {
-        if (!slot.empty && !window.confirm(`Replace slot ${i + 1}? Its previous contents will be backed up.`)) return;
+        if (!slot.empty && !window.confirm(t(`Replace slot ${i + 1}? Its previous contents will be backed up.`))) return;
         result(saveSlot(slot.key), 'Dawn checkpoint saved.');
       });
       button(row, `Load slot ${i + 1}`, () => {
-        if (!window.confirm('Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.')) return;
+        if (!window.confirm(t('Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.'))) return;
         if (result(loadSlot(slot.key), 'Loaded.')) onLoad();
       }, !slot.ok || slot.empty);
       button(row, `Export slot ${i + 1}`, () => exportKey(slot.key, `last-refuge-slot-${i + 1}.json`), slot.empty === true);
@@ -91,7 +93,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
       button(row, 'Export backup JSON', () => download(entry.raw, 'last-refuge-backup.json'));
       if (entry.mutable) {
         button(row, entry.pinned ? 'Allow rotation' : 'Keep permanently', () => {
-          if (entry.pinned && !window.confirm('Allow this backup to be replaced by future saves? Export a copy first if it is important.')) return;
+          if (entry.pinned && !window.confirm(t('Allow this backup to be replaced by future saves? Export a copy first if it is important.'))) return;
           result(setBackupPinned(entry.backupKey, !entry.pinned),
             entry.pinned ? 'Backup may now rotate.' : 'Backup kept permanently. Automatic rotation cannot replace it.');
         });
@@ -109,7 +111,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
   const file = el('input');
   file.type = 'file';
   file.accept = '.json,application/json';
-  file.setAttribute('aria-label', 'Import save JSON');
+  file.setAttribute('aria-label', t('Import save JSON'));
   label.append(file);
   dialog.append(label);
   const recoveryLabel = el('label', ' Recover a protected autosave by archiving it before this import');
@@ -123,9 +125,9 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
       if (!selected) return;
       if (selected.size > MAX_SAVE_BYTES) throw new Error('Save exceeds 2 MiB limit.');
       const raw = await selected.text();
-      if (!window.confirm(recovery.checked
+      if (!window.confirm(t(recovery.checked
         ? 'Recover using this import and reload? The protected original will be archived byte-for-byte before replacement. If backup fails, nothing will be replaced.'
-        : 'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.')) return;
+        : 'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.'))) return;
       if (result(importSave(raw, { recoverProtected: recovery.checked }), 'Imported.')) onLoad();
     } catch (error) { notify(`Import failed: ${error.message}`); }
     finally { file.value = ''; }
