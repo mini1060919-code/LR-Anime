@@ -1,0 +1,37 @@
+[WebServer] (node:83823) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] (node:83880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 1 worker
+
+(node:83935) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/m2-interface.spec.js:4:1 › Traditional Chinese interface, read-only character dossier and v4/v5 language compatibility (3.3m)
+  ✓   2 [chromium] › e2e/m2-interface.spec.js:87:1 › compact Traditional Chinese controls and accessible character modal (34.9s)
+  ✓   3 [chromium] › e2e/m3-art-integration.spec.js:5:2 › supplied four-character PNGs, all expressions and fallback at 1280px (6.4m)
+  ✓   4 [chromium] › e2e/m3-art-integration.spec.js:5:2 › supplied four-character PNGs, all expressions and fallback at 390px (6.1m)
+  ✓   5 [chromium] › e2e/m3-characters.spec.js:18:1 › persistent named residents, high-water recruitment, v5 import and complete manual slots (2.3m)
+  ✓   6 [chromium] › e2e/m3-characters.spec.js:78:1 › verified transparent PNG loading and checksum/decode failure default portrait (57.0s)
+  ✓   7 [chromium] › e2e/m4-progression.spec.js:3:31 › Traditional Chinese skills, validated assignment and dawn persistence at 1000px (4.0m)
+  ✓   8 [chromium] › e2e/m4-progression.spec.js:3:31 › Traditional Chinese skills, validated assignment and dawn persistence at 390px (3.3m)
+  ✓   9 [chromium] › e2e/m5a-survival-needs.spec.js:5:31 › M5-A needs, real duty and rest, saved growth at 1000px (4.0m)
+  ✓  10 [chromium] › e2e/m5a-survival-needs.spec.js:5:31 › M5-A needs, real duty and rest, saved growth at 390px (2.1m)
+  ✓  11 [chromium] › e2e/m5b-survivor-autonomy.spec.js:5:31 › M5-B rest, reserved manual priority and recovered work at 1000px (3.3m)
+  ✓  12 [chromium] › e2e/m5b-survivor-autonomy.spec.js:5:31 › M5-B rest, reserved manual priority and recovered work at 390px (4.3m)
+  ✓  13 [chromium] › e2e/save-protection.spec.js:9:1 › v4 migration, three slots, JSON transfers and protected corrupt saves (1.8m)
+  ✓  14 [chromium] › e2e/save-protection.spec.js:76:1 › permanent backup survives reload and actual browser quota failure protects saved data (2.6m)
+  ✓  15 [chromium] › e2e/smoke.spec.js:45:1 › boots to the HUD with day 1, resources and a working build menu (1.6m)
+  ✓  16 [chromium] › e2e/smoke.spec.js:93:1 › autosaves at dawn and restores the run after a reload (3.3m)
+
+  Slow test file: [chromium] › e2e/m3-art-integration.spec.js (12.5m)
+  Slow test file: [chromium] › e2e/m5b-survivor-autonomy.spec.js (7.7m)
+  Slow test file: [chromium] › e2e/m4-progression.spec.js (7.3m)
+  Slow test file: [chromium] › e2e/m5a-survival-needs.spec.js (6.1m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  16 passed (50.2m)

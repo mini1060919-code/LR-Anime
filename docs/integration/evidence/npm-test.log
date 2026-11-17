@@ -1,0 +1,714 @@
+
+> city-builder-survival@0.1.0 test
+> vitest run --reporter=verbose
+
+
+ RUN  v4.1.10 /workspace/LR-Anime
+
+ ✓ tests/economy.test.js > resource production > produces nothing and consumes nothing without workers 3ms
+ ✓ tests/economy.test.js > resource production > produces the full per-day amount and burns fuel with full staff 2ms
+ ✓ tests/economy.test.js > resource production > scales production linearly with assigned workers 1ms
+ ✓ tests/economy.test.js > resource production > respects resource caps 0ms
+ ✓ tests/economy.test.js > resource production > cap bonuses raise the production clamp (warehouse food cap) 0ms
+ ✓ tests/economy.test.js > resource production > stalls without fuel: no production and no consumption 0ms
+ ✓ tests/economy.test.js > resource production > stalls when the fuel left covers only part of the tick 1ms
+ ✓ tests/economy.test.js > production modifiers > farmProd scales food production 0ms
+ ✓ tests/economy.test.js > production modifiers > rainProd scales water from rain collectors 0ms
+ ✓ tests/economy.test.js > production modifiers > rain collectors produce the base amount without modifiers 0ms
+ ✓ tests/economy.test.js > production modifiers > well production scales with the site efficiency (passive, no workers) 0ms
+ ✓ tests/economy.test.js > production modifiers > hunt production scales with the site efficiency 0ms
+ ✓ tests/economy.test.js > production modifiers > fish production scales with the site efficiency 0ms
+ ✓ tests/economy.test.js > production modifiers > food from hunt and fish does not scale with farmProd 0ms
+ ✓ tests/economy.test.js > production modifiers > solarProd scales solar energy production 1ms
+ ✓ tests/economy.test.js > production modifiers > windProd scales wind turbine production, day and night 0ms
+ ✓ tests/economy.test.js > production modifiers > wind turbines produce the base amount without modifiers 0ms
+ ✓ tests/economy.test.js > effectiveCaps > returns the base caps when no building grants a bonus 3ms
+ ✓ tests/economy.test.js > effectiveCaps > sums capBonus over every building, per resource 1ms
+ ✓ tests/economy.test.js > effectiveCaps > ignores unknown def ids and defs without capBonus 0ms
+ ✓ tests/economy.test.js > energy storage > solar charges the stock only during the day phase 0ms
+ ✓ tests/economy.test.js > energy storage > integrates production minus the requiresEnergy drain of each consumer 0ms
+ ✓ tests/economy.test.js > energy storage > the hq generator runs day and night without workers 0ms
+ ✓ tests/economy.test.js > energy storage > powers requiresEnergy buildings while any charge is left 0ms
+ ✓ tests/economy.test.js > energy storage > drains the stock and unpowers consumers when it hits zero 0ms
+ ✓ tests/economy.test.js > energy storage > clamps the stock at the base cap 0ms
+ ✓ tests/economy.test.js > energy storage > batteries add their capBonus to the storage cap 0ms
+ ✓ tests/economy.test.js > generator fuel > burns wood to produce energy, even at night 0ms
+ ✓ tests/economy.test.js > generator fuel > without wood it stalls and pushes a single throttled fuel event 1ms
+ ✓ tests/economy.test.js > generator fuel > warns again once the throttle interval has passed 0ms
+ ✓ tests/economy.test.js > distillery and garage fuel > the distillery burns wood to produce fuel 0ms
+ ✓ tests/economy.test.js > distillery and garage fuel > the distillery stalls without wood: no fuel, no consumption 0ms
+ ✓ tests/economy.test.js > distillery and garage fuel > the garage burns fuel and stalls without it 1ms
+ ✓ tests/economy.test.js > distillery and garage fuel > fuel production respects the fuel cap 2ms
+ ✓ tests/economy.test.js > distillery and garage fuel > the balance reports fuel production and consumption 3ms
+ ✓ tests/economy.test.js > computeResourceBalance > reports producers, consumers and the net per resource 2ms
+ ✓ tests/economy.test.js > computeResourceBalance > groups identical buildings into a single ×N entry 1ms
+ ✓ tests/economy.test.js > computeResourceBalance > applies production modifiers (farmProd, rainProd, solarProd, windProd, efficiency) 1ms
+ ✓ tests/economy.test.js > computeResourceBalance > counts the requiresEnergy drain as energy consumption, even unpowered 0ms
+ ✓ tests/economy.test.js > computeResourceBalance > skips unstaffed and unpowered producers 0ms
+ ✓ tests/economy.test.js > computeResourceBalance > counts fuel consumption only while the resource is in stock 0ms
+ ✓ tests/economy.test.js > computeResourceBalance > scales extractor output with extractProd when no grid is passed 0ms
+ ✓ tests/economy.test.js > computeResourceBalance > includes extractors with nodes in range, skips depleted ones 1ms
+ ✓ tests/economy.test.js > computeResourceBalance > counts survivor upkeep: ~1.67 food and 2.5 water per survivor per day 1ms
+ ✓ tests/economy.test.js > computeResourceBalance > excludes research points from the balance 1ms
+ ✓ tests/economy.test.js > buildingDailyOutput > returns the base per-day rate with no modifiers and full staffing 1ms
+ ✓ tests/economy.test.js > buildingDailyOutput > folds the site efficiency in: a well at 0.4 yields 3.2 water/day 0ms
+ ✓ tests/economy.test.js > buildingDailyOutput > scales with staffing and site efficiency, ignoring farmProd for hunt 1ms
+ ✓ tests/economy.test.js > buildingDailyOutput > returns {} when unstaffed or unpowered 0ms
+ ✓ tests/economy.test.js > buildingDailyOutput > matches the produced rates of computeResourceBalance 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > levelMultiplier: L1 ×1, L2 ×1.5, L3 ×2, missing level = L1 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > scales production with the level 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > scales energy production with the level 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > applies after the site efficiency: base × efficiency × level 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > buildingDailyOutput folds the level in 0ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > computeResourceBalance shows leveled production and extraction rates 1ms
+ ✓ tests/economy.test.js > building levels (potenziamento) > a missing level field counts as level 1 (retrocompat) 1ms
+ ✓ tests/economy.test.js > switched-off buildings (enabled === false) > produce nothing and consume nothing, even staffed and fueled 0ms
+ ✓ tests/economy.test.js > switched-off buildings (enabled === false) > skip the energy grid: no production and no requiresEnergy drain 1ms
+ ✓ tests/economy.test.js > switched-off buildings (enabled === false) > stay unpowered even with charge in the grid, and repower when re-enabled 1ms
+ ✓ tests/economy.test.js > switched-off buildings (enabled === false) > buildingDailyOutput returns {} for a switched-off building 3ms
+ ✓ tests/economy.test.js > switched-off buildings (enabled === false) > computeResourceBalance skips them entirely (production, fuel, drain) 1ms
+ ✓ tests/economy.test.js > costs > canAfford checks every cost resource 1ms
+ ✓ tests/economy.test.js > costs > canAfford tolerates fractional resources just below an integer cost 2ms
+ ✓ tests/economy.test.js > costs > payCost subtracts every resource and returns true 0ms
+ ✓ tests/economy.test.js > costs > payCost fails without enough resources and leaves them untouched 1ms
+ ✓ tests/zombies.test.js > module smoke > exposes the documented factory API 20ms
+ ✓ tests/zombies.test.js > pickZombieModel > picks zombie below 0.7 and zombie-crawler at/above it 0ms
+ ✓ tests/zombies.test.js > createZombieManager > spawns a zombie with wave stats, clips and a mesh in the scene 12ms
+ ✓ tests/zombies.test.js > createZombieManager > uses the crawler model when the roll says so 4ms
+ ✓ tests/zombies.test.js > createZombieManager > walks to the nearest building and starts attacking it 7ms
+ ✓ tests/zombies.test.js > createZombieManager > scales the attack damage on buildings by ZOMBIE_BUILDING_DPS_MUL 3ms
+ ✓ tests/zombies.test.js > createZombieManager > targets the staffed building, not the closer unstaffed one 3ms
+ ✓ tests/zombies.test.js > createZombieManager > walks over roads to reach a building, never attacking them 3ms
+ ✓ tests/zombies.test.js > createZombieManager > finds no target when only roads exist 2ms
+ ✓ tests/zombies.test.js > createZombieManager > goes back to walking when its target is destroyed 9ms
+ ✓ tests/zombies.test.js > createZombieManager > kills a zombie: dying state, then removal and a kill counted 3ms
+ ✓ tests/zombies.test.js > createZombieManager > ignores further damage on a dying zombie 2ms
+ ✓ tests/zombies.test.js > createZombieManager > clearAll removes every zombie mesh from the scene 3ms
+ ✓ tests/zombies.test.js > combat helpers > crossedThresholds reports only newly crossed thresholds 1ms
+ ✓ tests/zombies.test.js > combat helpers > findNearestZombie picks the closest living zombie in range 0ms
+ ✓ tests/zombies.test.js > combat helpers > buildingCenterWorld centers multi-tile footprints 0ms
+ ✓ tests/zombies.test.js > combat towers > fires at the nearest zombie in range, then respects the cooldown 6ms
+ ✓ tests/zombies.test.js > combat towers > does not fire without workers, power or a target in range 2ms
+ ✓ tests/zombies.test.js > combat towers > does not fire while switched off, and fires again once re-enabled 2ms
+ ✓ tests/zombies.test.js > combat towers > scales the damage with the tower level (potenziamento) 2ms
+ ✓ tests/zombies.test.js > combat towers > removes expired tracers and flashes from the scene 2ms
+ ✓ tests/zombies.test.js > combat garrisons > garrisonGuns: workers capped for buildings, militia for hq, zero for towers 1ms
+ ✓ tests/zombies.test.js > combat garrisons > a staffed building fires at zombies in short range, then cools down 2ms
+ ✓ tests/zombies.test.js > combat garrisons > does not fire without workers or with the target out of range 2ms
+ ✓ tests/zombies.test.js > combat garrisons > the hq militia fires with idle survivors 11ms
+ ✓ tests/zombies.test.js > combat garrisons > scales rifle damage with mods.garrisonDamage (Lampione aura) 1ms
+ ✓ tests/zombies.test.js > combat garrisons > the militia damage scales with mods.garrisonDamage too 1ms
+ ✓ tests/zombies.test.js > combat destruction > removes destroyed buildings from state, grid and visuals, logging an event 1ms
+ ✓ tests/zombies.test.js > combat destruction > sets gameOver to defeat when the hq falls 1ms
+ ✓ tests/zombies.test.js > combat destruction > calls setDamaged once per crossed threshold 1ms
+ ✓ tests/zombies.test.js > combat destruction > kills the workers of a destroyed building, enriching the event 1ms
+ ✓ tests/zombies.test.js > combat destruction > kills nobody when the destroyed building had no workers 1ms
+ ✓ tests/zombies.test.js > combat destruction > warns once per rate-limit when a staffed building loses hp at night 2ms
+ ✓ tests/zombies.test.js > combat destruction > does not warn during the day or without workers 1ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > hunger grows toward starvation over 1.5 days without food 4ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > thirst grows toward dehydration over 1 day without water 1ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > eats 1 food when hunger passes 50 0ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > drinks 1 water when thirst passes 50 0ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > dies of starvation at hunger 100, with an event and job cleanup 2ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > dies of thirst at thirst 100, with a distinct death event 1ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > mods.hungerRate and mods.thirstRate scale the gains 1ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > a thirstRate above 1 speeds up dehydration (e.g. heat waves) 0ms
+ ✓ tests/survivors.test.js > survivors hunger and thirst > works without mods (backward compatible) 0ms
+ ✓ tests/survivors.test.js > assignJobs > fills free job slots with idle survivors 1ms
+ ✓ tests/survivors.test.js > assignJobs > prioritizes food > water > extractors > labs > the rest 1ms
+ ✓ tests/survivors.test.js > assignJobs > skips manually managed buildings (autoAssign === false) 2ms
+ ✓ tests/survivors.test.js > assignJobs > skips switched-off buildings (enabled === false) 4ms
+ ✓ tests/survivors.test.js > assignJobs > does not overfill jobs and leaves extra survivors idle 0ms
+ ✓ tests/survivors.test.js > assignJobs building priority > fills the high-priority building first within the same category 0ms
+ ✓ tests/survivors.test.js > assignJobs building priority > treats a missing priority as normal (retrocompat) 5ms
+ ✓ tests/survivors.test.js > assignJobs building priority > is deterministic at full ties: lowest building id first 0ms
+ ✓ tests/survivors.test.js > assignJobs building priority > lets a high-priority building jump the category order 0ms
+ ✓ tests/survivors.test.js > manual worker assignment > assignWorker moves one idle survivor and disables autoAssign 8ms
+ ✓ tests/survivors.test.js > manual worker assignment > assignWorker fails with no idle survivor or no free slot 2ms
+ ✓ tests/survivors.test.js > manual worker assignment > assignWorker fails for buildings without jobs 0ms
+ ✓ tests/survivors.test.js > manual worker assignment > unassignWorker frees the last worker and disables autoAssign 4ms
+ ✓ tests/survivors.test.js > manual worker assignment > unassignWorker fails on an empty building 0ms
+ ✓ tests/survivors.test.js > manual worker assignment > assignJobs leaves manually staffed buildings alone 0ms
+ ✓ tests/survivors.test.js > manual worker assignment > assignWorker refuses a switched-off building 0ms
+ ✓ tests/survivors.test.js > unassignAll and setBuildingEnabled > unassignAll frees every worker and returns the count 1ms
+ ✓ tests/survivors.test.js > unassignAll and setBuildingEnabled > unassignAll is a no-op on unknown buildings 0ms
+ ✓ tests/survivors.test.js > unassignAll and setBuildingEnabled > switching off frees the workers and assignJobs does not refill them 4ms
+ ✓ tests/survivors.test.js > unassignAll and setBuildingEnabled > switching back on lets assignJobs staff the building again 1ms
+ ✓ tests/survivors.test.js > housing and recruitment > housingCapacity sums houses over buildings 0ms
+ ✓ tests/survivors.test.js > housing and recruitment > recruits one survivor with food, water and a free bed, firing an event 5ms
+ ✓ tests/survivors.test.js > housing and recruitment > refuses recruitment without enough food 1ms
+ ✓ tests/survivors.test.js > housing and recruitment > refuses recruitment without enough water 0ms
+ ✓ tests/survivors.test.js > housing and recruitment > refuses recruitment when all beds are taken 1ms
+ ✓ tests/survivors.test.js > housing and recruitment > recruits up to count survivors while the gates hold 2ms
+ ✓ tests/survivors.test.js > housing and recruitment > stops at the first failed gate: beds run out before count 0ms
+ ✓ tests/survivors.test.js > housing and recruitment > recruits nobody with count > 1 when food is short 0ms
+ ✓ tests/survivors.test.js > killBuildingWorkers > rimuove i lavoratori dell'edificio e ritorna il conteggio 1ms
+ ✓ tests/survivors.test.js > killBuildingWorkers > ritorna 0 e non tocca niente su un edificio senza lavoratori 1ms
+ ✓ tests/survivors.test.js > killBuildingWorkers > conta solo i sopravvissuti esistenti (ignora ref pendenti) 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual agriculture participants and preserves unrelated skills 6ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual engineering participants and preserves unrelated skills 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual medicine participants and preserves unrelated skills 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual scavenging participants and preserves unrelated skills 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual defense participants and preserves unrelated skills 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > awards only actual logistics participants and preserves unrelated skills 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > caps rank, experience and multiplier, preserving named professions 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > uses exact thresholds and bounded profession/personality learning rules 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession farmer learning bonus restricted to agriculture 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession mechanic learning bonus restricted to engineering 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession medic learning bonus restricted to medicine 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession scout learning bonus restricted to scavenging 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession guard learning bonus restricted to defense 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession logistician learning bonus restricted to logistics 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > keeps profession researcher learning bonus restricted to engineering 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality steadfast through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality empathetic through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality pragmatic through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality curious through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality reserved through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality optimistic through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality patient through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > applies personality cautious through the independent learning rule table 0ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > settles a receipt once, rejects forged/replayed receipts and restored-state replay 29ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > rejects invalid work amount 0 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > rejects invalid work amount -1 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > rejects invalid work amount NaN 2ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > rejects invalid work amount Infinity 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > does not credit workers who died or changed jobs between issue and settlement 1ms
+ ✓ tests/progression.test.js > deterministic growth and receipts > retains fractional XP through save/reload and reproduces equivalent completed work 7ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > credits only food that fits the cap; no idle, stalled, disabled or zero-dt XP 2ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > caps agriculture output at +10% and gives exactly baseline output with effects disabled 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > projects the same bounded food output in the resource HUD 2ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > keeps full economy, extraction, research, modifiers and needs equivalent when effects are off 92ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > credits powered, fueled generation only when energy is actually used or stored 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > credits actual lab research and clinic care without introducing health/fatigue 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > credits extraction and hauling only for delivered resource, never depleted/capped nodes 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > awards radio logistics only after a recruit actually arrives 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > awards tree completion, not idle forester waiting 1ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > credits only the six actual HQ militia fighters, and only on a hit 4ms
+ ✓ tests/progression.test.js > outcome hooks and bounded economic/defense effects > limits tower bonus to 10%, preserves baseline combat when disabled, and gives no idle aim XP 2ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > moves a specific living resident atomically, releasing old references 1ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > rejects full assignment without losing previous work 1ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > rejects disabled assignment without losing previous work 1ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > rejects destroyed assignment without losing previous work 0ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > rejects missing assignment without losing previous work 1ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > rejects dead assignment without losing previous work 0ms
+ ✓ tests/progression.test.js > validated player assignment and original automation > keeps auto-assignment available and manual assignments stable across automation 2ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > preserves v6 run, UID, art, names, ranks and safe defaults without version redesign 8ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > migrates v4/v5 to identical growth defaults and preserves exact old v6 source on import 33ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > stores growth, remainder, work, effects switch and allocator in all three slots and JSON 47ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 9ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 3ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 3ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 4ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 5ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 7ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 9ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 6ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > protects corrupt/unknown progression and keeps raw export 7ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > rejects inconsistent persisted worker lists undefined without overwriting 5ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > rejects inconsistent persisted worker lists 1 without overwriting 6ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > rejects inconsistent persisted worker lists 999 without overwriting 27ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > rejects inconsistent persisted worker lists "bad" without overwriting 4ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > keeps a native empty v6 roster empty after adding growth data 1ms
+ ✓ tests/progression.test.js > v4/v5/v6 add-on migration and protection > keeps dead residents dead and high-water IDs non-reusable after growth reload 4ms
+ ✓ tests/save-protection.test.js > v4/v5 to v6 compatibility > migrates without mutating or losing legacy data 107ms
+ ✓ tests/save-protection.test.js > v4/v5 to v6 compatibility > accepts legacy v4 fields added after v4 first shipped 7ms
+ ✓ tests/save-protection.test.js > v4/v5 to v6 compatibility > reads v4 without writing and backs up its exact bytes before first v6 write 59ms
+ ✓ tests/save-protection.test.js > v4/v5 to v6 compatibility > migration of v6 is idempotent 11ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes malformed JSON 13ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes future version 12ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes missing Refuge 20ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes unknown building 14ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes invalid position 12ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes invalid field 17ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes unknown research 15ms
+ ✓ tests/save-protection.test.js > validation and preservation > never overwrites or deletes bad envelope 15ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > contains exactly the 40 v3 buildings (hq + 39 buildable) 6ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > every def has all required fields 38ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > every def id matches its key 2ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > matches the v3 contract values 25ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > every def has a valid category and every category is used 13ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > CATEGORIES lists the six categories in display order 3ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > costs only use wood and metal, positive amounts (hq is free) 8ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > every def has positive size and hp 7ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > every def has a non-empty Italian name and description 6ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only farm, garden, greenhouse, smelter, generator, distillery and garage consume fuel 3ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only lumber, scavenger and mine extract from map nodes 9ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only well, hunt, fish and ranch have a proximity rule, with a valid shape 4ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only the forester plants, only the lab researches 5ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > tech requirements are set exactly where expected 3ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > solar buildings produce energy only during the day 2ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only battery, cistern and warehouse grant cap bonuses 3ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > towers have combat stats and an energy requirement 2ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > exactly the four walls are isWall, the two towers isTower, the trap isTrap 7ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > walls are ordered by rising hp (palisade < scrap < brick < concrete) 1ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > only the road def is isRoad (drag-placement in a row, like walls) 2ms
+ ✓ tests/definitions.test.js > BUILDING_DEFS > BUILD_MENU_ORDER lists the 39 buildable ids grouped by category (no hq, no wall) 4ms
+ ✓ tests/definitions.test.js > getDef > returns the definition for a valid id 0ms
+ ✓ tests/definitions.test.js > getDef > returns undefined for an unknown id 0ms
+ ✓ tests/save-protection.test.js > validation and preservation > rejects duplicate IDs, overlap, invalid workplace and changed tiles 6ms
+ ✓ tests/save-protection.test.js > validation and preservation > keeps saves untouched if storage cannot be read 7ms
+ ✓ tests/save-protection.test.js > validation and preservation > does not overwrite if backup fails from quota 28ms
+ ✓ tests/save-protection.test.js > validation and preservation > retains both original and backup if replacement fails after backup 19ms
+ ✓ tests/save-protection.test.js > validation and preservation > archives before explicit restart and does not touch slots or record 27ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > stores three independent checkpoints, exports and loads them with backup 94ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > preserves an unreadable manual slot and invalid imports 10ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > round trips JSON from v4 and v5 and retains preceding snapshots 65ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > rejects oversized imports without writing 15ms
+ ✓ tests/autonomy.test.js > bounded rest lifecycle and hysteresis > releases an exhausted worker and fills the vacancy with one eligible resident 11ms
+ ✓ tests/autonomy.test.js > bounded rest lifecycle and hysteresis > requires both the low fatigue threshold and the saved minimum rest time 2ms
+ ✓ tests/autonomy.test.js > bounded rest lifecycle and hysteresis > does not thrash around the upper threshold or reassign a stable job for small score changes 2ms
+ ✓ tests/autonomy.test.js > bounded rest lifecycle and hysteresis > low health lowers ranking without inventing compulsory illness or new deaths 2ms
+ ✓ tests/autonomy.test.js > bounded rest lifecycle and hysteresis > preserves cooldown on restore and does not restart the rest timer on every evaluation 18ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > reserves a manual target while exhausted, then resumes it ahead of autonomous occupants 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > never evicts another manual worker when a reserved manual target is full 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > keeps manual idle intent until the player explicitly returns control 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > keeps healthy manual assignments stable despite profession scores and other vacancies 2ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > failed manual requests preserve the complete rest state and old target 2ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > generic plus/minus commands preserve player intent and skip resting residents 2ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > returning a building to automatic management clears its live and pending manual orders only 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > idempotent control commands do not erase a pending manual target 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > rejects unknown control mode invalid without mutation 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > rejects unknown control mode null without mutation 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > rejects unknown control mode 0 without mutation 1ms
+ ✓ tests/autonomy.test.js > player intent and all existing manual entry points > releases pending targets when a building is demolished and never restores dead residents 4ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > prioritizes a building flag before resource urgency 0ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > uses base water/fuel shortage before the ordinary category at equal building priority 0ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > considers profession and skill with stable ID tie breaks 1ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > prefers healthier candidates over a low-health expert 3ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > deduplicates stale cross-building references and respects every capacity 1ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > does not reorder valid manual worker history or emit XP for repeated job evaluation 1ms
+ ✓ tests/autonomy.test.js > deterministic job priority, suitability and capacity > does not use wall time or RNG to decide jobs 1ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > infers old manual work without changing any M5-A fields 4ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > preserves exact old v6 import bytes even when the upgraded payload already exists 25ms
+ ✓ tests/world.test.js > grid > createGrid returns a full grass grid with empty metadata 3ms
+ ✓ tests/world.test.js > grid > occupy marks cells not free and not walkable, release restores them 5ms
+ ✓ tests/world.test.js > grid > isFree rejects out-of-bounds areas 1ms
+ ✓ tests/world.test.js > grid > ore tiles are walkable but not buildable (extraction nodes) 3ms
+ ✓ tests/world.test.js > grid > tileToWorld centers the map on the origin 0ms
+ ✓ tests/world.test.js > grid > worldToTile is the inverse of tileToWorld (roundtrip) 0ms
+ ✓ tests/world.test.js > mapgen > fills the whole grid with valid cell types 112ms
+ ✓ tests/world.test.js > mapgen > places hqTile at the center on clean grass 4ms
+ ✓ tests/world.test.js > mapgen > creates at least 4 walkable spawn points 6ms
+ ✓ tests/world.test.js > mapgen > water is not walkable and non-grass/road types are not buildable 22ms
+ ✓ tests/world.test.js > mapgen > marks the outer border as wasteland (except river water and road mouths) 16ms
+ ✓ tests/world.test.js > mapgen > is deterministic for the same seed and differs across seeds 6ms
+ ✓ tests/world.test.js > mapgen > places ponds: interior water tiles beyond the edge river 10ms
+ ✓ tests/world.test.js > mapgen > keeps ponds out of the center clearing 7ms
+ ✓ tests/world.test.js > mapgen ore veins > generates clustered ore veins across many seeds 8ms
+ ✓ tests/world.test.js > mapgen ore veins > keeps every ore tile far from the HQ, walkable and not buildable 30ms
+ ✓ tests/world.test.js > mapgen wildlife herds > places 3-4 herd tiles on every seed 5ms
+ ✓ tests/world.test.js > mapgen wildlife herds > keeps every herd out of the center clearing, walkable and not buildable 5ms
+ ✓ tests/world.test.js > mapgen roads > draws roads as 4-connected paths (no corner-only or isolated tiles) 18ms
+ ✓ tests/world.test.js > mapgen roads > places at least one road on every seed 8ms
+ ✓ tests/world.test.js > terrain > builds ground/water/decorations and exposes the per-tile mutators 34ms
+ ✓ tests/world.test.js > terrain > setGroundTile recolors only the ground instance at z*size+x 14ms
+ ✓ tests/world.test.js > terrain > scatters dense rocks on ore tiles and clearDecorationsAt strips one tile only 23ms
+ ✓ tests/world.test.js > terrain > scatters 1-2 deer on wildlife tiles, tracked per tile 11ms
+ ✓ tests/world.test.js > terrain > addDecorationAt plants a prop on a tile with tracking, clearDecorationsAt removes it 11ms
+ ✓ tests/modifiers.test.js > DEFAULT_MODS > matches the v3 contract 7ms
+ ✓ tests/modifiers.test.js > getModifiers > returns the defaults under clear weather with no techs 2ms
+ ✓ tests/modifiers.test.js > getModifiers > defaults to clear when state.weather is missing or unknown 1ms
+ ✓ tests/modifiers.test.js > getModifiers > applies the current weather mods 2ms
+ ✓ tests/modifiers.test.js > getModifiers > applies researched tech effects 1ms
+ ✓ tests/modifiers.test.js > getModifiers > stacks weather and tech effects multiplicatively 1ms
+ ✓ tests/modifiers.test.js > getModifiers > heat slows rain production to a trickle and boosts solar 3ms
+ ✓ tests/modifiers.test.js > getModifiers > ignores unknown tech ids and never mutates DEFAULT_MODS 1ms
+ ✓ tests/modifiers.test.js > clinic aura > slows hunger and thirst by 15% with at least one worker 1ms
+ ✓ tests/modifiers.test.js > clinic aura > does nothing without workers or without a clinic 10ms
+ ✓ tests/modifiers.test.js > clinic aura > stacks multiplicatively with weather and tech effects 1ms
+ ✓ tests/modifiers.test.js > clinic aura > a single staffed clinic is enough among many buildings 1ms
+ ✓ tests/modifiers.test.js > clinic aura > a switched-off clinic grants no aura 0ms
+ ✓ tests/modifiers.test.js > radio aura > adds +1 recruitBonus per staffed radio 0ms
+ ✓ tests/modifiers.test.js > radio aura > does nothing without workers or without a radio 2ms
+ ✓ tests/modifiers.test.js > radio aura > stacks with the clinic aura and leaves the other mods untouched 1ms
+ ✓ tests/modifiers.test.js > radio aura > a switched-off radio grants no recruitBonus 0ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > spotlight boosts towerDamage by 20% while the grid is charged 1ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > streetlamp boosts garrisonDamage by 25% while the grid is charged 0ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > motor boosts extractProd by 25% while the grid is charged 0ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > does nothing without the building, with the grid drained or with no resources field 1ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > a switched-off aura building grants no bonus 0ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > auras do not stack with copies of themselves 1ms
+ ✓ tests/modifiers.test.js > powered auras (spotlight, streetlamp, motor) > stack multiplicatively with weather and tech effects 0ms
+ ✓ tests/modifiers.test.js > road aura (logistica) > adds +2% extractProd per standing road 0ms
+ ✓ tests/modifiers.test.js > road aura (logistica) > caps at +40% no matter how many roads 0ms
+ ✓ tests/modifiers.test.js > road aura (logistica) > counts every road, even switched off (roads never turn off) 0ms
+ ✓ tests/modifiers.test.js > road aura (logistica) > does nothing without roads and never mutates DEFAULT_MODS 0ms
+ ✓ tests/modifiers.test.js > road aura (logistica) > stacks with the motor aura and the efficiency tech 0ms
+ ✓ tests/modifiers.test.js > trail bonus (sentieri sterrati) > adds +0.5% extractProd per trail tile on the grid 0ms
+ ✓ tests/modifiers.test.js > trail bonus (sentieri sterrati) > caps at +15% no matter how many trail tiles 1ms
+ ✓ tests/modifiers.test.js > trail bonus (sentieri sterrati) > is 0 without a grid argument (old call sites keep working) 0ms
+ ✓ tests/modifiers.test.js > trail bonus (sentieri sterrati) > stacks with the road aura under its own separate cap 0ms
+ ✓ tests/modifiers.test.js > garage aura (autorimessa) > boosts extractProd by 50% while switched on and staffed 0ms
+ ✓ tests/modifiers.test.js > garage aura (autorimessa) > does nothing without workers or when switched off 1ms
+ ✓ tests/modifiers.test.js > garage aura (autorimessa) > does not stack with copies of itself 1ms
+ ✓ tests/modifiers.test.js > garage aura (autorimessa) > stays nominal even with an empty fuel tank (stall handled by consumes) 0ms
+ ✓ tests/modifiers.test.js > garage aura (autorimessa) > stacks with the motor aura 1ms
+ ✓ tests/modifiers.test.js > ranch aura (animali da lavoro) > adds +15% farmProd and +10% extractProd per staffed ranch 1ms
+ ✓ tests/modifiers.test.js > ranch aura (animali da lavoro) > caps at +45% farmProd and +30% extractProd 0ms
+ ✓ tests/modifiers.test.js > ranch aura (animali da lavoro) > does nothing without workers or when switched off 0ms
+ ✓ tests/modifiers.test.js > ranch aura (animali da lavoro) > stacks with road and garage auras and never mutates DEFAULT_MODS 2ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > persists manual targets, rest cooldown and needs through three slots and JSON 42ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 11ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 7ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 9ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 6ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 9ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 7ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 4ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 3ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > safe v6 autonomy extension > blocks corrupt/unknown autonomy and preserves raw originals 5ms
+ ✓ tests/autonomy.test.js > long autonomous rest/work simulation > runs 200 cycle-equivalents with real repeated rest/resume, bounded resources and no duplicate jobs 2272ms
+ ✓ tests/autonomy.test.js > legacy staffing controls with autonomous rest > configures Auto while a building is off without staffing it until enabled 1ms
+ ✓ tests/autonomy.test.js > legacy staffing controls with autonomous rest > counts available manual workers separately from idle HQ defenders 1ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > starts healthy and neutral without modifying M4 identity, skills or core 15ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > increases fatigue on a valid duty and recovers while idle 4ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > treats disabled work references as rest, not extra fatigue 4ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > treats unpowered work references as rest, not extra fatigue 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > treats destroyed work references as rest, not extra fatigue 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > treats missing work references as rest, not extra fatigue 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > treats inconsistent work references as rest, not extra fatigue 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > counts actual idle militia fire for one settled step only 6ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid dt 0 4ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid dt -1 3ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid dt NaN 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid dt Infinity 1ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid dt 1.01 1ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid or old step 0 3ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid or old step -1 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid or old step 1.2 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid or old step NaN 3ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > does not settle invalid or old step Infinity 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > rejects duplicate/reversed settlement and ignores wall-clock/phase jumps 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > is reproducible for the same valid simulation steps without RNG 19ms
+ ✓ tests/extraction.test.js > TILE_YIELDS > matches the v2 contract 15ms
+ ✓ tests/extraction.test.js > extractors > produce continuously at extractRate * staffing per day 1ms
+ ✓ tests/extraction.test.js > extractors > scale production with the staffing ratio 0ms
+ ✓ tests/extraction.test.js > extractors > scale production with mods.extractProd 0ms
+ ✓ tests/extraction.test.js > extractors > scale production with the building level (potenziamento) 0ms
+ ✓ tests/extraction.test.js > extractors > produce nothing without workers or without nodes in range 2ms
+ ✓ tests/extraction.test.js > extractors > ignore buildings without extracts/plants and unknown defIds 1ms
+ ✓ tests/extraction.test.js > extractors > deplete the nearest node once a full tile yield is extracted 2ms
+ ✓ tests/extraction.test.js > extractors > stop producing when the last node is gone, even with leftover progress 1ms
+ ✓ tests/extraction.test.js > extractors > respect the resource cap and do not waste nodes while full 1ms
+ ✓ tests/extraction.test.js > extractors > clamps at the effective cap when storage buildings raise it 0ms
+ ✓ tests/extraction.test.js > extractors > extract metal from ruins and ore with their own yields 2ms
+ ✓ tests/extraction.test.js > extractors > extract nothing while switched off (enabled === false) 2ms
+ ✓ tests/extraction.test.js > foresters > plant a forest on free grass after 20 worker-seconds and 2 water 1ms
+ ✓ tests/extraction.test.js > foresters > accumulate progress across ticks 3ms
+ ✓ tests/extraction.test.js > foresters > do not progress without at least 2 water 0ms
+ ✓ tests/extraction.test.js > foresters > do not progress without free grass in range 0ms
+ ✓ tests/extraction.test.js > foresters > scale planting speed with the staffing ratio 0ms
+ ✓ tests/extraction.test.js > foresters > plant nothing while switched off (enabled === false) 0ms
+ ✓ tests/extraction.test.js > range helpers > countNodesInRange uses Chebyshev distance 2 from the footprint edge 0ms
+ ✓ tests/extraction.test.js > range helpers > nearestNode returns the closest matching tile or null 1ms
+ ✓ tests/extraction.test.js > range helpers > nearestNode clips the search to the grid bounds 1ms
+ ✓ tests/extraction.test.js > range helpers > hasFreeGrassInRange ignores occupied and non-grass tiles 0ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > requires explicit recovery to replace protected data and archives the raw original 43ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > does not recover protected data when archiving fails 10ms
+ ✓ tests/save-protection.test.js > manual slots and JSON > reports empty/invalid slots 1ms
+ ✓ tests/traps.test.js > grid traps > occupyTrap marks the cell without blocking movement; release clears it 10ms
+ ✓ tests/traps.test.js > grid traps > occupyTrap rejects out-of-bounds tiles 2ms
+ ✓ tests/traps.test.js > grid traps > release only clears the matching trap id 2ms
+ ✓ tests/traps.test.js > pathfinding with traps > findPath walks straight through a trapped tile 12ms
+ ✓ tests/traps.test.js > zombies on traps > damages a zombie standing on the trap tile and wears the trap down 24ms
+ ✓ tests/traps.test.js > zombies on traps > wears the trap down once per tick even with several zombies on it 5ms
+ ✓ tests/traps.test.js > zombies on traps > does not wear the trap down when nobody stands on it 2ms
+ ✓ tests/traps.test.js > zombies on traps > kills a zombie that stays on the trap 5ms
+ ✓ tests/traps.test.js > zombie targeting with traps > never targets a trap, even when it is the only building 4ms
+ ✓ tests/traps.test.js > zombie targeting with traps > walks past the trap and attacks the real building behind it 8ms
+ ✓ tests/traps.test.js > trap destruction > combat removes a destroyed trap from state, grid and visuals 6ms
+ ✓ tests/traps.test.js > trap destruction > a trap worn down by zombie damage is removed by the combat loop 4ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for "" 5ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for "abc" 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for "繁體中文角色" 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 55 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 56 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 63 0ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 64 0ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 65 1ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > matches native SHA-256 for binary buffer length 120000 37ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > canonicalizes object keys while preserving semantic array order 2ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > creates one fixed identity per resident without changing legacy state 5ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > uses different namespaces for fresh games with the same map seed 2ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > reconciles deaths and recruitment before dawn serialization without reusing stories 34ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > preserves high-water identity after the highest resident dies and the save reloads 11ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > does not consume simulation or cosmetic RNG 5ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > leaves jobs, economy, survival and recruitment equivalent when ability effects are disabled, even at rank five 24ms
+ ✓ tests/characters.test.js > stable identity and roster lifecycle > guards ID overflow without changing normal recruitment gates 1ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > migrates v4 and v5 deterministically and without modifying input 13ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > round trips names, personality, occupation and appearance including missing art 9ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > keeps native zero population empty while protecting ambiguous legacy zero rosters 5ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 0 without replacing raw bytes 11ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 1 without replacing raw bytes 8ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 2 without replacing raw bytes 14ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > runs 200 dawns within a finite quota and retains exactly the three latest checkpoints 3435ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > does not create a backup or rewrite an unchanged v6 checkpoint on repeated reloads 38ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 3 without replacing raw bytes 11ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 4 without replacing raw bytes 8ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 5 without replacing raw bytes 8ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 6 without replacing raw bytes 7ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 7 without replacing raw bytes 7ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 8 without replacing raw bytes 9ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 9 without replacing raw bytes 5ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 10 without replacing raw bytes 4ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 11 without replacing raw bytes 9ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 12 without replacing raw bytes 6ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 13 without replacing raw bytes 6ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects invalid/unknown candidate 14 without replacing raw bytes 6ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > exports a valid v5 copy without replacing or stripping the authoritative v6 data 8ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > backs up the exact JSON v5 import source permanently, not only the previous active save 24ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > requires the exact appearance metadata schema and finite rank values before serialization 2ms
+ ✓ tests/characters.test.js > v6 complete save contract and safe legacy migration > rejects unknown legacy fields instead of silently erasing future data 2ms
+ ✓ tests/survival-needs.test.js > bounded needs and simulation clock > prevents replay across checkpoint restore and preserves the elapsed counter 90ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > loses health under hunger/thirst stress and recovers when supplied 5ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > never adds a health-based death or revives original starvation victims 9ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > moves morale toward supplied/rested conditions and away from unmet needs 14ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession generalist differences within five percent 2ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession farmer differences within five percent 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession mechanic differences within five percent 1ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession medic differences within five percent 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession scout differences within five percent 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession guard differences within five percent 1ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession researcher differences within five percent 1ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > keeps profession logistician differences within five percent 2ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality steadfast morale bias without new statuses or AI 1ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality empathetic morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality pragmatic morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality curious morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality reserved morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality optimistic morale bias without new statuses or AI 1ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality patient morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > bounds personality cautious morale bias without new statuses or AI 0ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > caps combined personality differences and all three needs at both extremes 3ms
+ ✓ tests/survival-needs.test.js > health, morale and individual differences > reports Traditional-Chinese-ready threshold statuses and only reduces efficiency 2ms
+ ✓ tests/survival-needs.test.js > bounded real output and long-running simulation > reduces actual food and HUD projections, restoring exact M4 output when disabled 13ms
+ ✓ tests/survival-needs.test.js > bounded real output and long-running simulation > uses average crew needs, preserves skills, and affects research/extraction 16ms
+ ✓ tests/survival-needs.test.js > bounded real output and long-running simulation > simulates 200 complete day/night cycles without invalid needs, extra deaths or resource overflow 1791ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves every M4 identity, XP, skill, work and art reference while adding safe defaults 14ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > loads v4/v5/M3 v6 and permanently backs up exact pre-needs v6 import bytes 63ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > retains a pinned backup byte-for-byte across later rotation 828ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > pins exact legacy source even when migration output equals the existing save 42ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > round-trips all needs, clock, switch, XP and jobs through three slots and JSON 110ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 13ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 6ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 12ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 10ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 17ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 10ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 9ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 9ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 10ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > keeps legacy, corrupt and future-format archives without hiding healthy backups 221ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 7ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > preserves corrupted/unknown original data and raw export 5ms
+ ✓ tests/survival-needs.test.js > v4/v5/M3/M4 v6 migration and safe protection > keeps a native empty roster empty and does not reuse dead UID after load 6ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > permanently retains the original v4 migration and unknown recovery originals 169ms
+ ✓ tests/pathfinding.test.js > findPath > finds a straight path on an open grid 8ms
+ ✓ tests/pathfinding.test.js > findPath > walks around a wall through the only gap 4ms
+ ✓ tests/pathfinding.test.js > findPath > returns null when the goal is unreachable 1ms
+ ✓ tests/pathfinding.test.js > findPath > returns null when the start tile is not valid 1ms
+ ✓ tests/pathfinding.test.js > findPath > returns the single tile when start equals goal 1ms
+ ✓ tests/pathfinding.test.js > findPath > reaches a goal tile even when it is occupied and not walkable 2ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > picks the nearest reachable building, not the walled one 1ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > targets the footprint tile closest to the zombie 1ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > returns null when nothing is reachable 4ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > prefers a farther high-interest target over a closer dull one 5ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > treats bare buildings as weight 1 (backward compatible) 2ms
+ ✓ tests/pathfinding.test.js > findNearestTarget > falls back to a wall when everything interesting is sealed off 1ms
+ ✓ tests/pathfinding.test.js > roads > crosses an occupied road tile to reach the other side 1ms
+ ✓ tests/pathfinding.test.js > roads > still blocks the path on an occupied tile without the road flag 1ms
+ ✓ tests/pathfinding.test.js > roads > plans a path starting from a road tile 1ms
+ ✓ tests/pathfinding.test.js > roads > targets a building behind a road, crossing the road tiles 0ms
+ ✓ tests/pathfinding.test.js > nextStep > returns the next tile of a path 0ms
+ ✓ tests/pathfinding.test.js > nextStep > returns null when there is no next tile 0ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > only makes a legacy backup rotatable after an explicit unpin 149ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > cleans excess explicitly unpinned legacy archives only after a successful primary write 119ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > does not silently claim success when a pin update fails 10ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > cannot make malformed or unknown-version save archives eligible for rotation 2ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > preserves the active save and every pin when storage is completely full 64ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > protects the active save and pins if replacement fails after rotating an old archive 82ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > reports a failed permanent pin without changing its prior retention state 13ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > reports cleanup failure separately from a successful save and never touches pins 81ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > refuses rotation when a selected archive was pinned after the backup scan 45ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > preserves raw v4 data when actual map reconstruction fails 7ms
+ ✓ tests/save-protection.test.js > bounded rotation and permanent retention > rejects mixed legacy building IDs rather than creating duplicate IDs during restoration 5ms
+ ✓ tests/workers.test.js > module smoke > exposes the documented factory API 11ms
+ ✓ tests/workers.test.js > workers sync > shows up to two workers per staffed building, parked on footprint corners 9ms
+ ✓ tests/workers.test.js > workers sync > shows a single worker when the roster has only one 1ms
+ ✓ tests/workers.test.js > workers sync > caps the visible workers at 24 overall 9ms
+ ✓ tests/workers.test.js > workers sync > prioritizes the fullest rosters when the cap bites 6ms
+ ✓ tests/workers.test.js > workers sync > hides everyone at night and brings them back by day 3ms
+ ✓ tests/workers.test.js > workers sync > removes workers when the building disappears or its roster empties 4ms
+ ✓ tests/workers.test.js > workers sync > does not rebuild workers when the staffing signature is unchanged 1ms
+ ✓ tests/workers.test.js > workers sync > reuses pooled meshes after a building is removed and another staffed 3ms
+ ✓ tests/workers.test.js > workers wander > strolls slowly around the anchor, staying within 1.5 tiles of it 4ms
+ ✓ tests/buildings.test.js > buildings modules > visuals.js exports the createBuildingVisuals factory 4ms
+ ✓ tests/buildings.test.js > buildings modules > placement.js exports the createPlacement factory 2ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > returns 1 when the required tile is in range, poor otherwise 2ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > honours the wildlife tile type for the ranch 1ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > returns 1 for defs without a proximity rule 0ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > honours the required tile type (forest for hunting, not water) 0ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > measures the range from the footprint edge, not just the anchor 1ms
+ ✓ tests/buildings.test.js > proximityEfficiencyAt > clamps the search to the grid bounds 1ms
+ ✓ tests/buildings.test.js > wallLineTiles > draws a horizontal row on start.z when |dx| >= |dz| 4ms
+ ✓ tests/buildings.test.js > wallLineTiles > draws a vertical column on start.x when |dz| > |dx| 1ms
+ ✓ tests/buildings.test.js > wallLineTiles > returns a single tile when start equals end 1ms
+ ✓ tests/buildings.test.js > wallLineTiles > walks backwards when the end precedes the start 0ms
+ ✓ tests/buildings.test.js > wallLineTiles > clamps both ends to the grid (0..63) 1ms
+ ✓ tests/buildings.test.js > wallLineTiles > prefers the horizontal axis on a perfect diagonal (|dx| === |dz|) 0ms
+ ✓ tests/buildings.test.js > demolishBuilding refund > refunds half the cost, clamped at the base cap without storage 10ms
+ ✓ tests/buildings.test.js > demolishBuilding refund > clamps at the effective cap when storage buildings raise it 3ms
+ ✓ tests/buildings.test.js > scaleForFootprint > scales to 1.6 units per footprint row on a 1x1 6ms
+ ✓ tests/buildings.test.js > scaleForFootprint > shrinks models whose width would overflow the footprint 2ms
+ ✓ tests/buildings.test.js > scaleForFootprint > applies the optional modelScaleMul after the footprint fit 1ms
+ ✓ tests/buildings.test.js > scaleForFootprint > honours modelWidthFrac for thin structures (road: 1/4 of the tile) 3ms
+ ✓ tests/core.test.js > core/engine > imports without DOM/WebGL and exports the createEngine factory 3ms
+ ✓ tests/core.test.js > core/camera > creates an orthographic camera centered on the origin 3ms
+ ✓ tests/core.test.js > core/camera > clamps zoom to the [15, 80] frustum half-size range 1ms
+ ✓ tests/core.test.js > core/camera > focus jumps the view to a world point 0ms
+ ✓ tests/core.test.js > core/camera > pans on the ground plane relative to the screen 1ms
+ ✓ tests/core.test.js > core/camera > rotates in smooth 90° steps 10ms
+ ✓ tests/core.test.js > core/camera > pans and rotates from the keyboard state passed to update() 2ms
+ ✓ tests/core.test.js > core/input > exposes keys/mouse/ground and emits hover on tile change 4ms
+ ✓ tests/core.test.js > core/input > emits click and rightclick with the ground payload 1ms
+ ✓ tests/core.test.js > core/input > tracks keys, emits keydown/keyup and clears keys on blur 0ms
+ ✓ tests/core.test.js > core/input > stops emitting after destroy() 0ms
+ ✓ tests/core.test.js > core/daynight > sets up fog, background, sun and hemisphere lights on the scene 2ms
+ ✓ tests/core.test.js > core/daynight > interpolates between day and night keyframes 1ms
+ ✓ tests/core.test.js > core/daynight > keeps the sun high by day and the moon low by night 2ms
+ ✓ tests/core.test.js > core/daynight > ends the night on the near-black background color 1ms
+ ✓ tests/research.test.js > TECHS tree > matches the v3 contract (costs, effects, unlocks) 5ms
+ ✓ tests/research.test.js > TECHS tree > every unlocked building id exists only once across the tree 1ms
+ ✓ tests/research.test.js > tickResearch > generates researchRate points per day at full staffing 1ms
+ ✓ tests/research.test.js > tickResearch > scales with the staffing ratio and accumulates over ticks 0ms
+ ✓ tests/research.test.js > tickResearch > sums over multiple labs and ignores non-lab buildings 0ms
+ ✓ tests/research.test.js > tickResearch > generates nothing without workers 0ms
+ ✓ tests/research.test.js > tickResearch > does not require power 0ms
+ ✓ tests/research.test.js > research > canResearch checks existence, points and duplicates 0ms
+ ✓ tests/research.test.js > research > research spends the points, records the tech and fires an event 1ms
+ ✓ tests/research.test.js > research > research fails and leaves the state untouched when not allowed 5ms
+ ✓ tests/research.test.js > research > isUnlocked gates building defs on their required tech 0ms
+ ✓ tests/research.test.js > research > concrete and ballistics unlock their v3 buildings 0ms
+ ✓ tests/portraits.test.js > portrait inventory and licensing gate > ships only draft fixed IDs, no falsely approved portraits or unknown third-party files 14ms
+ ✓ tests/portraits.test.js > portrait inventory and licensing gate > gates on complete approval and validates local web image paths 3ms
+ ✓ tests/portraits.test.js > portrait inventory and licensing gate > requires evidence, reviewer and attribution, not just an Original label 1ms
+ ✓ tests/portraits.test.js > portrait inventory and licensing gate > selects expressions from existing survival/work state without mutation 6ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > performs no fetch at construction and never requests draft images 103ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > loads verified PNG, shares requests and reuses bounded cached image blobs 11ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > uses neutral when a requested expression is absent or fails checksum 7ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > falls back safely on mime 5ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > falls back safely on checksum 3ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > falls back safely on oversize 1ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > falls back safely on short 1ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > falls back safely on 404 1ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > does not fetch unknown appearance IDs and does not fall back to a full portrait for a missing avatar 1ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > keeps active URL leases valid across cache eviction and releases them on disposal 15ms
+ ✓ tests/portraits.test.js > lazy verified image loader and fallback > retries failed inventory on a subsequent request without blocking game boot 4ms
+ ✓ tests/portraits.test.js > build-time artwork verification > accepts the pending inventory without claiming any finished artwork 22ms
+ ✓ tests/portraits.test.js > build-time artwork verification > fails build validation for unapproved art and broken ID references 6ms
+ ✓ tests/portraits.test.js > build-time artwork verification > fails validation when approved bytes do not match their recorded digest 2ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > covers all building names/descriptions without changing simulation definitions 25ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > covers every technology, category, resource and weather label 6ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > formats dynamic templates, nested labels and optional tooltip suffixes 8ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > keeps English and deterministic missing-message fallback available 2ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > selects query, saved preference and default in order without touching game keys 3ms
+ ✓ tests/i18n.test.js > Traditional Chinese presentation catalog > does not stop gameplay when preference storage is blocked/full 1ms
+ ✓ tests/i18n.test.js > read-only character presentation and save compatibility > adapts existing survivors without adding stats, portraits or translated IDs to the save 6ms
+ ✓ tests/i18n.test.js > read-only character presentation and save compatibility > preserves v4/v5 payloads and restored state across locales 90ms
+ ✓ tests/i18n.test.js > read-only character presentation and save compatibility > supports an empty/idle roster and clamps display values without mutating the survivor 2ms
+ ✓ tests/i18n.test.js > read-only character presentation and save compatibility > requires local artwork plus explicit license, attribution and alt text 2ms
+ ✓ tests/upgrade.test.js > addBuilding defaults > initializes priority 1 (normale) and level 1 6ms
+ ✓ tests/upgrade.test.js > isUpgradeable > is true for producers, extractors and towers 1ms
+ ✓ tests/upgrade.test.js > isUpgradeable > is false for defs without produces/extracts/isTower and for null defs 0ms
+ ✓ tests/upgrade.test.js > isUpgradeable > is false for the hq: unico e senza costo di costruzione 0ms
+ ✓ tests/upgrade.test.js > upgradeCost > is the build cost times the current level (L1 1×, L2 2×) 2ms
+ ✓ tests/upgrade.test.js > upgradeCost > treats a missing level as 1 (retrocompat) 0ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > pays the cost, raises the level and heals by the maxHp delta 2ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > clamps the hp at the new maxHp when already (nearly) full 1ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > refuses without funds and leaves resources and level untouched 1ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > refuses at MAX_LEVEL without charging 2ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > refuses non-upgradeable defs (warehouse, tent) 0ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > works on a switched-off building (la potenza resta alla riattivazione) 0ms
+ ✓ tests/upgrade.test.js > upgradeBuilding > reaches level 3 in two steps with escalating costs 2ms
+ ✓ tests/trails.test.js > tickTrails > waits TRAIL_INTERVAL before the first placement 12ms
+ ✓ tests/trails.test.js > tickTrails > expands one greedy step from the Refuge footprint, x axis first 4ms
+ ✓ tests/trails.test.js > tickTrails > only decides the tile: the grid is never mutated 3ms
+ ✓ tests/trails.test.js > tickTrails > places nothing without idle survivors 2ms
+ ✓ tests/trails.test.js > tickTrails > grows from the placed trail until the building is served, then stops 1ms
+ ✓ tests/trails.test.js > tickTrails > skips occupied tiles and steps around them from the next source 0ms
+ ✓ tests/trails.test.js > tickTrails > skips water tiles 0ms
+ ✓ tests/trails.test.js > tickTrails > skips trap tiles 1ms
+ ✓ tests/trails.test.js > tickTrails > stops at MAX_TRAILS trail tiles 3ms
+ ✓ tests/trails.test.js > tickTrails > never targets the Refuge itself or the roads 1ms
+ ✓ tests/repair.test.js > repairCost > scales the build cost by the missing-hp ratio and REPAIR_COST_RATIO 5ms
+ ✓ tests/repair.test.js > repairCost > rounds every resource up 0ms
+ ✓ tests/repair.test.js > repairCost > drops zero-cost entries and returns {} at full hp 1ms
+ ✓ tests/repair.test.js > repairCost > handles a missing or empty def cost 2ms
+ ✓ tests/repair.test.js > startRepair > pays the prorated cost once and flags repairing 1ms
+ ✓ tests/repair.test.js > startRepair > refuses full hp, an active repair and short funds (resources untouched) 1ms
+ ✓ tests/repair.test.js > tickRepairs > climbs at maxHp / REPAIR_SECONDS per second and returns the changed ids 1ms
+ ✓ tests/repair.test.js > tickRepairs > takes a prorated time: from half hp it completes in 15 s 3ms
+ ✓ tests/repair.test.js > tickRepairs > clamps at maxHp and clears the flag 1ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > preserves all 32 source PNG byte hashes, RGBA headers and dimensions 167ms
+ ✓ tests/reputation.test.js > reputation initial state > starts at 0 with no deaths counted 3ms
+ ✓ tests/reputation.test.js > tickReputation > gains +4 for the survived night 1ms
+ ✓ tests/reputation.test.js > tickReputation > gains +2 extra per staffed switched-on radio 0ms
+ ✓ tests/reputation.test.js > tickReputation > ignores radios without workers or switched off 0ms
+ ✓ tests/reputation.test.js > tickReputation > loses 10 per death of the day and then resets deathsToday 0ms
+ ✓ tests/reputation.test.js > tickReputation > clamps the result to 0-100 0ms
+ ✓ tests/reputation.test.js > deathsToday counting > counts starvation and thirst deaths from tickSurvivors 2ms
+ ✓ tests/reputation.test.js > deathsToday counting > counts the workers killed with their building 2ms
+ ✓ tests/reputation.test.js > recruitCount > is 1 by default 0ms
+ ✓ tests/reputation.test.js > recruitCount > adds the radio recruitBonus 0ms
+ ✓ tests/reputation.test.js > recruitCount > adds one recruit per 25 reputation points 0ms
+ ✓ tests/reputation.test.js > recruitCount > combines radio bonus and reputation 0ms
+ ✓ tests/waves.test.js > waveForNight > matches the scaling formulas for night 1 2ms
+ ✓ tests/waves.test.js > waveForNight > scales monotonically with the night number 1ms
+ ✓ tests/waves.test.js > waveForNight > keeps the linear branch unchanged up to night 12 0ms
+ ✓ tests/waves.test.js > waveForNight > keeps growing (non-decreasing) past night 12, up to night 50 2ms
+ ✓ tests/waves.test.js > waveForNight > grows sub-linearly past night 12 (dampened scaling) 0ms
+ ✓ tests/waves.test.js > waveForNight > keeps spawnInterval above its floor 1ms
+ ✓ tests/waves.test.js > spawnPlan > covers the total wave count for several nights 1ms
+ ✓ tests/waves.test.js > spawnPlan > schedules batches in ascending time within the night 0ms
+ ✓ tests/waves.test.js > spawnPlan > concentrates the wave toward the middle/end of the night 0ms
+ ✓ tests/weather.test.js > WEATHERS table > matches the v3 contract 9ms
+ ✓ tests/weather.test.js > WEATHERS table > has weights summing to 100 and a name/icon for each weather 2ms
+ ✓ tests/weather.test.js > rollWeatherForDay > is deterministic for the same (day, seed) pair 5ms
+ ✓ tests/weather.test.js > rollWeatherForDay > always returns a valid weather id 20ms
+ ✓ tests/weather.test.js > rollWeatherForDay > varies across days and seeds 4ms
+ ✓ tests/weather.test.js > rollWeatherForDay > follows the weights: clear is the most common outcome 11ms
+ ✓ tests/weather.test.js > advanceWeather > sets state.weather.current from day and mapSeed 2ms
+ ✓ tests/weather.test.js > advanceWeather > defaults mapSeed to 0 and creates the weather object if missing 0ms
+ ✓ tests/weather.test.js > advanceWeather > is deterministic across a whole playthrough 2ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > test environment has no DOM 2ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > hud.js imports cleanly and exports createHud 90ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > buildmenu.js imports cleanly and exports createBuildMenu 22ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > inspector.js imports cleanly and exports createInspector 98ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > researchpanel.js imports cleanly and exports createResearchPanel 16ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > laborpanel.js imports cleanly and exports createLaborPanel 17ms
+ ✓ tests/ui.test.js > ui modules (import-only smoke) > screens.js imports cleanly and exports createScreens 9ms
+ ✓ tests/persistence.test.js > restoreSave resources > keeps resources above the base cap when storage raises it 16ms
+ ✓ tests/persistence.test.js > restoreSave resources > clamps resources to the base cap without storage buildings 4ms
+ ✓ tests/persistence.test.js > restoreSave resources > clamps restored resources to the effective cap 2ms
+ ✓ tests/persistence.test.js > restoreSave resources > clamps negative restored resources to zero 4ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > loads the actual 4 full bodies, 4 avatars and 20 expressions under stable IDs 1519ms
+ ✓ tests/assets.test.js > normalizeHeight > scales to the target height and grounds the base 5ms
+ ✓ tests/assets.test.js > normalizeHeight > shrinks over-wide models to fit maxWidth (never enlarges) 1ms
+ ✓ tests/assets.test.js > normalizeHeight > leaves models already within maxWidth untouched 1ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > falls back to calm on missing expression, then null if calm is missing too 28ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > records integration authorization without inventing commercial or modification rights 1ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > continues generator v1 saves with the original cast and preserved profiles 23ms
+ ✓ tests/anime-art.test.js > user supplied anime pack > assigns new cast without rewriting legacy v6 profiles and migrates v4/v5 18ms
+
+ Test Files  30 passed (30)
+      Tests  701 passed (701)
+   Start at  17:10:59
+   Duration  10.60s (transform 2.06s, setup 0ms, import 5.55s, tests 15.20s, environment 9ms)
+

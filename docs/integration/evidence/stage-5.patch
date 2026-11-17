@@ -1,0 +1,962 @@
+diff --git a/docs/M5A-CHANGED-FILES.md b/docs/M5A-CHANGED-FILES.md
+new file mode 100644
+index 0000000..e1a5081
+--- /dev/null
++++ b/docs/M5A-CHANGED-FILES.md
+@@ -0,0 +1,31 @@
++# M5-A 修改檔案
++
++相對 M4 `2d1f408`。回歸重新產生的既有 M3/M4 截圖已恢復原文，只交付本次 M5-A 新截圖；未更動美術、地圖／攝影機、建築定義、戰鬥模組或相依套件。
++
++- `docs/M5A-CHANGED-FILES.md`
++- `docs/M5A-IMPLEMENTATION.md`
++- `docs/M5A-PR.md`
++- `docs/M5A-SAVE-COMPATIBILITY.md`
++- `docs/M5A-TEST-RESULTS.md`
++- `docs/screenshots/m5a-needs-1000.png`
++- `docs/screenshots/m5a-needs-390.png`
++- `e2e/m2-interface.spec.js`
++- `e2e/m3-characters.spec.js`
++- `e2e/m4-progression.spec.js`
++- `e2e/m5a-survival-needs.spec.js`
++- `src/characters/state.js`
++- `src/main.js`
++- `src/needs/rules.js`
++- `src/needs/schema.js`
++- `src/needs/simulation.js`
++- `src/persistence.js`
++- `src/progression/work.js`
++- `src/sim/economy.js`
++- `src/sim/extraction.js`
++- `src/sim/research.js`
++- `src/ui/anime-theme.css`
++- `src/ui/characterpanel.js`
++- `src/ui/i18n/zh-TW.js`
++- `src/ui/needspanel.js`
++- `tests/progression.test.js`
++- `tests/survival-needs.test.js`
+diff --git a/docs/M5A-IMPLEMENTATION.md b/docs/M5A-IMPLEMENTATION.md
+new file mode 100644
+index 0000000..5023f12
+--- /dev/null
++++ b/docs/M5A-IMPLEMENTATION.md
+@@ -0,0 +1,86 @@
++# M5-A 居民需求：實作規格
++
++## 基準與範圍
++
++基準為遠端最新 M4 `2d1f408`，分支 `feature/m5a-survival-needs`，PR base 為 `feature/m4-survivor-progression`。M1–M4 功能保留；不修改 main、不合併、不部署。
++
++沿用 M3 runId／數字 ID／UID／外觀 ID、M4 六技能／經驗／工作分配。沒有修改 Three.js 地圖、攝影機、美術、建築定義、射擊／夜襲與原死亡條件。M5-A 不含自主休息／醫療／工作 AI、疾病、叛逃或永久離隊。
++
++需求邏輯位於 `src/needs/`，面板在 `src/ui/needspanel.js`；生產、採集、植林與研究讀取獨立需求效率。M4 經驗仍只來自實際成果，效率下降後自然按較少的成果結算，不憑時間額外授予技能經驗。
++
++## 三個數值
++
++每名存活居民保存 `needs:{fatigue,health,morale}`，全部為 0–100 有限數字，變化後保留六位小數。新居民／舊檔缺省為疲勞 0、健康 100、士氣 70，初始需求效率 100%。
++
++公式使用原遊戲每個白晝 90 遊戲秒作為率的單位；一個完整日夜為 150 秒，不把白晝率誤當整個週期率。
++
++### 疲勞
++
++- 有效值勤：`+18 × 職業係數 / 90` 每遊戲秒。
++- 休息：`−30 / 90` 每遊戲秒。
++- 值勤須為存活居民，指向仍存在、hp>0、啟用、非缺電且有職缺的建築，workers 名冊亦須反向包含此人。停工、消失或不一致參照不增加工作疲勞。
++- 值勤包含在崗維護；倉滿或缺料未產出時，不虛構 XP，但仍可累積值勤疲勞。要休息可用 M4 解除工作／停工；原自動派工仍可能分配另一份工作，沒有新增休息 AI。
++- 待命 HQ 民兵只在實際造成傷害的該步視為活動；沒有命中的空轉不加此活動。活動標記在該次需求結算後清除，最高技能者亦正常計活動。
++
++職業係數：斥候／守衛 0.95、後勤 0.97、機械技師 0.98、研究員 1.02，其餘 1；統一限制於 0.95–1.05。職業 ID 與四位具名人物職業不改動。
++
++### 健康
++
++- 飢餓 ≥75：每 90 秒 −8 健康。
++- 口渴 ≥75：每 90 秒 −12 健康；同時存在時相加。
++- 飢餓、口渴均 <50：每 90 秒 +6 健康；中間區間不恢復也不額外扣除。
++- 使用原有進食／飲水處理後的實際需求值，不再扣一份食水。診所仍透過 M4 原有減緩飢渴間接保護健康，不新增疾病與醫療 AI。
++- 健康 0 不新增死亡；原飢餓／口渴達死亡條件、建築被摧毀的居民死亡與 HQ 淪陷仍維持原規則，健康不能用來擋下原本應發生的死亡。
++
++### 士氣
++
++以目標值 `T` 而非每幀任意累加：從 70 起算，依條件加入以下項目，再 clamp 至 0–100：
++
++| 條件 | 目標調整 |
++| --- | --- |
++| 休息 | +8 |
++| 有至少一份食物且飢餓 <50 | +5 |
++| 食物不足一份 | −10 |
++| 有至少一份水且口渴 <50 | +5 |
++| 飲水不足一份 | −15 |
++| 飢餓 ≥75／口渴 ≥75 | −15／−20 |
++| 健康 <40 | −15 |
++| 疲勞 ≥75 | −10 |
++
++個性目標偏移：樂觀 +4、堅定 +2、耐心／好奇 +1、謹慎 −2、內斂／體貼 −1、務實 0；合計限制 ±5。這是獨立規則表，不改 M4 原有個性學習係數，也不賦予離隊或其他 AI 行為。
++
++士氣每 90 秒最多向 T 移動 12 點，不能超越目標。食物、飲水、健康與休息影響可逐項測試，不引入亂數或牆鐘。
++
++## 工作效率
++
++只減少，不給額外正產量：
++
++```text
++F = 1 − 0.25 × clamp((疲勞−40)/60, 0, 1)
++H = 1 − 0.50 × clamp((70−健康)/70, 0, 1)
++M = 1 − 0.10 × clamp((40−士氣)/40, 0, 1)
++個人需求效率 = clamp(F×H×M, 0.40, 1.00)
++建築需求效率 = 有效工作參與者的個人需求效率平均值
++```
++
++疲勞超過 40、健康低於 70、士氣低於 40 才逐步扣效率，避免輕微變化立即大幅改平衡；最差仍保留 40%，不造成零產出死鎖。值勤居民自身需求只結算一次，即使同一人有多種工作成果或駐軍射擊。
++
++倍率作用於食物／加工／發電、採集、植林進度與研究，仍受原資源上限及 M4 有限技能倍率約束。無人力建築不虛構居民需求倍率。HUD／建築產量預估亦讀取同一倍率。戰鬥傷害、診所／廣播／車庫等既有支援光環不調整，避免本階段同時重做整套戰鬥與光環平衡；UI 有明確說明適用範圍。
++
++可獨立關閉需求效率：需求仍按實際模擬步更新，但工作效率恢復 M4 數值。M4 技能加成開關維持獨立，不把兩個系統混在一個旗標。
++
++## 時間與存檔
++
++需求集中於一次正時間步的戰鬥後、日夜轉換及黎明保存前更新。主迴圈提供獨立遞增步號，讀檔從保存的 lastStep 繼續；日夜切換歸零 timeInPhase 不會重扣或讓需求時鐘倒退。
++
++拒絕重複／倒退／非整數步號，以及非有限、≤0 或 >1 秒的 dt；現有主迴圈最高時間步在此範圍內。跳過步號不代表補算離線時間，暫停、低幀率與牆鐘變化不直接產生額外結算。elapsedSeconds 僅累計有效遊戲 dt，保留九位小數；沒有待處理活動佇列跨讀檔重播。
++
++存檔沿用 v6，新增 versioned survival 元件與必要功能標記，詳見 [相容性](M5A-SAVE-COMPATIBILITY.md)。新增居民用安全預設，死者不更新／復活，UID 高水位不變。
++
++## UI 與已知範圍
++
++原動漫全身立繪、頭像、五表情、六技能、經驗與 M4 派工都保留。新增三條有方向意義的 meter、繁中／英文狀態、需求效率及開關。狀態門檻與數值分開，健康「良好」表示 ≥70，不表示數值必為 100。
++
++本版是有限的需求／計算／顯示系統。沒有自動班表；長期全天值勤會累積疲勞，需要玩家利用既有派工控制安排休息。健康壓力率與效率寬限門檻刻意溫和，保留原快速飢渴死亡規則；長局平衡仍需驗收。
++
++[測試與截圖](M5A-TEST-RESULTS.md)｜[修改檔案](M5A-CHANGED-FILES.md)
+diff --git a/docs/M5A-PR.md b/docs/M5A-PR.md
+new file mode 100644
+index 0000000..1e0a04a
+--- /dev/null
++++ b/docs/M5A-PR.md
+@@ -0,0 +1,26 @@
++## M5-A：有界限的居民疲勞、健康與士氣
++
++Base：`feature/m4-survivor-progression`（`2d1f408`）。保留 M1–M4，不合併、不修改 main、不正式部署。
++
++新增每位居民 0–100 的疲勞、健康與士氣。有效值勤增加疲勞、待命／停工休息降低疲勞；原飢餓口渴壓力影響健康，供應、休息與有限個性差異影響士氣。職業疲勞差異最多 ±5%，士氣個性偏移最多 ±5 點。沒有疾病、離隊、複雜醫療或自主 AI，健康 0 不新增死亡條件，夜襲／原死亡規則維持。
++
++需求效率只減少生產、採集、植林與研究，介於 40–100%，不增加原產出；M4 技能／經驗與上限、支援光環及戰鬥傷害規則保留。可獨立停用需求效率，保留數值追蹤並回到 M4 工作倍率。
++
++M3 立繪／頭像／五表情與 M4 技能／派工完整保留，新增中英文三需求、狀態、工作效率與開關。需求在唯一的正模擬步結算，保存步號並拒絕重複／倒退／非法 dt，不用牆鐘或日夜歸零補扣。
++
++v6 增加 versioned survival 元件與 `survival-needs-v1` 必要功能，保留原 runId／UID／成長／工作／美術 ID；有效 v4/v5/M3/M4 檔安全補預設並永久備份來源。未知／損壞不覆寫。另修正同內容舊 v6 匯入可能跳過原文備份的短路，現在即使無需重寫也先保護舊來源。
++
++### 驗證
++
++單元測試 **657/657（29 檔）**、正式建置成功；包含 30,000 遊戲秒（200 個日夜週期等值）的需求／食水經濟模擬。M5-A 桌面／手機 browser **2/2** 通過；原有十二項 browser 首輪 11 通過，1 項 M3 不變資料斷言因合法士氣變化失敗，修正為完整比對所有非 needs 資料及需求範圍後單項複驗 1/1 通過。最終 **14 個不同 browser 案例全數具通過結果**；分組紀錄與截圖見報告。
++
++- [計算公式與介面範圍](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5a-survival-needs/docs/M5A-IMPLEMENTATION.md)
++- [存檔相容性與回復](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5a-survival-needs/docs/M5A-SAVE-COMPATIBILITY.md)
++- [測試與截圖](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5a-survival-needs/docs/M5A-TEST-RESULTS.md)
++- [修改檔案](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5a-survival-needs/docs/M5A-CHANGED-FILES.md)
++
++### 已知風險
++
++這是保守的首版需求數值，不是完整 AI 排班；全天值勤會累積疲勞，需玩家利用既有派工安排休息，原自動派工亦可能再分配工作。長局平衡仍需玩家驗收，200 週期測試不代表所有城市配置或 200 場夜襲都已覆蓋。沒有離線恢復，仍是黎明檢查點與單分頁 localStorage；新欄位增加大小，保留既有 2 MiB 上限／配額保護。
++
++回到 M4 `2d1f408` 前保留完整 M5-A v6 與升級前永久備份，不刪 localStorage。舊 M4 不認得新必要功能會保護原檔；v5 副本不保留人物身分、成長、需求與高水位，不能當完整回復檔。未新增角色圖片或變更既有授權。
+diff --git a/docs/M5A-SAVE-COMPATIBILITY.md b/docs/M5A-SAVE-COMPATIBILITY.md
+new file mode 100644
+index 0000000..9c16f2e
+--- /dev/null
++++ b/docs/M5A-SAVE-COMPATIBILITY.md
+@@ -0,0 +1,38 @@
++# M5-A v6 相容性與回復
++
++## schema 評估
++
++不升級頂層 v6 或人物 schemaVersion，也不重設 M3 身分與 M4 成長。以獨立 `schemaVersion:1` 的 survival 元件擴充，並加必要功能標記，讓舊程式無法忽略新需求後存回而丟資料。
++
++```text
++requiredFeatures: ['characters-v1','progression-v1','survival-needs-v1']
++characters.survival: {schemaVersion:1,effectsEnabled:true,lastStep:0,elapsedSeconds:0}
++characters.records[id].needs: {fatigue:0,health:100,morale:70}
++```
++
++三值須為 0–100 有限 number。步號須為非負安全整數；elapsedSeconds 須有限、非負且不大於步號。標記與元件須同時存在；元件欄位、record needs 欄位皆精確驗證。已標記的檔案若缺少欄位或範圍錯誤，不把損壞當成舊檔補零。
++
++| 輸入 | 處理 |
++| --- | --- |
++| 有效 v4／v5 | 沿用 M3/M4 安全遷移，補技能／需求安全預設，原文永久保留 |
++| M3 v6（只有 characters-v1） | 保留身分／外觀，補 M4 成長與本次需求；既有技能等級保留 |
++| M4 v6 | 所有 runId／UID／XP／能力／個性／職業／工作／美術參照不變，只補 survival 與 needs |
++| M5-A v6 | 精確驗證、冪等讀取，保存時鐘、效率開關與全部需求 |
++| 未知功能、未知版本、損壞或遷移失敗 | 拒絕覆寫，仍可匯出原始 JSON，沿用 M1 明確復原機制 |
++| 原生 v6 空名冊 | 保持空名冊、空 active records 與原高水位，不復活居民 |
++
++舊版缺／空居民名冊、明確矛盾工作參照，沿用 M3/M4 的保守拒絕策略，不自動重建後覆寫原檔。新生與死亡的身分規則不變。
++
++## 備份與 JSON
++
++v4、v5、M3/M4 舊 v6 的首次升級原文均永久保護，JSON 匯入來源也保存確切文字。新增修正：若舊 v6 升級結果恰等於目前 active save，仍先保存舊來源，再回報無需重寫；不能讓相同內容的短路跳過來源備份。新增單元與瀏覽器測試驗證這個邊界。
++
++M5-A 正常自動保存仍只有三份輪替備份；釘選不自動移除。三槽、JSON、原始損壞資料匯出與配額不足保護保留，需求值／時鐘／成長／工作一起保存。仍是黎明檢查點，不新增任意戰鬥快照。
++
++## 回復與風險
++
++- 回復程式可回到 M4 `2d1f408` 或撤回本次 M5-A commit；先匯出完整 M5-A v6，勿刪 localStorage。
++- 舊 M4 遇 survival-needs-v1 會保護未知必要功能，不能直接讀取再丟掉需求欄位。要回到可玩的舊程式，使用升級前永久 M4 備份；保留完整 M5-A 檔，以後可回到本版恢復。
++- v5 相容副本不含人物身分、成長、需求、時鐘與高水位，不能用來完整回復 M5-A。
++- 仍為單分頁 localStorage、2 MiB 單檔上限。新欄位增加大小，永久備份累積可能滿額；保留 active save 並提示管理，不自動刪釘選檔。沒有跨分頁交易。
++- 需求只按有效模擬時間更新，不實作離線休息或補算。突然關頁仍只能回到最近黎明；這是既有檢查點設計。
+diff --git a/docs/M5A-TEST-RESULTS.md b/docs/M5A-TEST-RESULTS.md
+new file mode 100644
+index 0000000..c5bd9c4
+--- /dev/null
++++ b/docs/M5A-TEST-RESULTS.md
+@@ -0,0 +1,45 @@
++# M5-A 測試與畫面
++
++基準 M4 `2d1f408`；Node v24.22.1／npm 11.9.0，沒有新增套件。原有 596 項單元測試保留，legacy fixture 補上移除新需求元件的步驟，以維持「舊 v6」資料的真實形狀。
++
++| 檢查 | 結果 |
++| --- | --- |
++| `npm test` | 29 個檔案、657 項通過（原有 596 + 本階段 61） |
++| `npm run build` | 成功；原 32 PNG 校驗通過，既有 bundle >500 KiB 警告仍在 |
++| M5-A 桌面／手機 | 2/2 通過，5.1 分鐘 |
++| 原有 M1–M4 十二項瀏覽器回歸 | 首輪 11 通過、1 舊斷言失敗（31.2 分鐘）；修正後該項 1/1 通過（1.7 分鐘），最終 12 個不同案例均通過 |
++| `git diff --check` | 通過 |
++
++新增測試覆蓋工作／休息、無效職位、原民兵活動、數值上下限、健康壓力與恢復、原死亡規則、個性／職業差異、效率上下限與停用、產出／預估／研究／採集、重複／倒退／非法時間步、日夜時鐘隔離、重載防重播、全版本遷移、三槽／JSON、同內容舊檔匯入永久備份，以及損壞／未知版本原文保護。
++
++長時間測試為 30,000 個一秒遊戲步（相當 200 個 150 秒日夜週期），固定四名居民、農場／菜園／診所／兩口井，實際執行經濟、進食飲水與需求。驗證每段資源不越容量、需求有限且範圍合法、沒有額外死亡或資源異常。這不是 200 場夜襲與隨機天氣壓力測試；自然日夜／夜襲功能由既有純邏輯與 browser smoke 另行覆蓋。
++
++M5-A 瀏覽器使用 1000×900 與 390×900 CSS viewport，透過正式 JSON 介面匯入可重現的需求檢查點，再用 M4 UI 派工；確認實際運行後工作者疲勞增加、待命者疲勞減少、需求效率開關、黎明保存與重載、解除工作恢復，以及英文標籤。舊 M4 檔案移除需求元件後匯入，確認預設與原始文字永久備份。
++
++重載後主程式會繼續有效模擬，因此 browser 比較保存的需求快照與延續步號，不錯把正在運作的數值要求為永遠等於黎明；純資料 restore 測試則逐欄比對完全相等。
++
++```sh
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs e2e/m5a-survival-needs.spec.js
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs --grep-invert 'M5-A needs, real duty and rest, saved growth'
++```
++
++環境使用系統 Chromium／SwiftShader，workers=1、deviceScaleFactor=0.5，設定在 repo 外；圖片像素是 CSS viewport 的一半。本機 preview 不是正式部署。
++
++初跑 browser 發現「同內容舊 v6 匯入」漏存來源備份，已修正並加入專項回歸；修正前失敗／中止結果不計為通過。M2 的 meter 斷言由原兩條增為五條（保留飢渴、增加三需求）；M4 checkpoint 斷言增加新的必要功能標記。
++
++## 截圖
++
++- [桌面三需求、立繪與技能](screenshots/m5a-needs-1000.png)
++- [手機三需求與技能](screenshots/m5a-needs-390.png)
++
++M3 舊人物回歸原本把整份 record 視為不變；本階段士氣會隨有效時間改變，因此調整為逐欄保留全部非 needs 資料的深度比對，並驗證需求的合法方向／範圍。此項已在其餘回歸完成後單獨複驗通過，不把首次失敗算作通過。
++
++最終覆蓋 14 個不同 browser 案例（本階段 2 + 原有 12），均有通過結果；採分組與修正後單項複驗，不宣稱第一次單次全套已零失敗。正式程式與最後建置在這些回歸期間沒有變更。
++
++單項複驗命令：
++
++```sh
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs e2e/m3-characters.spec.js --grep "persistent named residents"
++```
+diff --git a/docs/screenshots/m5a-needs-1000.png b/docs/screenshots/m5a-needs-1000.png
+new file mode 100644
+index 0000000..2e70593
+Binary files /dev/null and b/docs/screenshots/m5a-needs-1000.png differ
+diff --git a/docs/screenshots/m5a-needs-390.png b/docs/screenshots/m5a-needs-390.png
+new file mode 100644
+index 0000000..a9b7365
+Binary files /dev/null and b/docs/screenshots/m5a-needs-390.png differ
+diff --git a/e2e/m2-interface.spec.js b/e2e/m2-interface.spec.js
+index fdffa1c..f6e6eb4 100644
+--- a/e2e/m2-interface.spec.js
++++ b/e2e/m2-interface.spec.js
+@@ -44,7 +44,7 @@ test('Traditional Chinese interface, read-only character dossier and v4/v5 langu
+   await expect(dossier.locator('.portrait-frame')).toHaveAttribute('data-portrait-status','ready');
+   await expect(dossier.locator('.character-portrait')).toBeVisible();
+   await expect(dossier.locator('.character-avatar')).toHaveCount(4);
+-  await expect(dossier.getByRole('meter')).toHaveCount(2);
++  await expect(dossier.getByRole('meter')).toHaveCount(5);
+   const residentName=await page.evaluate(()=>window.__game.state.characters.records['2'].nameSnapshot['zh-TW']);
+   await dossier.locator('[data-survivor-id="2"]').click();
+   await expect(dossier.locator('.character-name')).toHaveText(residentName);
+diff --git a/e2e/m3-characters.spec.js b/e2e/m3-characters.spec.js
+index b91249f..e46c349 100644
+--- a/e2e/m3-characters.spec.js
++++ b/e2e/m3-characters.spec.js
+@@ -37,7 +37,11 @@ test('persistent named residents, high-water recruitment, v5 import and complete
+  expect(dawn.core.survivors.map(s=>s.id)).toEqual([1,2,3,5]);
+  expect(dawn.characters.records['4']).toBeUndefined();expect(dawn.characters.records['5'].uid).toBe(`${initial.run.id}:5`);
+  expect(dawn.characters.records['5'].archetypeId).toBe('chr_generic');
+- expect(dawn.characters.records['1']).toEqual(initial.characters.records['1']);
++ const {needs:initialNeeds,...initialIdentity}=initial.characters.records['1'];
++ const {needs:dawnNeeds,...dawnIdentity}=dawn.characters.records['1'];
++ expect(dawnIdentity).toEqual(initialIdentity);
++ expect(dawnNeeds.fatigue).toBe(0);expect(dawnNeeds.health).toBe(100);
++ expect(dawnNeeds.morale).toBeGreaterThanOrEqual(initialNeeds.morale);expect(dawnNeeds.morale).toBeLessThanOrEqual(100);
+  await page.getByRole('button',{name:'角色資訊',exact:true}).click();
+  const panel=page.getByRole('dialog',{name:'倖存者檔案'});
+  await panel.locator('[data-survivor-id="5"]').click();
+diff --git a/e2e/m4-progression.spec.js b/e2e/m4-progression.spec.js
+index 0e8156f..84cfe23 100644
+--- a/e2e/m4-progression.spec.js
++++ b/e2e/m4-progression.spec.js
+@@ -35,7 +35,7 @@ for(const width of [1000,390])test(`Traditional Chinese skills, validated assign
+  await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
+  await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
+  const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
+- expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
++ expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1','survival-needs-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
+  expect(dawn.core.survivors.find(s=>String(s.id)===farmer).buildingId).toBe(2);
+  await page.reload();await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
+  await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
+diff --git a/e2e/m5a-survival-needs.spec.js b/e2e/m5a-survival-needs.spec.js
+new file mode 100644
+index 0000000..59d88a1
+--- /dev/null
++++ b/e2e/m5a-survival-needs.spec.js
+@@ -0,0 +1,43 @@
++import {test,expect} from '@playwright/test';
++const BASE='/city-builder-survival/';
++async function start(page){await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});}
++async function transfer(page,data){await page.getByRole('button',{name:'存檔',exact:true}).click();page.once('dialog',d=>d.accept());await page.getByLabel('匯入存檔 JSON',{exact:true}).setInputFiles({name:'needs.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(data))});await start(page);}
++for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth at ${width}px`,async({page})=>{
++ test.setTimeout(process.env.E2E_SLOW_WEBGL?600000:240000);await page.setViewportSize({width,height:900});
++ const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
++ let save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++ if(width===1000){
++  const old=structuredClone(save);old.requiredFeatures.pop();delete old.characters.survival;for(const r of Object.values(old.characters.records))delete r.needs;
++  await transfer(page,old);save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++  expect(save.characters.records['1'].needs).toEqual({fatigue:0,health:100,morale:70});expect(save.characters.records['1'].uid).toBe(old.characters.records['1'].uid);
++  expect(save.characters.records['1'].experience).toEqual(old.characters.records['1'].experience);
++  expect(await page.evaluate(raw=>Object.keys(localStorage).some(k=>k.startsWith('cbs-backup:')&&JSON.parse(localStorage.getItem(k)).pinned&&JSON.parse(localStorage.getItem(k)).raw===raw),JSON.stringify(old))).toBe(true);
++ }
++ save.core.buildings.push({id:2,defId:'farm',x:20,z:20,hp:180,workers:[],autoAssign:false,extracted:0,efficiency:1,enabled:true,repairing:false,priority:1,level:1});
++ save.characters.records['1'].needs={fatigue:80,health:50,morale:20};save.characters.records['2'].needs={fatigue:50,health:100,morale:70};
++ await transfer(page,save);await page.getByRole('button',{name:'角色資訊',exact:true}).click();
++ await expect(page.locator('.needs-row')).toHaveCount(3);await expect(page.locator('.needs-row strong')).toHaveText(['疲勞','健康','士氣']);
++ await expect(page.locator('[data-need="fatigue"]')).toContainText('精疲力竭');await expect(page.locator('[data-need="health"]')).toContainText('欠佳');await expect(page.locator('[data-need="morale"]')).toContainText('低落');
++ await expect(page.locator('.skill-row')).toHaveCount(6);await expect(page.locator('.character-portrait')).toBeVisible();await expect(page.locator('.character-avatar')).toHaveCount(4);
++ await page.getByLabel('工作建築',{exact:true}).selectOption('2');await page.getByRole('button',{name:'指派居民',exact:true}).click();
++ const before=await page.evaluate(()=>({worker:window.__game.state.characters.records['1'].needs.fatigue,idle:window.__game.state.characters.records['2'].needs.fatigue,step:window.__game.state.characters.survival.lastStep}));
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await page.keyboard.press('3');
++ await expect.poll(()=>page.evaluate(()=>window.__game.state.characters.survival.lastStep),{timeout:30000}).toBeGreaterThan(before.step+10);
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();
++ const worked=await page.evaluate(()=>({worker:window.__game.state.characters.records['1'].needs.fatigue,idle:window.__game.state.characters.records['2'].needs.fatigue}));
++ expect(worked.worker).toBeGreaterThan(before.worker);expect(worked.idle).toBeLessThan(before.idle);
++ await page.locator('.resident-needs').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m5a-needs-${width}.png`});
++ await page.getByLabel('套用生存需求效率',{exact:true}).uncheck();await expect(page.locator('.needs-efficiency')).toContainText('100.0%');
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
++ await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++ expect(dawn.characters.survival.effectsEnabled).toBe(false);expect(dawn.characters.survival.lastStep).toBeGreaterThan(before.step);expect(dawn.characters.records['1'].needs.fatigue).toBeGreaterThan(before.worker);
++ await page.reload();await start(page);await page.getByRole('button',{name:'角色資訊',exact:true}).click();
++ expect(await page.evaluate(()=>window.__game.state.characters.records['1'].uid)).toBe(save.characters.records['1'].uid);
++ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')).characters.records['1'].needs)).toEqual(dawn.characters.records['1'].needs);
++ expect(await page.evaluate(()=>window.__game.state.characters.survival.lastStep)).toBeGreaterThanOrEqual(dawn.characters.survival.lastStep);
++ await expect(page.locator('.needs-efficiency')).toContainText('100.0%');await expect(page.locator('.character-assignment')).toContainText('農場');
++ await page.getByLabel('工作建築',{exact:true}).selectOption('');await page.getByRole('button',{name:'指派居民',exact:true}).click();const fatigue=await page.evaluate(()=>window.__game.state.characters.records['1'].needs.fatigue);
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await expect.poll(()=>page.evaluate(()=>window.__game.state.characters.records['1'].needs.fatigue),{timeout:30000}).toBeLessThan(fatigue);
++ if(width===1000){page.once('dialog',d=>d.accept());await page.getByLabel('語言',{exact:true}).selectOption('en');await page.getByRole('button',{name:'Start game',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});await page.getByRole('button',{name:'Characters',exact:true}).click();await expect(page.locator('.needs-row strong')).toHaveText(['Fatigue','Health','Morale']);}
++ expect(errors).toEqual([]);
++});
+diff --git a/src/characters/state.js b/src/characters/state.js
+index 870927a..1279bfb 100644
+--- a/src/characters/state.js
++++ b/src/characters/state.js
+@@ -1,3 +1,4 @@
++import {upgradeNeeds,validateNeeds} from '../needs/schema.js';
+ // Identity and growth records; work effects live in independent progression modules.
+ import { ARCHETYPES, SKILLS, PROFESSIONS, PERSONALITIES } from './catalog.js';
+ import { upgradeProgression,validateProgression } from '../progression/schema.js';
+@@ -45,6 +46,7 @@ export function reconcileCharacters(state) {
+   }
+   rosterCache.set(state,{array:state.survivors,count:state.survivors.length,next:state.nextSurvivorId});
+   upgradeProgression(state.characters);
++  upgradeNeeds(state.characters);
+   return state.characters;
+ }
+ export function validateCharacters(run, characters, survivors) {
+@@ -52,7 +54,8 @@ export function validateCharacters(run, characters, survivors) {
+   check(validRunId(run.id),'Invalid run identity.');
+   check(Number.isSafeInteger(run.nextSurvivorId) && run.nextSurvivorId>Math.max(0,...survivors.map(s=>s.id)) && run.nextSurvivorId<=Number.MAX_SAFE_INTEGER,'Invalid survivor high-water mark.');
+   const growth=Object.hasOwn(characters,'progression');
+-  exactKeys(characters,[...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
++  const survival=Object.hasOwn(characters,'survival');
++  exactKeys(characters,[...(survival?['survival']:[]),...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
+   check(characters.schemaVersion===1 && [1,2].includes(characters.generatorVersion),'Unsupported character schema/generator.');
+   check(typeof characters.contentPackId==='string' && /^[a-z0-9-]{1,64}$/.test(characters.contentPackId) && Number.isSafeInteger(characters.contentPackVersion) && characters.contentPackVersion>0,'Invalid character content pack.');
+   check(Array.isArray(characters.usedUniqueArchetypeIds) && characters.usedUniqueArchetypeIds.length<=128 && new Set(characters.usedUniqueArchetypeIds).size===characters.usedUniqueArchetypeIds.length && characters.usedUniqueArchetypeIds.every(id=>typeof id==='string' && /^chr_[a-z0-9_]{1,64}$/.test(id)), 'Invalid reserved archetypes.');
+@@ -61,7 +64,7 @@ export function validateCharacters(run, characters, survivors) {
+   const usedLive=new Set();
+   for (const id of ids) {
+     const record=characters.records[id];
+-    exactKeys(record,[...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
++    exactKeys(record,[...(survival?['needs']:[]),...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
+     check(record.uid===`${run.id}:${id}`,'Character UID mismatch.');
+     check(typeof record.archetypeId==='string' && /^chr_[a-z0-9_]{1,64}$/.test(record.archetypeId) && Number.isSafeInteger(record.archetypeRevision) && record.archetypeRevision>0,'Invalid character archetype.');
+     exactKeys(record.nameSnapshot,['zh-TW','en'],'name snapshot');
+@@ -78,5 +81,6 @@ export function validateCharacters(run, characters, survivors) {
+     }
+   }
+   if(growth)validateProgression(characters,exactKeys,check);
++  if(survival)validateNeeds(characters,exactKeys,check);
+   return characters;
+ }
+diff --git a/src/main.js b/src/main.js
+index b9954bd..070ec71 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -1,3 +1,4 @@
++import {tickNeeds,setNeedsEffects} from './needs/simulation.js';
+ import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
+ import {setAbilityEffects} from './progression/work.js';
+ // Entry point: hands boot() (bootstrap.js: URL params, engine, asset load)
+@@ -292,6 +293,7 @@ function startGame({ engine, screens, assets, params }) {
+     onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
+     onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
+     onEffects:enabled=>setAbilityEffects(state,enabled),
++    onNeedsEffects:enabled=>setNeedsEffects(state,enabled),
+     getState: () => state,
+     onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
+     onClose: () => { paused = pausedBeforeCharacters; },
+@@ -302,6 +304,7 @@ function startGame({ engine, screens, assets, params }) {
+     onLoad: () => { window.location.href = window.location.pathname; },
+   });
+   if (!initialSave.ok) savePanel.notify(`Saved data could not be loaded: ${initialSave.error} Autosave is blocked; use Saves to export the original.`);
++  let survivalStep=state.characters.survival.lastStep;
+   let jobTimer = JOB_INTERVAL; // staff the buildings on the first frame
+   let menuTimer = 0;
+   // Day/night transitions and the wave plan (currentWave + spawnSchedule).
+@@ -511,6 +514,7 @@ function startGame({ engine, screens, assets, params }) {
+ 
+     zombies.update(dt, mods);
+     combat.update(dt, zombies, mods);
++    tickNeeds(state,dt,++survivalStep,BUILDING_DEFS);
+ 
+     if (state.timeInPhase >= phases.phaseDuration()) {
+       if (state.phase === 'day') phases.startNight();
+diff --git a/src/needs/rules.js b/src/needs/rules.js
+new file mode 100644
+index 0000000..5900050
+--- /dev/null
++++ b/src/needs/rules.js
+@@ -0,0 +1,38 @@
++// M5-A v1: bounded individual needs. No AI, illness, new deaths or RNG.
++export const NEEDS_FEATURE='survival-needs-v1';
++export const DAY_SECONDS=90;
++export const DEFAULT_NEEDS=Object.freeze({fatigue:0,health:100,morale:70});
++export const clamp=(n,min=0,max=100)=>Math.min(max,Math.max(min,n));
++const round=n=>Math.round(clamp(n)*1e6)/1e6;
++const DUTY={scout:.95,guard:.95,logistician:.97,mechanic:.98,researcher:1.02};
++const MORALE={optimistic:4,steadfast:2,cautious:-2,reserved:-1,empathetic:-1,patient:1,curious:1,pragmatic:0};
++export function individualRules(record){
++ return {workFatigue:clamp(DUTY[record.professionId] ?? 1,.95,1.05),moraleBias:clamp((record.personalityIds ?? []).reduce((n,id)=>n+(MORALE[id] ?? 0),0),-5,5)};
++}
++export function needsEfficiency(needs){
++ if(!needs)return 1;
++ const fatigue=1-.25*clamp((needs.fatigue-40)/60,0,1);
++ const health=1-.5*clamp((70-needs.health)/70,0,1);
++ const morale=1-.1*clamp((40-needs.morale)/40,0,1);
++ return clamp(fatigue*health*morale,.4,1);
++}
++export function calculateNeeds(record,survivor,{working,dt,resources}){
++ const n=record.needs,rules=individualRules(record),days=dt/DAY_SECONDS;
++ const fatigue=clamp(n.fatigue+(working?18*rules.workFatigue:-30)*days);
++ const harm=(survivor.hunger>=75?8:0)+((survivor.thirst ?? 0)>=75?12:0);
++ const recovery=survivor.hunger<50&&(survivor.thirst ?? 0)<50?6:0;
++ const health=clamp(n.health+(harm>0?-harm:recovery)*days);
++ let target=70+(working?0:8)+rules.moraleBias;
++ target+=(resources.food ?? 0)>=1&&survivor.hunger<50?5:(resources.food ?? 0)<1?-10:0;
++ target+=(resources.water ?? 0)>=1&&(survivor.thirst ?? 0)<50?5:(resources.water ?? 0)<1?-15:0;
++ if(survivor.hunger>=75)target-=15;if((survivor.thirst ?? 0)>=75)target-=20;
++ if(health<40)target-=15;if(fatigue>=75)target-=10;
++ target=clamp(target);const movement=12*days;
++ const morale=n.morale+clamp(target-n.morale,-movement,movement);
++ return {fatigue:round(fatigue),health:round(health),morale:round(morale)};
++}
++export function needsStatus(needs){return {
++ fatigue:needs.fatigue>=75?'Exhausted':needs.fatigue>=40?'Tired':'Rested',
++ health:needs.health<30?'Critical':needs.health<70?'Unwell':'Healthy',
++ morale:needs.morale<30?'Low spirits':needs.morale<60?'Uneasy':'Stable',
++};}
+diff --git a/src/needs/schema.js b/src/needs/schema.js
+new file mode 100644
+index 0000000..4b76e06
+--- /dev/null
++++ b/src/needs/schema.js
+@@ -0,0 +1,14 @@
++import {DEFAULT_NEEDS} from './rules.js';
++export function upgradeNeeds(characters){
++ characters.survival ??= {schemaVersion:1,effectsEnabled:true,lastStep:0,elapsedSeconds:0};
++ for(const record of Object.values(characters.records))record.needs ??= {...DEFAULT_NEEDS};
++ return characters;
++}
++export function validateNeeds(characters,exactKeys,check){
++ const meta=characters.survival;exactKeys(meta,['schemaVersion','effectsEnabled','lastStep','elapsedSeconds'],'survival needs');
++ check(meta.schemaVersion===1&&typeof meta.effectsEnabled==='boolean'&&Number.isSafeInteger(meta.lastStep)&&meta.lastStep>=0&&typeof meta.elapsedSeconds==='number'&&Number.isFinite(meta.elapsedSeconds)&&meta.elapsedSeconds>=0&&meta.elapsedSeconds<=meta.lastStep,'Invalid survival clock.');
++ for(const record of Object.values(characters.records)){
++  exactKeys(record.needs,['fatigue','health','morale'],'resident needs');
++  check(Object.values(record.needs).every(n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100),'Invalid resident needs.');
++ }
++}
+diff --git a/src/needs/simulation.js b/src/needs/simulation.js
+new file mode 100644
+index 0000000..9ef33a7
+--- /dev/null
++++ b/src/needs/simulation.js
+@@ -0,0 +1,20 @@
++import {calculateNeeds} from './rules.js';
++const combatActivity=new WeakMap();
++export function markDefenseActivity(state,id){let active=combatActivity.get(state);if(!active){active=new Set();combatActivity.set(state,active);}active.add(id);}
++export function onDuty(state,resident,DEFS){
++ const b=state.buildings.find(b=>b.id===resident.buildingId);
++ return !!(b&&b.hp>0&&b.enabled!==false&&b.powered!==false&&DEFS[b.defId]?.jobs>0&&b.workers.includes(resident.id));
++}
++// The application supplies one strictly increasing simulation-step token. No wall time.
++export function tickNeeds(state,dt,step,DEFS){
++ const meta=state.characters?.survival;
++ if(!meta||!Number.isFinite(dt)||dt<=0||dt>1||!Number.isSafeInteger(step)||step<=meta.lastStep)return false;
++ const fighting=combatActivity.get(state) ?? new Set();
++ for(const resident of state.survivors){
++  const record=state.characters.records[resident.id];if(!record)continue;
++  record.needs=calculateNeeds(record,resident,{working:onDuty(state,resident,DEFS)||fighting.has(resident.id),dt,resources:state.resources});
++ }
++ meta.lastStep=step;meta.elapsedSeconds=Math.round((meta.elapsedSeconds+dt)*1e9)/1e9;
++ combatActivity.delete(state);return true;
++}
++export function setNeedsEffects(state,enabled){if(typeof enabled!=='boolean'||!state.characters?.survival)return false;state.characters.survival.effectsEnabled=enabled;return true;}
+diff --git a/src/persistence.js b/src/persistence.js
+index e7197c6..d444025 100644
+--- a/src/persistence.js
++++ b/src/persistence.js
+@@ -1,3 +1,5 @@
++import {upgradeNeeds} from './needs/schema.js';
++import {NEEDS_FEATURE} from './needs/rules.js';
+ import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
+ // Validated v6 dawn checkpoints, character identity and safe v4/v5 migration.
+ // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
+@@ -130,7 +132,9 @@ function validateEnvelope(data) {
+   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
+   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
+     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
+-  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures[0]==='characters-v1' && (data.requiredFeatures.length===1 || (data.requiredFeatures.length===2 && data.requiredFeatures[1]===GROWTH_FEATURE)), 'Unsupported required save feature.');
++  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE];
++  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length>=1 && data.requiredFeatures.length<=supported.length && data.requiredFeatures.every((f,i)=>f===supported[i]), 'Unsupported required save feature.');
++  assert(data.requiredFeatures.includes(NEEDS_FEATURE)===Object.hasOwn(data.characters ?? {},'survival'),'Missing or unmarked survival data.');
+   assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
+   validateSave(data.core);
+   assert(Object.keys(data.core).every(key=>CORE_FIELDS.includes(key)), 'Unknown core fields; original protected.');
+@@ -160,6 +164,7 @@ export function migrateSave(data) {
+   if (data?.version === 6) {
+     const copy=structuredClone(validateEnvelope(data));
+     if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
++    if(!copy.requiredFeatures.includes(NEEDS_FEATURE)){upgradeNeeds(copy.characters);copy.requiredFeatures.push(NEEDS_FEATURE);}
+     return validateEnvelope(copy);
+   }
+   let core=data;
+@@ -174,7 +179,7 @@ export function migrateSave(data) {
+   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
+   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
+   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
++    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+     core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
+   return validateEnvelope(envelope);
+ }
+@@ -305,7 +310,7 @@ function trimBackups(keep) {
+   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
+ }
+ 
+-const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(GROWTH_FEATURE);
++const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(NEEDS_FEATURE);
+ 
+ const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
+ 
+@@ -314,7 +319,10 @@ function writeSave(key, raw, reason, recoverProtected = false, migrationSource =
+     decodeSave(raw);
+     const previous = inspectSave(key);
+     assert(previous.ok || (recoverProtected && typeof previous.raw === 'string'), `Existing save protected: ${previous.error}`);
+-    if (previous.raw === raw) return { ok: true };
++    if (previous.raw === raw) {
++      if(migrationSource!==null)backup(key,migrationSource,'JSON migration source');
++      return { ok: true };
++    }
+     // A reload of an unchanged v6 checkpoint must not consume storage. Legacy saves
+     // still go through migration and an exact, permanently retained original backup.
+     if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
+@@ -573,14 +581,14 @@ function restoreCore(data, legacyPopulationFallback = true) {
+ export function createCheckpoint(state, seed, changedTiles) {
+   reconcileCharacters(state);
+   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
++    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
+   return validateEnvelope(data);
+ }
+ 
+ export function restoreSave(data) {
+   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
+-  if(!data.requiredFeatures?.includes(GROWTH_FEATURE))data=migrateSave(data);
++  if(!data.requiredFeatures?.includes(NEEDS_FEATURE))data=migrateSave(data);
+   validateEnvelope(data);
+   const restored=restoreCore(data.core,false);
+   restored.state.runId=data.run.id;
+diff --git a/src/progression/work.js b/src/progression/work.js
+index e9f52fb..3dbb6d1 100644
+--- a/src/progression/work.js
++++ b/src/progression/work.js
+@@ -1,3 +1,5 @@
++import {needsEfficiency} from '../needs/rules.js';
++import {markDefenseActivity} from '../needs/simulation.js';
+ // Synchronous completion receipts. No polling rewards, wall clock, UI or RNG.
+ import {learningMultiplier,rankForExperience,THRESHOLDS} from './rules.js';
+ import {BUILDING_DEFS} from '../buildings/definitions.js';
+@@ -22,6 +24,11 @@ export function abilityMultiplier(state,building,skill,options){
+  const mean=members.reduce((sum,s)=>sum+state.characters.records[s.id].abilityRanks[skill],0)/members.length;
+  return 1+Math.min(0.1,Math.max(0,mean)*0.02);
+ }
++export function crewEfficiency(state,building){
++ if(state?.characters?.survival?.effectsEnabled!==true)return 1;
++ const members=participants(state,building);if(!members.length)return 1;
++ return members.reduce((sum,s)=>sum+needsEfficiency(state.characters.records[s.id].needs),0)/members.length;
++}
+ export function supportingBuilding(state,defId){
+  return state.buildings.filter(b=>b.defId===defId&&participants(state,b).length>0).sort((a,b)=>a.id-b.id)[0] ?? null;
+ }
+@@ -45,7 +52,7 @@ export function settleWork(state,receipt){
+  const eligible=new Set(participants(state,proof.building,proof.options).map(s=>s.id));
+  for(const member of proof.members){
+   const r=state.characters.records[member.id];if(!eligible.has(member.id)||r?.uid!==member.uid)continue;
+-  const skill=receipt.skill;if(r.experience[skill]>=THRESHOLDS[5])continue;
++  const skill=receipt.skill;if(skill==='defense')markDefenseActivity(state,member.id);if(r.experience[skill]>=THRESHOLDS[5])continue;
+   const raw=receipt.units*1000/proof.members.length*learningMultiplier(r,skill)+r.experienceRemainders[skill];
+   const whole=Math.floor(raw+1e-9);
+   r.experience[skill]=Math.min(THRESHOLDS[5],r.experience[skill]+whole);
+diff --git a/src/sim/economy.js b/src/sim/economy.js
+index 14454a2..4264b1c 100644
+--- a/src/sim/economy.js
++++ b/src/sim/economy.js
+@@ -1,4 +1,4 @@
+-import {abilityMultiplier,completeWork,logisticsMultiplier} from '../progression/work.js';
++import {crewEfficiency,abilityMultiplier,completeWork,logisticsMultiplier} from '../progression/work.js';
+ import {buildingSkill} from '../progression/rules.js';
+ // Economy tick: resource production, fuel consumption, energy storage grid,
+ // build costs. Pure logic, no I/O.
+@@ -81,7 +81,7 @@ function energyOutput(state, building, def, mods) {
+   let mod = 1;
+   if (def.energyDayOnly) mod = mods.solarProd;
+   else if (building.defId === 'wind') mod = mods.windProd;
+-  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level) * abilityMultiplier(state,building,'engineering');
++  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level) * abilityMultiplier(state,building,'engineering') * crewEfficiency(state,building);
+ }
+ 
+ // Effective storage caps: the base caps plus every building's capBonus
+@@ -179,7 +179,7 @@ export function tickEconomy(state, dt, DEFS, mods) {
+       const before=state.resources[resource] ?? 0;
+       const skill=buildingSkill(b.defId,def);
+       const gain =
+-        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,skill) * dt) / CONFIG.dayLength;
++        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,skill) * crewEfficiency(state,b) * dt) / CONFIG.dayLength;
+       state.resources[resource] = Math.min(cap, before + gain);
+       if(def.jobs>0)completeWork(state,b,skill,Math.max(0,state.resources[resource]-before));
+     }
+@@ -228,7 +228,7 @@ export function buildingDailyOutput(b, def, mods, state) {
+   if (ratio <= 0) return output;
+   const levelMul = levelMultiplier(b.level);
+   for (const [resource, perDay] of Object.entries(def.produces ?? {})) {
+-    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,buildingSkill(b.defId,def));
++    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,buildingSkill(b.defId,def)) * crewEfficiency(state,b);
+   }
+   return output;
+ }
+@@ -277,7 +277,7 @@ export function computeResourceBalance(state, DEFS, mods, grid) {
+       const resource = EXTRACT_RESOURCES[def.extracts];
+       const depleted = grid && countNodesInRange(grid, b, def.extracts) === 0;
+       if (resource && !depleted) {
+-        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
++        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state) * crewEfficiency(state,b);
+         add(resource, 'produced', b.defId, def.name, rate);
+       }
+     }
+diff --git a/src/sim/extraction.js b/src/sim/extraction.js
+index 6148a71..0ca21cf 100644
+--- a/src/sim/extraction.js
++++ b/src/sim/extraction.js
+@@ -1,4 +1,4 @@
+-import {abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
++import {crewEfficiency,abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
+ // Node extraction: depletable resource tiles (forest/ruins/ore) drained by
+ // extractors, and renewable planting by foresters. Pure logic, no I/O.
+ 
+@@ -106,7 +106,7 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
+   const yieldDef = TILE_YIELDS[def.extracts];
+   if (!yieldDef) return;
+   if (countNodesInRange(grid, b, def.extracts) === 0) return; // no nodes: idle
+-  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
++  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state) * crewEfficiency(state,b);
+   const gained = (perDay * dt) / DAY_LENGTH;
+   const cap = caps?.[yieldDef.resource] ?? Infinity;
+   const before = state.resources[yieldDef.resource] ?? 0;
+@@ -132,7 +132,7 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
+ function tickForester(state, grid, b, ratio, dt, result) {
+   if (!hasFreeGrassInRange(grid, b, PLANT_RANGE)) return;
+   if ((state.resources.water ?? 0) < PLANT_WATER_COST) return;
+-  b.extracted = Math.min(PLANT_WORK, (b.extracted ?? 0) + dt * ratio);
++  b.extracted = Math.min(PLANT_WORK, (b.extracted ?? 0) + dt * ratio * crewEfficiency(state,b));
+   if (b.extracted < PLANT_WORK) return;
+   const tile = nearestFreeGrass(grid, b, PLANT_RANGE);
+   if (!tile) return; // the tile was taken mid-tick: keep the progress
+diff --git a/src/sim/research.js b/src/sim/research.js
+index 2cf7e62..8c2fa68 100644
+--- a/src/sim/research.js
++++ b/src/sim/research.js
+@@ -1,4 +1,4 @@
+-import {abilityMultiplier,completeWork} from '../progression/work.js';
++import {crewEfficiency,abilityMultiplier,completeWork} from '../progression/work.js';
+ // Tech tree: research point generation, spending and unlock checks.
+ // Pure logic, no I/O.
+ 
+@@ -76,7 +76,7 @@ export function tickResearch(state, dt, DEFS) {
+     if (!def || !(def.researchRate > 0)) continue;
+     const ratio = def.jobs ? Math.min(b.workers.length, def.jobs) / def.jobs : 1;
+     if (ratio <= 0) continue;
+-    const actual=(def.researchRate * ratio * dt) / DAY_LENGTH * abilityMultiplier(state,b,'engineering');
++    const actual=(def.researchRate * ratio * dt) / DAY_LENGTH * abilityMultiplier(state,b,'engineering') * crewEfficiency(state,b);
+     gain += actual;
+     completeWork(state,b,'engineering',actual);
+   }
+diff --git a/src/ui/anime-theme.css b/src/ui/anime-theme.css
+index 5249177..a81f804 100644
+--- a/src/ui/anime-theme.css
++++ b/src/ui/anime-theme.css
+@@ -158,3 +158,9 @@
+ @media (min-width: 521px) {
+   .character-detail > .portrait-frame { align-self: start; position: sticky; top: 12px; }
+ }
++
++.resident-needs { display: grid; gap: 9px; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--ui-line); }
++.needs-row { display: grid; gap: 4px; font-size: 12px; }
++.needs-row meter { width: 100%; }
++.resident-needs small { color: #a9c7d5; }
++.needs-efficiency { color: #9bd5ce; font-size: 13px; }
+diff --git a/src/ui/characterpanel.js b/src/ui/characterpanel.js
+index e856862..906bbb6 100644
+--- a/src/ui/characterpanel.js
++++ b/src/ui/characterpanel.js
+@@ -1,3 +1,4 @@
++import {createNeedsPanel} from './needspanel.js';
+ import {createProgressionControls} from './progressionpanel.js';
+ // Presentation adapter with validated command callbacks. Saves contain identity snapshots and asset IDs, never image bytes.
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+@@ -45,7 +46,7 @@ function el(tag, className, text) {
+ }
+ 
+ /** Snapshot the paused roster. Assignment/effect changes go through injected core commands. */
+-export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, portraitManager = createPortraitManager() }) {
++export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, onNeedsEffects, portraitManager = createPortraitManager() }) {
+   const launch = el('button', 'character-launch', 'Characters');
+   launch.type = 'button';
+   const dialog = el('dialog', 'character-dialog');
+@@ -129,6 +130,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign
+       row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
+       info.append(row);
+     }
++    info.append(createNeedsPanel(state.characters?.records?.[survivor.id],state,{onEffects:onNeedsEffects,onRefresh:()=>renderPage(survivor.id)}));
+     info.append(createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh:()=>{renderPage(survivor.id);}}));
+     detail.append(frame, info);
+   }
+diff --git a/src/ui/i18n/zh-TW.js b/src/ui/i18n/zh-TW.js
+index 4d43bc2..02bec2a 100644
+--- a/src/ui/i18n/zh-TW.js
++++ b/src/ui/i18n/zh-TW.js
+@@ -233,3 +233,7 @@ Object.assign(messages,{
+ });
+ 
+ Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%, clinic care +3%.":"技能加成上限：工作與防禦 +10%、搬運 +5%、診所照護 +3%。"});
++
++Object.assign(messages,{"Survival needs":"居民生存需求","Fatigue":"疲勞","Health":"健康","Morale":"士氣","Exhausted":"精疲力竭","Rested":"精神充足","Unwell":"欠佳","Critical":"危急","Low spirits":"低落","Uneasy":"不安","Stable":"穩定","Healthy":"良好","Needs work efficiency: {value}%":"需求造成的工作效率：{value}%","Unassign or switch off the workplace to rest. Needs do not introduce new death rules.":"解除工作或關閉建築即可休息；需求數值不會新增死亡條件。","Apply survival efficiency":"套用生存需求效率"});
++
++Object.assign(messages,{"Idle or stopped workplaces allow rest. Automatic assignment may allocate another job.":"待命或建築停工時可休息；自動派工可能再分配其他工作。","Efficiency applies to production, extraction, planting and research. Combat and support auras retain their existing rules.":"需求效率適用生產、採集、植林與研究；戰鬥及支援光環沿用既有規則。"});
+diff --git a/src/ui/needspanel.js b/src/ui/needspanel.js
+new file mode 100644
+index 0000000..8f2abc3
+--- /dev/null
++++ b/src/ui/needspanel.js
+@@ -0,0 +1,19 @@
++import {needsEfficiency,needsStatus} from '../needs/rules.js';
++import {t} from './i18n/index.js';
++function el(tag,text,className=''){const n=document.createElement(tag);n.className=className;if(text!==undefined)n.textContent=t(text);return n;}
++export function createNeedsPanel(record,state,{onEffects,onRefresh}={}){
++ const root=el('section',undefined,'resident-needs');root.setAttribute('aria-label',t('Survival needs'));
++ if(!record?.needs)return root;
++ const statuses=needsStatus(record.needs),labels={fatigue:'Fatigue',health:'Health',morale:'Morale'};
++ for(const key of Object.keys(labels)){
++  const row=el('label',undefined,'needs-row');row.dataset.need=key;
++  row.append(el('strong',labels[key]),el('span',`${record.needs[key].toFixed(1)}/100 · ${t(statuses[key])}`));
++  const meter=el('meter');meter.min=0;meter.max=100;meter.low=key==='fatigue'?40:30;meter.high=key==='fatigue'?75:key==='health'?70:60;meter.optimum=key==='fatigue'?0:100;meter.value=record.needs[key];meter.setAttribute('aria-label',t(labels[key]));row.append(meter);root.append(row);
++ }
++ const factor=state.characters.survival.effectsEnabled?needsEfficiency(record.needs):1;
++ root.append(el('p',t('Needs work efficiency: {value}%',{value:(factor*100).toFixed(1)}),'needs-efficiency'));
++ root.append(el('small','Idle or stopped workplaces allow rest. Automatic assignment may allocate another job.'));
++ root.append(el('small','Efficiency applies to production, extraction, planting and research. Combat and support auras retain their existing rules.'));
++ if(onEffects){const label=el('label','Apply survival efficiency');const checkbox=el('input');checkbox.type='checkbox';checkbox.checked=state.characters.survival.effectsEnabled;checkbox.setAttribute('aria-label',t('Apply survival efficiency'));checkbox.addEventListener('change',()=>{onEffects(checkbox.checked);onRefresh();});label.prepend(checkbox);root.append(label);}
++ return root;
++}
+diff --git a/tests/progression.test.js b/tests/progression.test.js
+index 5710a8c..c061364 100644
+--- a/tests/progression.test.js
++++ b/tests/progression.test.js
+@@ -161,7 +161,7 @@ describe('validated player assignment and original automation',()=>{
+  });
+ });
+ describe('v4/v5/v6 add-on migration and protection',()=>{
+- function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;}return data;}
++ function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;delete data.characters.survival;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;delete r.needs;}return data;}
+  it('preserves v6 run, UID, art, names, ranks and safe defaults without version redesign',()=>{
+   const old=oldV6();old.characters.records[1].abilityRanks.agriculture=3;const copy=structuredClone(old);const data=migrateSave(old);
+   expect(old).toEqual(copy);expect(data.version).toBe(6);expect(data.run).toEqual(old.run);const r=data.characters.records[1];expect(r.uid).toBe(old.characters.records[1].uid);expect(r.portraitSetId).toBe(old.characters.records[1].portraitSetId);expect(r.experience.agriculture).toBe(60000);expect(r.abilityRanks.agriculture).toBe(3);expect(migrateSave(data)).toEqual(data);
+diff --git a/tests/survival-needs.test.js b/tests/survival-needs.test.js
+new file mode 100644
+index 0000000..4beadb2
+--- /dev/null
++++ b/tests/survival-needs.test.js
+@@ -0,0 +1,144 @@
++import {describe,it,expect,vi,afterEach} from 'vitest';
++import {DEFAULT_NEEDS,needsEfficiency,calculateNeeds,individualRules,needsStatus,NEEDS_FEATURE} from '../src/needs/rules.js';
++import {tickNeeds,markDefenseActivity,setNeedsEffects} from '../src/needs/simulation.js';
++import {createGameState,addBuilding,addSurvivor} from '../src/sim/state.js';
++import {initializeCharacters,reconcileCharacters} from '../src/characters/state.js';
++import {BUILDING_DEFS as DEFS} from '../src/buildings/definitions.js';
++import {PROFESSIONS,PERSONALITIES} from '../src/characters/catalog.js';
++import {assignResident} from '../src/progression/assignments.js';
++import {crewEfficiency} from '../src/progression/work.js';
++import {tickEconomy,computeResourceBalance} from '../src/sim/economy.js';
++import {tickSurvivors,killBuildingWorkers} from '../src/sim/survivors.js';
++import {tickResearch} from '../src/sim/research.js';
++import {tickExtraction} from '../src/sim/extraction.js';
++import {getModifiers} from '../src/sim/modifiers.js';
++import {createGrid} from '../src/world/grid.js';
++import {createCheckpoint,createSaveData,migrateSave,restoreSave,decodeSave,saveGame,importSave,exportSave,listBackups,SAVE_KEY,saveSlot,loadSlot,SLOT_KEYS} from '../src/persistence.js';
++const RUN='run_12345678-1234-4234-8234-123456789abc';
++function game(n=4){const s=createGameState();addBuilding(s,'hq',DEFS.hq,30,30);for(let i=0;i<n;i++)addSurvivor(s);initializeCharacters(s,RUN);return s;}
++function build(s,id='farm',x=20,z=20){return addBuilding(s,id,DEFS[id],x,z);}
++function put(s,id,b){expect(assignResident(s,id,b.id,DEFS).ok).toBe(true);}
++const record=s=>s.characters.records[1];
++function storage(){const values=new Map();vi.stubGlobal('localStorage',{get length(){return values.size;},key:i=>[...values.keys()][i]??null,getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)});return values;}
++afterEach(()=>vi.unstubAllGlobals());
++describe('bounded needs and simulation clock',()=>{
++ it('starts healthy and neutral without modifying M4 identity, skills or core',()=>{
++  const s=game();for(const r of Object.values(s.characters.records))expect(r.needs).toEqual(DEFAULT_NEEDS);
++  expect(needsEfficiency(record(s).needs)).toBe(1);expect(record(s).abilityRanks.agriculture).toBe(0);
++ });
++ it('increases fatigue on a valid duty and recovers while idle',()=>{
++  const s=game(),b=build(s);put(s,1,b);tickNeeds(s,1,1,DEFS);expect(record(s).needs.fatigue).toBeGreaterThan(0);expect(s.characters.records[2].needs.fatigue).toBe(0);
++  const before=record(s).needs.fatigue;assignResident(s,1,null,DEFS);tickNeeds(s,1,2,DEFS);expect(record(s).needs.fatigue).toBeLessThan(before);
++ });
++ it.each(['disabled','unpowered','destroyed','missing','inconsistent'])('treats %s work references as rest, not extra fatigue',kind=>{
++  const s=game(),b=build(s);put(s,1,b);record(s).needs.fatigue=50;
++  if(kind==='disabled')b.enabled=false;if(kind==='unpowered')b.powered=false;if(kind==='destroyed')b.hp=0;if(kind==='missing')s.buildings=s.buildings.filter(x=>x!==b);if(kind==='inconsistent')b.workers=[];
++  tickNeeds(s,1,1,DEFS);expect(record(s).needs.fatigue).toBeLessThan(50);
++ });
++ it('counts actual idle militia fire for one settled step only',()=>{
++  const s=game();markDefenseActivity(s,1);tickNeeds(s,1,1,DEFS);expect(record(s).needs.fatigue).toBeGreaterThan(0);tickNeeds(s,1,2,DEFS);expect(record(s).needs.fatigue).toBe(0);
++ });
++ it.each([0,-1,NaN,Infinity,1.01])('does not settle invalid dt %s',dt=>{
++  const s=game();const before=structuredClone(s);expect(tickNeeds(s,dt,1,DEFS)).toBe(false);expect(s).toEqual(before);
++ });
++ it.each([0,-1,1.2,NaN,Infinity])('does not settle invalid or old step %s',step=>{
++  const s=game();const before=structuredClone(s);expect(tickNeeds(s,1,step,DEFS)).toBe(false);expect(s).toEqual(before);
++ });
++ it('rejects duplicate/reversed settlement and ignores wall-clock/phase jumps',()=>{
++  const s=game(),b=build(s);put(s,1,b);tickNeeds(s,.5,1,DEFS);const before=structuredClone(s.characters);
++  expect(tickNeeds(s,.5,1,DEFS)).toBe(false);expect(tickNeeds(s,.5,0,DEFS)).toBe(false);expect(s.characters).toEqual(before);
++  s.day=999;s.phase='night';s.timeInPhase=1e6;tickNeeds(s,.5,2,DEFS);expect(s.characters.survival.elapsedSeconds).toBe(1);
++ });
++ it('is reproducible for the same valid simulation steps without RNG',()=>{
++  const a=game(),b=structuredClone(a);for(let i=1;i<=500;i++){tickNeeds(a,.3,i,DEFS);tickNeeds(b,.3,i,DEFS);}expect(a.characters).toEqual(b.characters);expect(a.characters.survival.elapsedSeconds).toBe(150);
++ });
++ it('prevents replay across checkpoint restore and preserves the elapsed counter',()=>{
++  const s=game();tickNeeds(s,.3,1,DEFS);const data=createCheckpoint(s,42,[]),restored=restoreSave(data).state;
++  expect(tickNeeds(restored,.3,1,DEFS)).toBe(false);expect(restored.characters).toEqual(s.characters);expect(tickNeeds(restored,.3,2,DEFS)).toBe(true);expect(restored.characters.survival.elapsedSeconds).toBe(.6);
++ });
++});
++describe('health, morale and individual differences',()=>{
++ it('loses health under hunger/thirst stress and recovers when supplied',()=>{
++  const s=game();s.survivors[0].hunger=80;s.survivors[0].thirst=80;tickNeeds(s,1,1,DEFS);expect(record(s).needs.health).toBeLessThan(100);
++  const injured=record(s).needs.health;s.survivors[0].hunger=0;s.survivors[0].thirst=0;tickNeeds(s,1,2,DEFS);expect(record(s).needs.health).toBeGreaterThan(injured);
++ });
++ it('never adds a health-based death or revives original starvation victims',()=>{
++  const s=game();record(s).needs.health=0;tickSurvivors(s,.1,getModifiers(s));tickNeeds(s,.1,1,DEFS);expect(s.survivors).toHaveLength(4);
++  s.resources.food=0;s.survivors[0].hunger=100;tickSurvivors(s,1,getModifiers(s));tickNeeds(s,1,2,DEFS);reconcileCharacters(s);expect(s.survivors.some(x=>x.id===1)).toBe(false);expect(s.characters.records[1]).toBeUndefined();
++ });
++ it('moves morale toward supplied/rested conditions and away from unmet needs',()=>{
++  const good=game(),bad=game();bad.resources.food=0;bad.resources.water=0;bad.survivors[0].hunger=90;bad.survivors[0].thirst=90;record(bad).needs.health=20;record(bad).needs.fatigue=90;
++  for(let i=1;i<=90;i++){tickNeeds(good,1,i,DEFS);tickNeeds(bad,1,i,DEFS);}expect(record(good).needs.morale).toBeGreaterThan(70);expect(record(bad).needs.morale).toBeLessThan(70);
++ });
++ it.each(PROFESSIONS)('keeps profession %s differences within five percent',professionId=>{
++  const p=individualRules({professionId,personalityIds:[]});expect(p.workFatigue).toBeGreaterThanOrEqual(.95);expect(p.workFatigue).toBeLessThanOrEqual(1.05);
++ });
++ it.each(PERSONALITIES)('bounds personality %s morale bias without new statuses or AI',id=>{
++  const p=individualRules({professionId:'generalist',personalityIds:[id]});expect(Math.abs(p.moraleBias)).toBeLessThanOrEqual(5);
++ });
++ it('caps combined personality differences and all three needs at both extremes',()=>{
++  expect(individualRules({professionId:'guard',personalityIds:['optimistic','steadfast']}).moraleBias).toBe(5);
++  const r={professionId:'generalist',personalityIds:[],needs:{fatigue:100,health:0,morale:0}};
++  const n=calculateNeeds(r,{hunger:100,thirst:100},{working:true,dt:1,resources:{}});expect(n.fatigue).toBe(100);expect(n.health).toBe(0);expect(n.morale).toBeGreaterThanOrEqual(0);
++  const recovered=calculateNeeds({...r,needs:{fatigue:0,health:100,morale:100}},{hunger:0,thirst:0},{working:false,dt:1,resources:{food:1,water:1}});expect(recovered.fatigue).toBe(0);expect(recovered.health).toBe(100);expect(recovered.morale).toBeLessThanOrEqual(100);
++ });
++ it('reports Traditional-Chinese-ready threshold statuses and only reduces efficiency',()=>{
++  expect(needsStatus({fatigue:100,health:0,morale:0})).toEqual({fatigue:'Exhausted',health:'Critical',morale:'Low spirits'});
++  expect(needsEfficiency({fatigue:0,health:100,morale:100})).toBe(1);expect(needsEfficiency({fatigue:100,health:0,morale:0})).toBe(.4);
++  expect(needsEfficiency({fatigue:100,health:100,morale:70})).toBe(.75);
++ });
++});
++describe('bounded real output and long-running simulation',()=>{
++ it('reduces actual food and HUD projections, restoring exact M4 output when disabled',()=>{
++  const s=game(),b=build(s);put(s,1,b);record(s).needs={fatigue:100,health:0,morale:0};s.resources.food=0;
++  tickEconomy(s,90,DEFS);expect(s.resources.food).toBeCloseTo(1.6);expect(computeResourceBalance(s,DEFS).food.produced.find(x=>x.label==='Farm').rate).toBeCloseTo(1.6);
++  setNeedsEffects(s,false);s.resources.food=0;tickEconomy(s,90,DEFS);expect(s.resources.food).toBe(4);
++ });
++ it('uses average crew needs, preserves skills, and affects research/extraction',()=>{
++  const s=game(),b=build(s,'lab');put(s,1,b);record(s).needs={fatigue:100,health:0,morale:0};expect(crewEfficiency(s,b)).toBe(.4);
++  tickResearch(s,1,DEFS);const poor=s.researchPoints;setNeedsEffects(s,false);s.researchPoints=0;tickResearch(s,1,DEFS);expect(poor/s.researchPoints).toBeCloseTo(.4);
++  const l=build(s,'lumber',24,20);put(s,1,l);const grid=createGrid(64);grid.cells[19][24].type='forest';setNeedsEffects(s,true);s.resources.wood=0;tickExtraction(s,grid,1,DEFS);expect(s.resources.wood).toBeCloseTo(10*.5*.4/90);
++ });
++ it('simulates 200 complete day/night cycles without invalid needs, extra deaths or resource overflow',()=>{
++  const s=game(),farm=build(s),garden=build(s,'garden',24,20),clinic=build(s,'clinic',27,20);build(s,'well',20,24);build(s,'well',24,24);
++  put(s,1,farm);put(s,2,farm);put(s,3,garden);put(s,4,clinic);
++  for(let step=1;step<=30000;step++){
++   const mods=getModifiers(s);tickEconomy(s,1,DEFS,mods);tickSurvivors(s,1,mods);tickNeeds(s,1,step,DEFS);
++   if(step%150===0){s.day++;const values=Object.values(s.resources);expect(values.every(Number.isFinite)).toBe(true);expect(s.resources.food).toBeLessThanOrEqual(s.caps.food);expect(s.resources.water).toBeLessThanOrEqual(s.caps.water);expect(s.survivors).toHaveLength(4);
++    for(const r of Object.values(s.characters.records))expect(Object.values(r.needs).every(n=>Number.isFinite(n)&&n>=0&&n<=100)).toBe(true);
++   }
++  }
++  expect(s.characters.survival.elapsedSeconds).toBe(30000);expect(record(s).needs.fatigue).toBe(100);expect(s.resources.food).toBeGreaterThan(0);expect(s.resources.water).toBeGreaterThan(0);
++ },20000);
++});
++describe('v4/v5/M3/M4 v6 migration and safe protection',()=>{
++ function m4(){const s=game(),b=build(s);put(s,1,b);const d=createCheckpoint(s,42,[]);d.requiredFeatures=d.requiredFeatures.filter(f=>f!==NEEDS_FEATURE);delete d.characters.survival;for(const r of Object.values(d.characters.records))delete r.needs;return d;}
++ it('preserves every M4 identity, XP, skill, work and art reference while adding safe defaults',()=>{
++  const old=m4(),copy=structuredClone(old),d=migrateSave(old);expect(old).toEqual(copy);expect(d.version).toBe(6);expect(d.run).toEqual(old.run);expect(d.core).toEqual(old.core);expect(d.characters.progression).toEqual(old.characters.progression);
++  for(const [id,r] of Object.entries(d.characters.records)){const {needs,...rest}=r;expect(needs).toEqual(DEFAULT_NEEDS);expect(rest).toEqual(old.characters.records[id]);}
++  expect(migrateSave(d)).toEqual(d);
++ });
++ it('loads v4/v5/M3 v6 and permanently backs up exact pre-needs v6 import bytes',()=>{
++  const old=m4(),v4=old.core,v5={format:'last-refuge',version:5,checkpoint:'dawn',savedAt:old.savedAt,payload:v4};expect(migrateSave(v4).characters).toEqual(migrateSave(v5).characters);
++  const m3=structuredClone(old);m3.requiredFeatures=['characters-v1'];delete m3.characters.progression;for(const r of Object.values(m3.characters.records)){delete r.experience;delete r.experienceRemainders;}
++  expect(migrateSave(m3).characters.records[1].needs).toEqual(DEFAULT_NEEDS);
++  storage();const raw=' '+JSON.stringify(old);expect(importSave(raw).ok).toBe(true);expect(listBackups().entries.some(b=>b.pinned&&b.raw===raw)).toBe(true);
++ });
++ it('pins exact legacy source even when migration output equals the existing save',()=>{
++  const values=storage(),old=m4(),current=JSON.stringify(migrateSave(old));values.set(SAVE_KEY,current);
++  const raw=' '+JSON.stringify(old);expect(importSave(raw).ok).toBe(true);expect(values.get(SAVE_KEY)).toBe(current);expect(listBackups().entries.some(b=>b.pinned&&b.raw===raw)).toBe(true);
++ });
++ it('round-trips all needs, clock, switch, XP and jobs through three slots and JSON',()=>{
++  storage();const s=game(),b=build(s);put(s,1,b);record(s).needs={fatigue:80,health:50,morale:20};tickNeeds(s,.3,1,DEFS);setNeedsEffects(s,false);expect(saveGame(s,42,[]).ok).toBe(true);
++  const original=decodeSave(exportSave().raw);for(const slot of SLOT_KEYS){expect(saveSlot(slot).ok).toBe(true);expect(loadSlot(slot).ok).toBe(true);expect(decodeSave(exportSave().raw).characters).toEqual(original.characters);}
++  expect(restoreSave(original).state.characters).toEqual(s.characters);
++ });
++ it.each([
++  d=>{delete d.characters.records[1].needs;},d=>{d.characters.records[1].needs.health=-1;},d=>{d.characters.records[1].needs.fatigue=101;},d=>{d.characters.records[1].needs.morale='50';},d=>{d.characters.records[1].needs.extra=1;},d=>{d.characters.survival.schemaVersion=2;},d=>{d.characters.survival.lastStep=-1;},d=>{d.characters.survival.elapsedSeconds=100;},d=>{d.requiredFeatures.pop();},d=>{d.requiredFeatures.push('future');},d=>{d.version=99;}
++ ])('preserves corrupted/unknown original data and raw export',change=>{
++  const values=storage(),d=createCheckpoint(game(),42,[]);change(d);const raw=JSON.stringify(d);values.set(SAVE_KEY,raw);expect(saveGame(game(),42,[]).ok).toBe(false);expect(importSave(raw).ok).toBe(false);expect(exportSave().raw).toBe(raw);
++ });
++ it('keeps a native empty roster empty and does not reuse dead UID after load',()=>{
++  const s=game(1),b=build(s);put(s,1,b);const uid=record(s).uid;killBuildingWorkers(s,b);reconcileCharacters(s);const r=restoreSave(createCheckpoint(s,42,[])).state;expect(r.survivors).toEqual([]);expect(r.characters.records).toEqual({});addSurvivor(r);reconcileCharacters(r);expect(r.characters.records[2].uid).not.toBe(uid);expect(r.characters.records[2].needs).toEqual(DEFAULT_NEEDS);
++ });
++});

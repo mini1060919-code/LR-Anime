@@ -1,0 +1,56 @@
+[
+  {
+    "stage": 1,
+    "base": "develop",
+    "head": "feature/save-protection-v5",
+    "exit": 0,
+    "mergeTree": "681d742f01ea0be37ec40dd3cb06126b8fd53050",
+    "expectedHeadTree": "681d742f01ea0be37ec40dd3cb06126b8fd53050",
+    "identicalTree": true
+  },
+  {
+    "stage": 2,
+    "base": "feature/save-protection-v5",
+    "head": "feature/m2-zh-tw-anime-ui",
+    "exit": 0,
+    "mergeTree": "f0283d846c6926abe1953fa2d865a290b35cef86",
+    "expectedHeadTree": "f0283d846c6926abe1953fa2d865a290b35cef86",
+    "identicalTree": true
+  },
+  {
+    "stage": 3,
+    "base": "feature/m2-zh-tw-anime-ui",
+    "head": "feature/m3-anime-art-integration",
+    "exit": 0,
+    "mergeTree": "1259797bb3822a519ff7594c3f60aae02f709731",
+    "expectedHeadTree": "1259797bb3822a519ff7594c3f60aae02f709731",
+    "identicalTree": true
+  },
+  {
+    "stage": 4,
+    "base": "feature/m3-anime-art-integration",
+    "head": "feature/m4-survivor-progression",
+    "exit": 0,
+    "mergeTree": "efc109ccc27255fc0b42f140bd8428f83492f052",
+    "expectedHeadTree": "efc109ccc27255fc0b42f140bd8428f83492f052",
+    "identicalTree": true
+  },
+  {
+    "stage": 5,
+    "base": "feature/m4-survivor-progression",
+    "head": "feature/m5a-survival-needs",
+    "exit": 0,
+    "mergeTree": "bca46ebe70629e2817d931897f76b0bfb594d2a4",
+    "expectedHeadTree": "bca46ebe70629e2817d931897f76b0bfb594d2a4",
+    "identicalTree": true
+  },
+  {
+    "stage": 6,
+    "base": "feature/m5a-survival-needs",
+    "head": "feature/m5b-survivor-autonomy",
+    "exit": 0,
+    "mergeTree": "76f1f0cdc7f506920b273850383b3497641590c0",
+    "expectedHeadTree": "76f1f0cdc7f506920b273850383b3497641590c0",
+    "identicalTree": true
+  }
+]

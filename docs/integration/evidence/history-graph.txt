@@ -1,0 +1,21 @@
+* f2df451  (HEAD -> review/m1-m5b-integration, origin/feature/m5b-survivor-autonomy, feature/m5b-survivor-autonomy) Add bounded survivor autonomy with reserved manual jobs
+* 002529e  (origin/pr/5, origin/feature/m5a-survival-needs, feature/m5a-survival-needs) Add bounded survivor needs and safe v6 needs migration
+* 2d1f408  (origin/pr/3, origin/feature/m4-survivor-progression, feature/m4-survivor-progression) Add bounded survivor skills, work experience and validated assignments
+* 14ddcdd  (origin/pr/4, origin/feature/m3-anime-art-integration, feature/m3-anime-art-integration) Integrate supplied M3 anime artwork and expression controls
+* e1c983d  Add M3 survivor identities, verified portraits and v6 saves
+| * 4b7fc71  (origin/feature/m3-survivor-profiles, feature/m3-survivor-profiles) Add M3 survivor identities, verified portraits and v6 saves
+|/  
+| * 294b46a  (docs/m3-survivor-system-design) Document M3 survivor identity, portrait and save design
+|/  
+* e89c3a7  (origin/pr/2, origin/feature/m2-zh-tw-anime-ui, feature/m2-zh-tw-anime-ui) Add Traditional Chinese interface and anime survival theme
+* 642c8d2  (origin/pr/1, origin/feature/save-protection-v5, feature/save-protection-v5) Bound backup rotation and permanently retain protected checkpoints
+* 3d5082f  Protect legacy saves with validated checkpoints and manual slots
+* f6faebb  (origin/main, origin/develop, origin/HEAD, work, develop) Deflake dawn-autosave e2e test: tiny viewport, speed via hotkey
+*   3dcd55e  Merge pull request #4 from D590900/fix/tooltips-balance-effective-caps
+|\  
+| * 22c8416  Fix build-menu tooltips, rebalance tent/shack/ranch, clamp resources to effective caps
+|/  
+* 066fe31  Brand as Last Refuge, split main.js, add e2e tests and open-source docs
+* f5c5af4  Translate game UI to English, add first-run tutorial, link live site in README
+* a694dc0  Add GitHub Pages deployment workflow
+* 8e8a01f  Initial commit

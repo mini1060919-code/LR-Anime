@@ -1,0 +1,33 @@
+docs/M4-CHANGED-FILES.md             |  36 +++++++
+ docs/M4-IMPLEMENTATION.md            |  48 +++++++++
+ docs/M4-PR.md                        |  26 +++++
+ docs/M4-SAVE-COMPATIBILITY.md        |  43 ++++++++
+ docs/M4-TEST-RESULTS.md              |  40 +++++++
+ docs/screenshots/m4-dossier-1000.png | Bin 0 -> 115774 bytes
+ docs/screenshots/m4-dossier-390.png  | Bin 0 -> 64195 bytes
+ docs/screenshots/m4-skills-1000.png  | Bin 0 -> 107920 bytes
+ docs/screenshots/m4-skills-390.png   | Bin 0 -> 34030 bytes
+ e2e/m4-progression.spec.js           |  53 ++++++++++
+ src/characters/state.js              |  10 +-
+ src/main.js                          |   5 +
+ src/persistence.js                   |  38 +++++--
+ src/progression/assignments.js       |  24 +++++
+ src/progression/rules.js             |  18 ++++
+ src/progression/schema.js            |  25 +++++
+ src/progression/work.js              |  58 ++++++++++
+ src/sim/economy.js                   |  26 +++--
+ src/sim/extraction.js                |   8 +-
+ src/sim/modifiers.js                 |   8 +-
+ src/sim/research.js                  |   6 +-
+ src/sim/survivors.js                 |  12 +++
+ src/ui/anime-theme.css               |  12 +++
+ src/ui/characterpanel.js             |  14 +--
+ src/ui/i18n/zh-TW.js                 |  12 +++
+ src/ui/inspector.js                  |   2 +-
+ src/ui/progressionpanel.js           |  40 +++++++
+ src/zombies/combat.js                |  10 +-
+ tests/characters.test.js             |   5 +-
+ tests/i18n.test.js                   |   3 +
+ tests/progression.test.js            | 199 +++++++++++++++++++++++++++++++++++
+ tests/save-protection.test.js        |   2 +-
+ 32 files changed, 748 insertions(+), 35 deletions(-)

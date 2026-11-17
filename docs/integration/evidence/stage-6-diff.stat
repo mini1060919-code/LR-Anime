@@ -1,0 +1,32 @@
+docs/M5B-CHANGED-FILES.md          |  35 ++++++++
+ docs/M5B-IMPLEMENTATION.md         |  40 +++++++++
+ docs/M5B-PR.md                     |  20 +++++
+ docs/M5B-SAVE-COMPATIBILITY.md     |  54 ++++++++++++
+ docs/M5B-TEST-RESULTS.md           |  55 +++++++++++++
+ docs/screenshots/m5b-rest-1000.png | Bin 0 -> 114234 bytes
+ docs/screenshots/m5b-rest-390.png  | Bin 0 -> 42196 bytes
+ docs/screenshots/m5b-work-1000.png | Bin 0 -> 114560 bytes
+ docs/screenshots/m5b-work-390.png  | Bin 0 -> 41431 bytes
+ e2e/m4-progression.spec.js         |   2 +-
+ e2e/m5a-survival-needs.spec.js     |   2 +-
+ e2e/m5b-survivor-autonomy.spec.js  |  42 ++++++++++
+ src/autonomy/control.js            |  13 +++
+ src/autonomy/rules.js              |  23 ++++++
+ src/autonomy/scheduler.js          |  32 ++++++++
+ src/autonomy/schema.js             |  19 +++++
+ src/characters/state.js            |  10 ++-
+ src/main.js                        |   2 +
+ src/persistence.js                 |  16 ++--
+ src/progression/assignments.js     |   6 +-
+ src/sim/state.js                   |   2 +
+ src/sim/survivors.js               |  22 +++--
+ src/ui/anime-theme.css             |   4 +
+ src/ui/autonomypanel.js            |  16 ++++
+ src/ui/characterpanel.js           |   4 +-
+ src/ui/i18n/zh-TW.js               |   6 ++
+ src/ui/inspector.js                |   4 +-
+ src/ui/laborpanel.js               |   7 +-
+ tests/autonomy.test.js             | 163 +++++++++++++++++++++++++++++++++++++
+ tests/progression.test.js          |   2 +-
+ tests/survival-needs.test.js       |   6 +-
+ 31 files changed, 579 insertions(+), 28 deletions(-)

@@ -1,0 +1,28 @@
+{
+  "candidate": "f2df451b0fccf4c62ac71821817bf130376d18bc",
+  "npmCiFirst": {
+    "exit": 254,
+    "reason": "Default npm cache not writable; retained original log"
+  },
+  "npmCiRetry": {
+    "exit": 0,
+    "cache": "/workspace/.npm-cache"
+  },
+  "npmTest": {
+    "exit": 0,
+    "files": 30,
+    "tests": 701
+  },
+  "build": {
+    "exit": 0,
+    "warning": "Existing chunk >500 kB"
+  },
+  "playwright": {
+    "exit": 0,
+    "passed": 16,
+    "durationMinutes": 50.2,
+    "failed": 0,
+    "skipped": 0,
+    "retries": 0
+  }
+}

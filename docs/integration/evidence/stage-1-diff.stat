@@ -1,0 +1,11 @@
+docs/M1-PREMERGE-REVIEW.md    |  71 ++++++++
+ docs/PHASE1-PR.md             |  16 ++
+ docs/SAVE-PROTECTION.md       |  92 ++++++++++
+ e2e/save-protection.spec.js   | 146 +++++++++++++++
+ e2e/smoke.spec.js             |  12 +-
+ src/main.js                   |  29 ++-
+ src/persistence.js            | 378 ++++++++++++++++++++++++++++++++------
+ src/style.css                 |  13 ++
+ src/ui/savepanel.js           | 145 +++++++++++++++
+ tests/save-protection.test.js | 411 ++++++++++++++++++++++++++++++++++++++++++
+ 10 files changed, 1245 insertions(+), 68 deletions(-)

@@ -1,0 +1,1802 @@
+diff --git a/docs/M2-INTERFACE.md b/docs/M2-INTERFACE.md
+new file mode 100644
+index 0000000..0c58372
+--- /dev/null
++++ b/docs/M2-INTERFACE.md
+@@ -0,0 +1,110 @@
++# M2 — Traditional Chinese and anime survival interface
++
++## Branch and dependency
++
++M2 branches from the latest M1 head `642c8d2fb1c6faddcfdd1b10e0c69d7231c53eec` on `feature/save-protection-v5`. The M2 branch is `feature/m2-zh-tw-anime-ui`.
++
++**Depends on M1 PR #1:** https://github.com/mini1060919-code/LR-Anime/pull/1
++
++The independent M2 PR should target **`feature/save-protection-v5`**, keeping its diff limited to M2. Do not merge PR #1, retarget branches or deploy automatically. After M1 is accepted, a maintainer can retarget M2 to `develop` and resolve any later M1 changes before acceptance.
++
++## Completed translation scope
++
++Traditional Chinese (`zh-TW`) is the default. English remains available through the language control or `?lang=en`.
++
++- Title, introduction, controls, start/restart/confirmation, defeat and record screens.
++- Day/night, countdown, weather and effects, all six resource names and daily balance labels/rates, population and control tooltips.
++- All six building categories and **40 building names/descriptions**, production/consumption, storage, workers, beds, damage and research-lock tooltips.
++- All **8 technologies**, their descriptions, unlocked buildings, effect labels and completion state.
++- Worker management, building inspector/repair/upgrades, tutorial steps and common gameplay notifications.
++- M1 save-management labels, slot controls, import/export, permanent/rotating backups, confirmations and contextual safety/error messages. Unknown low-level browser/engine diagnostics intentionally retain a readable English fallback rather than being discarded.
++
++`src/ui/i18n/zh-TW.js` owns the translations, with building/technology entries indexed by existing IDs. The UI-only adapter in `src/ui/i18n/index.js` maps the original names/descriptions without modifying the definitions. Existing DOM factories translate their text/title/accessibility fields. Known dynamic English contracts have explicitly registered, anchored templates; numeric fields are constrained to avoid matching unrelated diagnostic text. There is no DOM text observer, HTML rewriting, translation of storage keys or mutation of game objects.
++
++Add a new message/template to the catalog, use `t(message, values)` at a presentation boundary, and add a coverage/formatting assertion. English source text is the deterministic fallback. The language is resolved from a supported `?lang=` value, then `lr-ui-locale`, then the default. Unsupported values fall back safely. Preference reads/writes may fail without stopping gameplay.
++
++Changing language while playing requires confirmation and returns to the most recent dawn checkpoint. It is not an in-place locale mutation and does not serialize in-progress combat. Cancelling preserves the current UI and run. The `new`/`autostart` parameters are removed during this navigation to avoid silently creating a new colony.
++
++## Theme and character architecture
++
++The original Three.js canvas, models, camera, rendering, buildings, economy, research rules and night attacks are retained. New styles are isolated in `src/ui/anime-theme.css`; the visual theme uses dark navy command panels, teal accents, readable Chinese system-font fallbacks and original CSS silhouette art. No image, font, UI library or remote asset dependency was added.
++
++The HUD wraps resource/control rows instead of pushing commands out of the viewport. UI-only ResizeObservers publish HUD/build-menu heights for the utility toolbar, resource breakdown and tutorial. Research/inspector panels remain scrollable and reachable. Reduced-motion preferences are respected.
++
++`createCharacterPanel` receives `getState`, `onOpen`, `onClose` and optional `resolvePortrait(id)` callbacks. Opening snapshots the paused survivor roster; closing restores the previous pause state. A read-only view model derives existing IDs, workplace, hunger and thirst. Selection and portraits never modify survivors, grant abilities or enter the save.
++
++The default portrait is an original CSS silhouette with accessible alternative text, clearly labelled as a prototype. A future portrait descriptor may contain:
++
++```js
++{
++  src: 'assets/portraits/operator.webp',
++  alt: 'An operator portrait',
++  credit: 'Project artist',
++  license: 'Original'
++}
++```
++
++Local files under `assets/portraits/` must provide alt text, attribution and an explicitly supported license (`Original`, `CC0`, `CC-BY-4.0`, or `MIT`). Unsupported/remote/missing metadata falls back to the silhouette. Descriptor validation is a presentation contract; the maintainer must still verify the actual license before adding artwork. This change adds no such image files and uses no Hearthfall imagery or copyrighted anime characters.
++
++## Save compatibility and rollback
++
++`src/persistence.js` is unchanged from M1, as are simulation, world, rendering, building and zombie modules. Save version stays v5, v4 remains readable, and migration/permanent backups continue to use M1's exact-byte protections. Building/research IDs remain unchanged. Locale preference is stored separately as `lr-ui-locale`; no locale, portrait or character-display fields are added to v4/v5 payloads.
++
++Tests compare restored v4/v5 state across languages, preserve original definitions, prove character-panel interactions do not change resources/survivors/save bytes, and compare active save bytes before/after a locale switch and reload. Original M1 browser tests explicitly select English in their isolated browser preferences, preserving their original assertions; the M2 suite exercises the actual default Chinese UI separately.
++
++To roll back M2, export important checkpoints as usual, then revert the M2 commit(s) on its feature/development branch. No save migration reversal or deletion is needed: M1 reads the same v4/v5 data and ignores the extra UI preference key. Do not reset or overwrite user data. The earlier M1 retention/compatibility contract remains documented in `SAVE-PROTECTION.md` and `M1-PREMERGE-REVIEW.md`.
++
++## Validation and limitations
++
++Final validation on 2026-11-17:
++
++- `npm test`: **466 passed**, 24 files. All original M1 tests remain passing; 10 M2 unit cases cover catalogs, locale resolution/fallbacks, read-only character data, portrait metadata and cross-language v4/v5 restoration.
++- `npm run build`: **passed**. The existing large-chunk warning remains (approximately 796 kB JS / 218 kB gzip).
++- Full browser regression: **6 passed in one final run** (9.1 minutes), with no skipped tests or disabled assertions. Includes both Chinese desktop/compact cases, the M1 migration/slots/JSON/corruption case, actual browser quota/permanent-backup recovery, original HUD/build menu, and the natural day/night dawn-save/reload cycle.
++- Visual checks confirmed Chinese glyphs, the character placeholder, reachable controls and the compact modal. Safety notices no longer intercept recovery controls; research headers remain inside the viewport and tutorial placement tracks the build menu height.
++- `git diff --check`: **passed**. The renderer/world/simulation/building/zombie modules, persistence module, public assets, manifest and lockfile are unchanged relative to M1.
++
++Commands from `/workspace/LR-Anime`:
++
++```sh
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 npm run test:e2e -- --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs
++```
++
++The prepared external config uses system Chromium, software WebGL, a 0.5 device scale and one worker. It leaves repository tests/assertions enabled. CI can use its normal repository config with the pinned Playwright browser. Local results do not establish GitHub-hosted CI success. Generated visual checks are `/tmp/lr-m2-title.png`, `/tmp/lr-m2-game.png`, `/tmp/lr-m2-character.png` and `/tmp/lr-m2-mobile.png`.
++
++Known boundaries:
++
++- Character art is a replaceable silhouette prototype, not a new narrative cast or combat system.
++- Language changes reload the dawn checkpoint after confirmation; live combat still is not saved.
++- Uncatalogued browser/engine diagnostics fall back to English. Fonts come from the device; no web font is downloaded.
++- Desktop and a 390×844 viewport are tested. This does not introduce a full touch-only control scheme for the original keyboard/mouse game.
++- M1's finite origin storage, protected backup policy and single-playing-tab limitation remain in effect.
++- The existing production chunk-size warning remains; no rendering/dependency changes were made to suppress it.
++- No merge, production deployment or environment publication is performed.
++
++## Changed files
++
++- `docs/M2-INTERFACE.md`
++- `docs/M2-PR.md`
++- `e2e/m2-interface.spec.js`
++- `e2e/save-protection.spec.js`
++- `e2e/smoke.spec.js`
++- `index.html`
++- `src/bootstrap.js`
++- `src/main.js`
++- `src/ui/anime-theme.css`
++- `src/ui/buildmenu.js`
++- `src/ui/characterpanel.js`
++- `src/ui/hud.js`
++- `src/ui/i18n/index.js`
++- `src/ui/i18n/zh-TW.js`
++- `src/ui/inspector.js`
++- `src/ui/interface-shell.js`
++- `src/ui/laborpanel.js`
++- `src/ui/researchpanel.js`
++- `src/ui/savepanel.js`
++- `src/ui/screens.js`
++- `src/ui/tutorial.js`
++- `tests/i18n.test.js`
+diff --git a/docs/M2-PR.md b/docs/M2-PR.md
+new file mode 100644
+index 0000000..69d876c
+--- /dev/null
++++ b/docs/M2-PR.md
+@@ -0,0 +1,11 @@
++## M2: Traditional Chinese and anime survival UI
++
++**Depends on #1 (M1 save protection).** Base this PR on `feature/save-protection-v5` at `642c8d2`, not main. Keep it separate from M1 and do not merge/deploy automatically. Retarget to develop only after M1 acceptance.
++
++Adds default Traditional Chinese with an English preference, translating the main screens, HUD/resources, all 40 buildings and 8 technologies, worker/inspector/tutorial panels and M1 save-management controls. UI catalogs and explicit templates keep the simulation definitions, IDs and v4/v5 persistence unchanged. Language changes require confirmation and reload the dawn checkpoint.
++
++Adds a dark anime survival command theme and a paused, read-only survivor dossier. The portrait adapter supports future local artwork with license, attribution and alt text. The current original CSS silhouette requires no external assets. No Three.js renderer, map, economy, building, research or zombie rules changed; no dependency was added.
++
++Validation: **466 unit tests passed**, **production build passed**, and **6 browser regression tests passed** in the final full run (including v4/v5 compatibility, actual quota failure/permanent backup protection and natural dawn autosave/reload). The existing chunk-size warning remains.
++
++Details and the full changed-file list are in `docs/M2-INTERFACE.md`. It covers language formatting/defaults/fallbacks, complete definition translation, read-only character presentation, cross-locale v4/v5 restoration, desktop/compact UI and original M1 browser regression. The known boundaries are checkpoint-based language switching, English fallback for unknown diagnostics, prototype portraits, and M1's existing storage/single-tab constraints.
+diff --git a/e2e/m2-interface.spec.js b/e2e/m2-interface.spec.js
+new file mode 100644
+index 0000000..24787b9
+--- /dev/null
++++ b/e2e/m2-interface.spec.js
+@@ -0,0 +1,105 @@
++import { test, expect } from '@playwright/test';
++
++const BASE = '/city-builder-survival/';
++test('Traditional Chinese interface, read-only character dossier and v4/v5 language compatibility', async ({ page }) => {
++  test.setTimeout(360_000);
++  const errors = [];
++  page.on('pageerror', error => errors.push(error.message));
++  await page.goto(`${BASE}?seed=42`);
++  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-TW');
++  await expect(page.getByRole('heading', { name: '最後庇護所', exact: true })).toBeVisible();
++  await page.screenshot({ path: '/tmp/lr-m2-title.png' });
++  await page.getByRole('button', { name: '開始遊戲', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('第 1 天', { timeout: 30_000 });
++  await page.getByTitle('暫停', { exact: true }).click();
++  await expect(page.getByTitle('暫停', { exact: true })).toHaveClass(/active/);
++  await expect(page.locator('.hud-resource-name')).toHaveText(['食物', '水', '木材', '金屬', '電力', '燃料']);
++  await expect(page.locator('.build-tab')).toHaveCount(6);
++  await expect(page.locator('.build-tab').first()).toContainText('居住');
++  const tent = page.locator('.build-btn').filter({ has: page.locator('.build-btn-name:text-is("帳篷")') });
++  await expect(tent).toBeVisible();
++  await tent.click();
++  await expect(tent).toHaveClass(/active/);
++  await page.locator('.build-btn--side').filter({ hasText: '取消' }).click();
++  await expect(tent).not.toHaveClass(/active/);
++  await page.getByTitle('科技研究', { exact: true }).click();
++  const research = page.locator('.research-panel');
++  await expect(research).toHaveClass(/open/);
++  await expect(research.locator('.research-tech-name')).toHaveText([
++    '林業', '電力儲存', '進階太陽能技術', '深層採礦', '生產效率', '醫療技術', '彈道學', '鋼筋混凝土',
++  ]);
++  await expect(research.getByText('解鎖：植林站', { exact: true })).toBeVisible();
++  await research.getByTitle('關閉', { exact: true }).click();
++  await page.screenshot({ path: '/tmp/lr-m2-game.png' });
++
++  const before = await page.evaluate(() => ({
++    survivors: JSON.stringify(window.__game.state.survivors),
++    resources: JSON.stringify(window.__game.state.resources),
++    save: localStorage.getItem('cbs-save'),
++  }));
++  await page.getByRole('button', { name: '角色資訊', exact: true }).click();
++  const dossier = page.getByRole('dialog', { name: '倖存者檔案' });
++  await expect(dossier).toBeVisible();
++  await expect(dossier.locator('.character-roster-button')).toHaveCount(4);
++  await expect(dossier.getByRole('img', { name: '原創剪影占位圖，尚未配置角色立繪。' })).toBeVisible();
++  await expect(dossier.locator('img')).toHaveCount(0);
++  await expect(dossier.getByRole('meter')).toHaveCount(2);
++  await dossier.getByRole('button', { name: '倖存者 #2', exact: true }).click();
++  await expect(dossier.locator('.character-name')).toHaveText('倖存者 #2');
++  await page.keyboard.press('3'); // Game speed hotkeys must not unpause the modal.
++  await expect(page.getByTitle('暫停', { exact: true })).toHaveClass(/active/);
++  await page.screenshot({ path: '/tmp/lr-m2-character.png' });
++  await page.keyboard.press('Escape');
++  await expect(dossier).not.toBeVisible();
++  expect(await page.evaluate(() => ({ survivors: JSON.stringify(window.__game.state.survivors),
++    resources: JSON.stringify(window.__game.state.resources), save: localStorage.getItem('cbs-save') }))).toEqual(before);
++
++  await page.getByRole('button', { name: '存檔', exact: true }).click();
++  const saves = page.getByRole('dialog', { name: '存檔管理' });
++  await expect(saves).toBeVisible();
++  await saves.getByRole('button', { name: '儲存至槽位 1', exact: true }).click();
++  await expect(saves.getByText('存檔槽 1：第 1 天', { exact: true })).toBeVisible();
++  await saves.getByRole('button', { name: '關閉存檔', exact: true }).click();
++  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
++  await page.evaluate(data => localStorage.setItem('cbs-save', JSON.stringify(data)), legacy);
++  await page.goto(BASE);
++  await page.getByRole('button', { name: '開始遊戲', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('第 1 天', { timeout: 30_000 });
++  const migrated = await page.evaluate(() => localStorage.getItem('cbs-save'));
++  expect(JSON.parse(migrated)).toMatchObject({ version: 5, payload: legacy });
++
++  page.once('dialog', dialog => dialog.dismiss());
++  await page.getByLabel('語言', { exact: true }).selectOption('en');
++  await expect(page.getByLabel('語言', { exact: true })).toHaveValue('zh-TW');
++  page.once('dialog', dialog => dialog.accept());
++  await page.getByLabel('語言', { exact: true }).selectOption('en');
++  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  expect(await page.evaluate(() => localStorage.getItem('cbs-save'))).toBe(migrated);
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++  expect(await page.evaluate(() => localStorage.getItem('cbs-save'))).toBe(migrated);
++  expect(errors).toEqual([]);
++});
++
++test('compact Traditional Chinese controls and accessible character modal', async ({ page }) => {
++  test.setTimeout(180_000);
++  await page.setViewportSize({ width: 390, height: 844 });
++  await page.goto(`${BASE}?autostart=1&seed=42`);
++  await expect(page.locator('.hud-day')).toHaveText('第 1 天', { timeout: 30_000 });
++  await expect(page.locator('#game')).toBeVisible();
++  for (const name of ['角色資訊', '存檔']) {
++    const button = page.getByRole('button', { name, exact: true });
++    await expect(button).toBeVisible();
++    const rect = await button.boundingBox();
++    expect(rect.x).toBeGreaterThanOrEqual(0);
++    expect(rect.x + rect.width).toBeLessThanOrEqual(390);
++  }
++  await page.getByRole('button', { name: '角色資訊', exact: true }).click();
++  const dialog = page.getByRole('dialog', { name: '倖存者檔案' });
++  await expect(dialog).toBeVisible();
++  await expect(dialog.getByRole('button', { name: '關閉檔案', exact: true })).toBeVisible();
++  await page.screenshot({ path: '/tmp/lr-m2-mobile.png' });
++  await page.keyboard.press('Escape');
++  await expect(dialog).not.toBeVisible();
++});
+diff --git a/e2e/save-protection.spec.js b/e2e/save-protection.spec.js
+index a132e1f..89efd26 100644
+--- a/e2e/save-protection.spec.js
++++ b/e2e/save-protection.spec.js
+@@ -1,5 +1,10 @@
+ import { test, expect } from '@playwright/test';
+ 
++// Keep the original English assertions; M2 has separate zh-TW coverage.
++test.use({ storageState: { cookies: [], origins: [{
++  origin: 'http://localhost:4173', localStorage: [{ name: 'lr-ui-locale', value: 'en' }],
++}] } });
++
+ const BASE = '/city-builder-survival/';
+ test('v4 migration, three slots, JSON transfers and protected corrupt saves', async ({ page }) => {
+   test.setTimeout(360_000);
+diff --git a/e2e/smoke.spec.js b/e2e/smoke.spec.js
+index 243b466..d4f59ca 100644
+--- a/e2e/smoke.spec.js
++++ b/e2e/smoke.spec.js
+@@ -8,6 +8,11 @@
+ 
+ import { test, expect } from '@playwright/test';
+ 
++// Keep the original English assertions; M2 has separate zh-TW coverage.
++test.use({ storageState: { cookies: [], origins: [{
++  origin: 'http://localhost:4173', localStorage: [{ name: 'lr-ui-locale', value: 'en' }],
++}] } });
++
+ const BASE = '/city-builder-survival/';
+ const SAVE_KEY = 'cbs-save';
+ // HUD resource labels, in DOM order (src/ui/hud.js BALANCE_RESOURCES).
+diff --git a/index.html b/index.html
+index aa3d379..183ff06 100644
+--- a/index.html
++++ b/index.html
+@@ -1,9 +1,9 @@
+ <!doctype html>
+-<html lang="en">
++<html lang="zh-TW">
+   <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Last Refuge — build by day, survive the night</title>
++    <title>最後庇護所 — 白晝建設，守過長夜</title>
+     <link rel="stylesheet" href="/src/style.css" />
+   </head>
+   <body>
+diff --git a/src/bootstrap.js b/src/bootstrap.js
+index 7f3fe18..935bca9 100644
+--- a/src/bootstrap.js
++++ b/src/bootstrap.js
+@@ -4,6 +4,8 @@
+ // imports boot() and calls it with its startGame. Nothing runs at import
+ // time here, so the module stays importable outside the browser.
+ 
++import { initializeLocale, t } from './ui/i18n/index.js';
++import { createInterfaceShell } from './ui/interface-shell.js';
+ import { createEngine } from './core/engine.js';
+ import { loadAll } from './assets/loader.js';
+ import { createScreens } from './ui/screens.js';
+@@ -26,7 +28,7 @@ export function randomSeed() {
+ // Small centered status line used while assets load (and for load errors).
+ export function showMessage(text) {
+   const el = document.createElement('div');
+-  el.textContent = text;
++  el.textContent = t(text);
+   el.style.cssText =
+     'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;' +
+     'color:#cfd8e3;font:16px/1.4 system-ui,sans-serif;pointer-events:none;z-index:200;';
+@@ -35,6 +37,8 @@ export function showMessage(text) {
+ }
+ 
+ export function boot({ startGame }) {
++  initializeLocale(window.location.search);
++  createInterfaceShell(document.getElementById('ui'));
+   const params = new URLSearchParams(window.location.search);
+   const engine = createEngine(document.getElementById('game'));
+   const screens = createScreens(document.getElementById('ui'));
+@@ -49,7 +53,7 @@ export function boot({ startGame }) {
+         startGame({ engine, screens, assets, params });
+       })
+       .catch((err) => {
+-        loading.textContent = `Failed to load the assets: ${err.message}`;
++        loading.textContent = t(`Failed to load the assets: ${err.message}`);
+       });
+   };
+ 
+diff --git a/src/main.js b/src/main.js
+index 9a0ba58..ec110bc 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -10,6 +10,8 @@
+ // Later additions: building repair (tickRepairs), the on/off switch, worker
+ // priorities and building upgrade levels.
+ 
++import { t } from './ui/i18n/index.js';
++import { createCharacterPanel } from './ui/characterpanel.js';
+ import * as THREE from 'three';
+ import { createIsoCamera } from './core/camera.js';
+ import { createInput } from './core/input.js';
+@@ -242,8 +244,8 @@ function startGame({ engine, screens, assets, params }) {
+   const seedEl = document.createElement('button');
+   seedEl.type = 'button';
+   seedEl.className = 'seed-label';
+-  seedEl.textContent = `seed #${seed}`;
+-  seedEl.title = 'Copy the link to this map';
++  seedEl.textContent = t(`seed #${seed}`);
++  seedEl.title = t('Copy the link to this map');
+   seedEl.addEventListener('click', () => {
+     const url = `${location.origin}${location.pathname}?seed=${seed}`;
+     navigator.clipboard?.writeText(url).then(
+@@ -281,6 +283,12 @@ function startGame({ engine, screens, assets, params }) {
+   let speed = 1; // 1 | 2 | 3; pause is tracked separately (timeScale 0)
+   let paused = false;
+   let pausedBeforeSaves = false;
++  let pausedBeforeCharacters = false;
++  createCharacterPanel(uiRoot, {
++    getState: () => state,
++    onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
++    onClose: () => { paused = pausedBeforeCharacters; },
++  });
+   savePanel = createSavePanel(uiRoot, {
+     onOpen: () => { pausedBeforeSaves = paused; paused = true; input.keys.clear(); },
+     onClose: () => { paused = pausedBeforeSaves; },
+diff --git a/src/ui/anime-theme.css b/src/ui/anime-theme.css
+new file mode 100644
+index 0000000..e1ed0ca
+--- /dev/null
++++ b/src/ui/anime-theme.css
+@@ -0,0 +1,127 @@
++/* Original CSS artwork and theme. No external images, fonts, or asset requests. */
++:root[data-ui-theme='anime-survival'] {
++  --ui-ink: #edf3ff;
++  --ui-muted: #9fb1ca;
++  --ui-panel: #121d31f2;
++  --ui-line: #5b718f;
++  --ui-accent: #88e5db;
++  --ui-alert: #ffad9d;
++  color-scheme: dark;
++  font-family: 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
++}
++[data-ui-theme] #ui { color: var(--ui-ink); font-family: inherit; }
++[data-ui-theme] #ui button, [data-ui-theme] #ui select {
++  font: inherit; color: var(--ui-ink); background: #182840;
++  border: 1px solid var(--ui-line); border-radius: 5px;
++}
++[data-ui-theme] #ui button:hover, [data-ui-theme] #ui select:hover { border-color: var(--ui-accent); background: #233d52; }
++[data-ui-theme] #ui button:focus-visible, [data-ui-theme] #ui select:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
++[data-ui-theme] #ui button:disabled { opacity: .45; cursor: default; }
++[data-ui-theme] .screen-overlay { background: radial-gradient(ellipse at 20% 30%, #183347b8, #080f1be8 75%); }
++[data-ui-theme] .screen-panel {
++  position: relative; border: 1px solid var(--ui-line); border-top: 3px solid var(--ui-accent);
++  background: linear-gradient(135deg, #1c2d44f5, #0d1628f5); box-shadow: 0 20px 70px #0008;
++  border-radius: 8px; max-height: 92dvh; overflow: auto;
++}
++[data-ui-theme] .screen-title { color: var(--ui-ink); letter-spacing: .12em; text-shadow: 0 0 24px #88e5db35; }
++[data-ui-theme] .screen-subtitle, [data-ui-theme] .screen-goal { color: #bed0e5; line-height: 1.8; }
++[data-ui-theme] .screen-btn { border-color: var(--ui-accent) !important; padding: 12px 28px; }
++[data-ui-theme] .hud-top { background: #0e192bed; border-bottom: 1px solid var(--ui-line); gap: 12px; }
++[data-ui-theme] .hud-resource-name { color: var(--ui-muted); font-size: 10px; letter-spacing: .06em; }
++[data-ui-theme] .hud-res { gap: 4px; }
++[data-ui-theme] .hud-day { color: var(--ui-accent); }
++[data-ui-theme] .hud-balance, [data-ui-theme] .inspector, [data-ui-theme] .research-panel,
++[data-ui-theme] .labor-panel, [data-ui-theme] .tutorial-card, [data-ui-theme] .build-tooltip {
++  color: var(--ui-ink); background: var(--ui-panel); border: 1px solid var(--ui-line); box-shadow: 0 12px 40px #0007;
++}
++[data-ui-theme] .build-menu { background: linear-gradient(0deg, #0d1628fa, #17273ded); border-top: 1px solid var(--ui-line); }
++[data-ui-theme] .build-tab.active, [data-ui-theme] .build-btn.active { border-color: var(--ui-accent); background: #254553; }
++[data-ui-theme] .build-btn-name { white-space: normal; }
++[data-ui-theme] .research-tech--available { border-color: var(--ui-accent); }
++[data-ui-theme] .research-tech--done { background: #193f38; }
++[data-ui-theme] .research-tech-desc { line-height: 1.6; }
++[data-ui-theme] .save-launch { top: 76px; right: 280px; bottom: auto; padding: 8px 12px; }
++.interface-tools { position: fixed; top: 76px; right: 16px; z-index: 90; pointer-events: auto; }
++.interface-tools label { display: flex; align-items: center; gap: 8px; font-size: 12px; }
++.interface-tools select { padding: 8px; max-width: 118px; }
++.character-launch { position: fixed; top: 76px; right: 180px; z-index: 90; pointer-events: auto; padding: 8px 12px; }
++[data-ui-theme] .inspector, [data-ui-theme] .research-panel, [data-ui-theme] .labor-panel { top: 132px; max-height: calc(100dvh - 290px); }
++[data-ui-theme] .save-dialog, .character-dialog {
++  margin: auto; padding: 24px; color: var(--ui-ink); background: var(--ui-panel);
++  border: 1px solid var(--ui-line); border-top: 3px solid var(--ui-accent); border-radius: 10px;
++  max-width: min(760px, 94vw); max-height: 88dvh; overflow: auto; pointer-events: auto;
++}
++[data-ui-theme] .save-dialog { width: 650px; }
++[data-ui-theme] .save-dialog p { margin: 8px 0; line-height: 1.7; }
++[data-ui-theme] .save-dialog label { display: block; margin-top: 12px; }
++.character-dialog { width: 720px; }
++.character-dialog::backdrop { background: #050b15bd; }
++.dossier-eyebrow { color: var(--ui-accent); font-size: 11px; letter-spacing: .15em; }
++.dossier-title { margin: 6px 0 18px; letter-spacing: .1em; }
++.character-close { position: absolute; top: 18px; right: 18px; padding: 8px; }
++.character-roster { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 16px; }
++.character-roster-button { padding: 8px; }
++.character-roster-button[aria-pressed='true'] { border-color: var(--ui-accent) !important; background: #254553 !important; }
++.character-detail { display: grid; grid-template-columns: minmax(170px, .8fr) 1fr; gap: 28px; }
++.portrait-frame { position: relative; min-height: 270px; overflow: hidden; border: 1px solid var(--ui-line); background: repeating-linear-gradient(0deg, #17313b55 0 1px, transparent 1px 7px), linear-gradient(140deg, #254553, #0a1426); }
++.operator-silhouette { position: relative; height: 270px; overflow: hidden; }
++.silhouette-head { position: absolute; width: 80px; height: 104px; top: 34px; left: calc(50% - 40px); border-radius: 44% 44% 38% 38%; background: linear-gradient(120deg, #99bdce, #3b6178); box-shadow: -9px -8px 0 #1b3046; transform: rotate(-6deg); }
++.silhouette-head::after { content: ''; position: absolute; top: -12px; left: -7px; width: 96px; height: 60px; background: #13283d; clip-path: polygon(0 20%, 35% 0, 85% 15%, 100% 80%, 72% 45%, 50% 100%, 38% 50%, 10% 100%); }
++.silhouette-body { position: absolute; width: 180px; height: 180px; top: 146px; left: calc(50% - 90px); border-radius: 45% 45% 0 0; background: linear-gradient(110deg, #234158, #476d7b 48%, #1c354b 49%); border-top: 10px solid #88e5db70; }
++.portrait-credit { position: relative; display: block; padding: 10px; color: #bed0e5; font-size: 11px; line-height: 1.6; }
++.character-portrait { display: block; width: 100%; height: 270px; object-fit: contain; }
++.character-name { margin: 20px 0 12px; font-size: 24px; }
++.character-assignment { color: var(--ui-accent); margin-bottom: 24px; }
++.character-stat { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin: 20px 0; }
++.character-stat meter { width: 100%; grid-column: 1 / -1; height: 10px; accent-color: var(--ui-accent); }
++.character-stat-value { color: var(--ui-muted); font-variant-numeric: tabular-nums; }
++.character-note { color: var(--ui-muted); font-size: 12px; margin-top: 20px; line-height: 1.8; }
++@media (max-width: 900px) {
++  [data-ui-theme] .hud-top { flex-wrap: wrap; gap: 6px; }
++  [data-ui-theme] .hud-resources { flex-wrap: wrap; }
++  [data-ui-theme] .hud-resource-name { display: none; }
++  [data-ui-theme] .save-launch, .character-launch, .interface-tools { top: 132px; }
++  [data-ui-theme] .inspector, [data-ui-theme] .research-panel, [data-ui-theme] .labor-panel { top: 180px; max-height: calc(100dvh - 340px); }
++  [data-ui-theme] .build-tabs { overflow-x: auto; }
++  [data-ui-theme] .build-tab { flex-shrink: 0; }
++  .character-detail { gap: 16px; }
++}
++@media (max-width: 520px) {
++  .character-detail { grid-template-columns: 1fr; }
++  .portrait-frame { min-height: 150px; }
++  .operator-silhouette, .character-portrait { height: 180px; }
++  .character-close { position: static; margin-bottom: 12px; }
++  .character-name { margin-top: 0; }
++  [data-ui-theme] .screen-panel { padding: 24px 16px; }
++  [data-ui-theme] .screen-title { font-size: 32px; }
++}
++@media (prefers-reduced-motion: reduce) {
++  [data-ui-theme] #ui *, [data-ui-theme] #ui *::before { animation-duration: .01ms !important; transition-duration: .01ms !important; }
++}
++/* Keep every command reachable; resource names must not push speed controls offscreen. */
++[data-ui-theme] #ui { font-family: 'Noto Sans TC', 'Noto Sans CJK TC', 'Microsoft JhengHei', system-ui, sans-serif; }
++[data-ui-theme] .hud-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
++[data-ui-theme] .hud-top > .hud-section:first-child { grid-column: 1; grid-row: 1; }
++[data-ui-theme] .hud-top > .hud-resources { grid-column: 1 / -1; grid-row: 2; min-width: 0; gap: 5px 14px; }
++[data-ui-theme] .hud-top > .hud-speed { grid-column: 2; grid-row: 1; flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
++[data-ui-theme] .interface-tools { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; max-width: calc(100vw - 32px); top: calc(var(--hud-bottom, 64px) + 12px); }
++[data-ui-theme] .interface-tools .save-launch, [data-ui-theme] .interface-tools .character-launch { position: static; padding: 8px 12px; }
++[data-ui-theme] .inspector, [data-ui-theme] .research-panel, [data-ui-theme] .labor-panel { top: calc(var(--hud-bottom, 64px) + 64px); }
++@media (max-width: 650px) {
++  [data-ui-theme] .hud-top { grid-template-columns: minmax(0, 1fr); }
++  [data-ui-theme] .hud-top > .hud-section:first-child { grid-column: 1; grid-row: 1; }
++  [data-ui-theme] .hud-top > .hud-resources { grid-column: 1; grid-row: 2; }
++  [data-ui-theme] .hud-top > .hud-speed { grid-column: 1; grid-row: 3; justify-content: flex-start; }
++  [data-ui-theme] .hud-top .hud-section { gap: 6px; }
++}
++[data-ui-theme] .research-panel { transform: translateX(-50%); bottom: auto; }
++[data-ui-theme] .inspector, [data-ui-theme] .research-panel, [data-ui-theme] .labor-panel {
++  max-height: calc(100dvh - var(--hud-bottom, 64px) - 80px); overflow-y: auto;
++}
++[data-ui-theme] .inspector, [data-ui-theme] .labor-panel { bottom: auto; }
++[data-ui-theme] .research-head { flex-shrink: 0; }
++[data-ui-theme] .research-list { min-height: 0; }
++[data-ui-theme] .hud-balance { top: calc(var(--hud-bottom, 64px) + 8px); }
++[data-ui-theme] .tutorial { bottom: calc(var(--build-height, 130px) + 24px); }
++/* Safety notices must never cover the controls needed to export/recover a save. */
++[data-ui-theme] .save-warning { top: calc(var(--hud-bottom, 64px) + 90px); pointer-events: none; }
+diff --git a/src/ui/buildmenu.js b/src/ui/buildmenu.js
+index 755652d..e2985de 100644
+--- a/src/ui/buildmenu.js
++++ b/src/ui/buildmenu.js
+@@ -8,6 +8,7 @@
+ // is no room above). No DOM access at import time — everything is built
+ // inside createBuildMenu().
+ 
++import { t } from './i18n/index.js';
+ import { BUILDING_DEFS, BUILD_MENU_ORDER, CATEGORIES } from '../buildings/definitions.js';
+ import { canAfford } from '../sim/economy.js';
+ import { isUnlocked, TECHS } from '../sim/research.js';
+@@ -75,7 +76,7 @@ const icon = (resource) => RESOURCE_ICONS[resource] ?? resource;
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -245,9 +246,9 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
+   }
+ 
+   for (const cat of CATEGORIES) {
+-    const tab = h('button', 'build-tab', `${cat.icon} ${cat.name}`);
++    const tab = h('button', 'build-tab', `${cat.icon} ${t(cat.name)}`);
+     tab.type = 'button';
+-    tab.title = cat.name;
++    tab.title = t(cat.name);
+     tab.addEventListener('click', () => {
+       if (activeCategoryId === cat.id) return;
+       activeCategoryId = cat.id;
+@@ -261,7 +262,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
+   const side = h('div', 'build-side');
+   const demolishBtn = h('button', 'build-btn build-btn--side');
+   demolishBtn.type = 'button';
+-  demolishBtn.title = 'Demolish a building';
++  demolishBtn.title = t('Demolish a building');
+   demolishBtn.append(
+     h('span', 'build-btn-icon', '🔨'),
+     h('span', 'build-btn-name', 'Demolish')
+@@ -270,7 +271,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
+ 
+   const cancelBtn = h('button', 'build-btn build-btn--side');
+   cancelBtn.type = 'button';
+-  cancelBtn.title = 'Cancel (ESC)';
++  cancelBtn.title = t('Cancel (ESC)');
+   cancelBtn.append(
+     h('span', 'build-btn-icon', '✖'),
+     h('span', 'build-btn-name', 'Cancel')
+@@ -281,6 +282,10 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
+   body.append(list, side);
+   rootEl.append(tabs, body);
+   root.appendChild(rootEl);
++  const measureMenu = () => document.documentElement.style.setProperty('--build-height', `${rootEl.offsetHeight}px`);
++  const resizeObserver = new ResizeObserver(measureMenu);
++  resizeObserver.observe(rootEl);
++  measureMenu();
+ 
+   // Recomputes disabled (affordability/tech lock) and active (mode)
+   // highlighting.
+@@ -298,7 +303,7 @@ export function createBuildMenu(root, { onSelect, onDemolish, onCancel } = {}) {
+       btn.classList.toggle('active', mode === 'build' && defId === activeDefId);
+       lockTip.style.display = locked ? '' : 'none';
+       if (locked) {
+-        lockTip.textContent = `🔒 Requires research: ${techNameFor(defId) ?? 'unknown'}`;
++        lockTip.textContent = t(`🔒 Requires research: ${techNameFor(defId) ?? 'unknown'}`);
+       }
+     }
+     demolishBtn.classList.toggle('active', mode === 'demolish');
+diff --git a/src/ui/characterpanel.js b/src/ui/characterpanel.js
+new file mode 100644
+index 0000000..49ac8ca
+--- /dev/null
++++ b/src/ui/characterpanel.js
+@@ -0,0 +1,105 @@
++// Read-only presentation adapter. Portraits and localized names never enter saves.
++import { BUILDING_DEFS } from '../buildings/definitions.js';
++import { t } from './i18n/index.js';
++
++export function characterProfile(survivor, state) {
++  const workplace = state.buildings.find(building => building.id === survivor.buildingId);
++  const bounded = value => Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0));
++  return {
++    id: survivor.id,
++    name: t('Survivor #{id}', { id: survivor.id }),
++    assignment: workplace
++      ? t('Assigned to {building}', { building: t(BUILDING_DEFS[workplace.defId]?.name ?? workplace.defId) })
++      : t('Awaiting assignment'),
++    hunger: bounded(survivor.hunger), thirst: bounded(survivor.thirst),
++  };
++}
++
++/** Optional future assets must be local and carry attribution and a license.
++ * This descriptor is a presentation contract, not a legal verification service.
++ */
++export function approvedPortrait(descriptor) {
++  return descriptor && typeof descriptor.src === 'string' &&
++    /^assets\/portraits\/[a-zA-Z0-9_/-]+\.(png|webp|jpg|svg)$/.test(descriptor.src) &&
++    ['CC0', 'CC-BY-4.0', 'Original', 'MIT'].includes(descriptor.license) &&
++    typeof descriptor.credit === 'string' && descriptor.credit.trim() &&
++    typeof descriptor.alt === 'string' && descriptor.alt.trim() ? descriptor : null;
++}
++
++function el(tag, className, text) {
++  const node = document.createElement(tag);
++  if (className) node.className = className;
++  if (text !== undefined) node.textContent = t(text);
++  return node;
++}
++
++/** Snapshot the paused roster. Only callbacks control pause; this panel never mutates state. */
++export function createCharacterPanel(root, { getState, onOpen, onClose, resolvePortrait = () => null }) {
++  const launch = el('button', 'character-launch', 'Characters');
++  launch.type = 'button';
++  const dialog = el('dialog', 'character-dialog');
++  dialog.setAttribute('aria-label', t('Operator dossier'));
++  const close = el('button', 'character-close', 'Close dossier');
++  close.type = 'button';
++  close.addEventListener('click', () => dialog.close());
++  const roster = el('div', 'character-roster');
++  roster.setAttribute('role', 'group');
++  roster.setAttribute('aria-label', t('Survivors'));
++  const detail = el('section', 'character-detail');
++  detail.setAttribute('aria-live', 'polite');
++  dialog.append(el('p', 'dossier-eyebrow', 'Portrait interface prototype'),
++    el('h2', 'dossier-title', 'Operator dossier'), close, roster, detail,
++    el('p', 'character-note', 'Portraits are presentation only. They do not change survivor statistics or saved data.'));
++  (root.querySelector('.interface-tools') ?? root).append(launch);
++  root.append(dialog);
++
++  function select(survivor, state) {
++    const profile = characterProfile(survivor, state);
++    for (const button of roster.children) button.setAttribute('aria-pressed', String(button.dataset.survivorId === String(profile.id)));
++    detail.replaceChildren();
++    const frame = el('div', 'portrait-frame');
++    const portrait = approvedPortrait(resolvePortrait(profile.id));
++    if (portrait) {
++      const image = el('img', 'character-portrait');
++      image.src = `${import.meta.env.BASE_URL}${portrait.src}`;
++      image.alt = portrait.alt;
++      frame.append(image, el('small', 'portrait-credit', t('Artwork: {credit} · License: {license}', portrait)));
++    } else {
++      const silhouette = el('div', 'operator-silhouette');
++      silhouette.setAttribute('role', 'img');
++      silhouette.setAttribute('aria-label', t('Original silhouette placeholder. No character artwork installed.'));
++      silhouette.append(el('span', 'silhouette-head'), el('span', 'silhouette-body'));
++      frame.append(silhouette, el('small', 'portrait-credit', 'Original silhouette placeholder. No character artwork installed.'));
++    }
++    const info = el('div', 'character-info');
++    info.append(el('h3', 'character-name', profile.name), el('p', 'character-assignment', profile.assignment));
++    for (const [key, label] of [['hunger', 'Hunger level'], ['thirst', 'Thirst level']]) {
++      const row = el('label', 'character-stat', label);
++      const meter = el('meter');
++      meter.min = 0; meter.max = 100; meter.value = profile[key];
++      meter.setAttribute('aria-label', t(label));
++      row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
++      info.append(row);
++    }
++    detail.append(frame, info);
++  }
++  launch.addEventListener('click', () => {
++    onOpen();
++    const state = getState();
++    roster.replaceChildren(); detail.replaceChildren();
++    for (const survivor of state.survivors) {
++      const button = el('button', 'character-roster-button', t('Survivor #{id}', { id: survivor.id }));
++      button.type = 'button';
++      button.dataset.survivorId = String(survivor.id);
++      button.addEventListener('click', () => select(survivor, state));
++      roster.append(button);
++    }
++    if (state.survivors.length) select(state.survivors[0], state);
++    else detail.append(el('p', '', 'No survivors in the settlement.'));
++    dialog.showModal();
++  });
++  dialog.addEventListener('close', () => { onClose(); launch.focus(); });
++  dialog.addEventListener('keydown', event => event.stopPropagation());
++  dialog.addEventListener('keyup', event => event.stopPropagation());
++  return { el: dialog };
++}
+diff --git a/src/ui/hud.js b/src/ui/hud.js
+index 6d200d3..2e8fc6c 100644
+--- a/src/ui/hud.js
++++ b/src/ui/hud.js
+@@ -5,6 +5,7 @@
+ // plus a toast area. No DOM access at import time — all elements are built
+ // inside createHud().
+ 
++import { t } from './i18n/index.js';
+ import './ui.css';
+ import { WEATHERS } from '../sim/weather.js';
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+@@ -46,7 +47,7 @@ const WEATHER_EFFECTS = {
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -125,7 +126,9 @@ export function createHud(root) {
+     const el = h('span', 'hud-stat hud-res');
+     const textEl = h('span');
+     const netEl = h('span', 'hud-net');
+-    el.append(textEl, netEl);
++    const labelEl = h('span', 'hud-resource-name', label);
++    el.setAttribute('aria-label', t(label));
++    el.append(labelEl, textEl, netEl);
+     el.addEventListener('mouseenter', () => {
+       hoveredResource = key;
+       balancePanel.classList.add('open');
+@@ -140,11 +143,11 @@ export function createHud(root) {
+   }
+ 
+   const researchEl = h('span', 'hud-stat');
+-  researchEl.title = 'Research points';
++  researchEl.title = t('Research points');
+   const survivorsEl = h('span', 'hud-stat');
+-  survivorsEl.title = 'Survivors (idle) / beds';
++  survivorsEl.title = t('Survivors (idle) / beds');
+   const killsEl = h('span', 'hud-stat');
+-  killsEl.title = 'Zombies killed';
++  killsEl.title = t('Zombies killed');
+   const reputationEl = h('span', 'hud-stat');
+   center.append(researchEl, survivorsEl, killsEl, reputationEl);
+ 
+@@ -180,13 +183,13 @@ export function createHud(root) {
+   }
+ 
+   function renderBalance() {
+-    balancePanel.textContent = '';
++    balancePanel.textContent = t('');
+     if (!hoveredResource || !balanceCache) return;
+     const meta = resourceEls.get(hoveredResource);
+     const data = balanceCache[hoveredResource];
+     if (!meta || !data) return;
+     balancePanel.appendChild(
+-      h('span', 'hud-balance-title', `${meta.icon} ${meta.label} — daily balance`)
++      h('span', 'hud-balance-title', `${meta.icon} ${t(meta.label)} — daily balance`)
+     );
+     const cols = h('div', 'hud-balance-cols');
+     cols.append(
+@@ -203,7 +206,7 @@ export function createHud(root) {
+   const right = h('div', 'hud-section hud-speed');
+   const laborBtn = h('button', 'hud-btn', '👷');
+   laborBtn.type = 'button';
+-  laborBtn.title = 'Workers panel';
++  laborBtn.title = t('Workers panel');
+   laborBtn.addEventListener('click', () => {
+     for (const cb of laborCbs) cb();
+   });
+@@ -211,7 +214,7 @@ export function createHud(root) {
+ 
+   const researchBtn = h('button', 'hud-btn', '🔬');
+   researchBtn.type = 'button';
+-  researchBtn.title = 'Research panel';
++  researchBtn.title = t('Research panel');
+   researchBtn.addEventListener('click', () => {
+     for (const cb of researchCbs) cb();
+   });
+@@ -219,7 +222,7 @@ export function createHud(root) {
+ 
+   const overlayBtn = h('button', 'hud-btn', '🔍');
+   overlayBtn.type = 'button';
+-  overlayBtn.title = 'Site yield (wells, hunting, fishing, ranches)';
++  overlayBtn.title = t('Site yield (wells, hunting, fishing, ranches)');
+   overlayBtn.addEventListener('click', () => {
+     overlayOn = !overlayOn;
+     overlayBtn.classList.toggle('active', overlayOn);
+@@ -229,7 +232,7 @@ export function createHud(root) {
+ 
+   const pauseBtn = h('button', 'hud-btn', '⏸');
+   pauseBtn.type = 'button';
+-  pauseBtn.title = 'Pause';
++  pauseBtn.title = t('Pause');
+   pauseBtn.addEventListener('click', () => {
+     isPaused = !isPaused;
+     refreshSpeedButtons();
+@@ -239,7 +242,7 @@ export function createHud(root) {
+ 
+   const restartBtn = h('button', 'hud-btn', '🔄');
+   restartBtn.type = 'button';
+-  restartBtn.title = 'Restart game';
++  restartBtn.title = t('Restart game');
+   restartBtn.addEventListener('click', () => {
+     for (const cb of restartCbs) cb();
+   });
+@@ -249,7 +252,7 @@ export function createHud(root) {
+   for (const { speed, icon, label } of SPEEDS) {
+     const btn = h('button', 'hud-btn', icon);
+     btn.type = 'button';
+-    btn.title = label;
++    btn.title = t(label);
+     btn.addEventListener('click', () => {
+       currentSpeed = speed;
+       refreshSpeedButtons();
+@@ -266,6 +269,11 @@ export function createHud(root) {
+ 
+   rootEl.append(top, balancePanel, toastArea);
+   root.appendChild(rootEl);
++  // Presentation layout only: utility controls follow a wrapping HUD at any width.
++  const measureHud = () => document.documentElement.style.setProperty('--hud-bottom', `${top.offsetHeight}px`);
++  const resizeObserver = new ResizeObserver(measureHud);
++  resizeObserver.observe(top);
++  measureHud();
+ 
+   function refreshSpeedButtons() {
+     pauseBtn.classList.toggle('active', isPaused);
+@@ -285,15 +293,15 @@ export function createHud(root) {
+    */
+   function update(state, defs, extra = {}) {
+     if (extra.grid) lastGrid = extra.grid;
+-    dayEl.textContent = `Day ${state.day}`;
++    dayEl.textContent = t(`Day ${state.day}`);
+ 
+     const night = state.phase === 'night';
+-    phaseIcon.textContent = night ? '☾' : '☀';
+-    phaseLabel.textContent = night ? 'Night' : 'Day';
++    phaseIcon.textContent = t(night ? '☾' : '☀');
++    phaseLabel.textContent = t(night ? 'Night' : 'Day');
+     phaseWrap.classList.toggle('hud-phase--night', night);
+ 
+     if (typeof extra.phaseTimeLeft === 'number') {
+-      phaseCount.textContent = `${Math.max(0, Math.ceil(extra.phaseTimeLeft))}s`;
++      phaseCount.textContent = t(`${Math.max(0, Math.ceil(extra.phaseTimeLeft))}s`);
+     }
+     if (
+       typeof extra.phaseTimeLeft === 'number' &&
+@@ -308,31 +316,31 @@ export function createHud(root) {
+     const caps = effectiveCaps(state, defs ?? BUILDING_DEFS);
+     const balance = currentBalance(state, defs);
+     for (const [key, { textEl, netEl, icon }] of resourceEls) {
+-      textEl.textContent = `${icon} ${fmt(res[key])}/${fmt(caps[key])}`;
++      textEl.textContent = t(`${icon} ${fmt(res[key])}/${fmt(caps[key])}`);
+       const net = Math.round((balance[key]?.net ?? 0) * 10) / 10;
+-      netEl.textContent = fmtNet(net);
++      netEl.textContent = t(fmtNet(net));
+       netEl.classList.toggle('hud-net--pos', net >= 0);
+       netEl.classList.toggle('hud-net--neg', net < 0);
+     }
+     if (hoveredResource) renderBalance(); // keeps the open breakdown live
+ 
+-    researchEl.textContent = `🔬 ${fmt(state.researchPoints)}`;
++    researchEl.textContent = t(`🔬 ${fmt(state.researchPoints)}`);
+ 
+     const survivorCount = state.survivors?.length ?? 0;
+     survivorsEl.textContent =
+-      typeof extra.idle === 'number'
+-        ? `👥 ${survivorCount} (${extra.idle} idle)/${extra.housing ?? 0}`
+-        : `👥 ${survivorCount}/${extra.housing ?? 0}`;
+-    killsEl.textContent = `💀 ${state.kills ?? 0}`;
++      t(typeof extra.idle === 'number'
++        ? `👥 ${survivorCount} (${t('{count} idle', { count: extra.idle })})/${extra.housing ?? 0}`
++        : `👥 ${survivorCount}/${extra.housing ?? 0}`);
++    killsEl.textContent = t(`💀 ${state.kills ?? 0}`);
+ 
+     const reputation = Math.floor(state.reputation ?? 0);
+-    reputationEl.textContent = `⭐ ${reputation}`;
+-    reputationEl.title = `Reputation: attracts survivors (+${Math.floor(reputation / 25)} recruits each dawn), grows by surviving and with Radios, drops with deaths`;
++    reputationEl.textContent = t(`⭐ ${reputation}`);
++    reputationEl.title = t(`Reputation: attracts survivors (+${Math.floor(reputation / 25)} recruits each dawn), grows by surviving and with Radios, drops with deaths`);
+ 
+     const weatherId = state.weather?.current ?? 'clear';
+     const weather = WEATHERS[weatherId] ?? WEATHERS.clear;
+-    weatherEl.textContent = `${weather.icon} ${weather.name}`;
+-    weatherEl.title = `Weather: ${weather.name} — ${WEATHER_EFFECTS[weatherId] ?? WEATHER_EFFECTS.clear}`;
++    weatherEl.textContent = t(`${weather.icon} ${t(weather.name)}`);
++    weatherEl.title = t(`Weather: ${t(weather.name)} — ${WEATHER_EFFECTS[weatherId] ?? WEATHER_EFFECTS.clear}`);
+ 
+     if (typeof extra.speed === 'number') currentSpeed = extra.speed;
+     if (typeof extra.paused === 'boolean') isPaused = extra.paused;
+diff --git a/src/ui/i18n/index.js b/src/ui/i18n/index.js
+new file mode 100644
+index 0000000..7082284
+--- /dev/null
++++ b/src/ui/i18n/index.js
+@@ -0,0 +1,69 @@
++// Locale state is UI-only. Importing this module does not access DOM or storage.
++import { BUILDING_DEFS } from '../../buildings/definitions.js';
++import { TECHS } from '../../sim/research.js';
++import { messages, buildingTranslations, techTranslations } from './zh-TW.js';
++
++export const LOCALE_KEY = 'lr-ui-locale';
++export const DEFAULT_LOCALE = 'zh-TW';
++export const SUPPORTED_LOCALES = ['zh-TW', 'en'];
++let locale = DEFAULT_LOCALE;
++const catalog = { ...messages };
++for (const [defs, translations] of [[BUILDING_DEFS, buildingTranslations], [TECHS, techTranslations]]) {
++  for (const [id, [name, desc]] of Object.entries(translations)) {
++    catalog[defs[id].name] = name;
++    catalog[defs[id].desc] = desc;
++  }
++}
++const escape = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
++const numericFields = new Set(['day', 'seconds', 'count', 'nights', 'record', 'slot', 'step', 'total', 'bonus', 'range', 'damage', 'level', 'id', 'seed', 'dps', 'base']);
++const patterns = Object.keys(catalog).filter(key => /\{\w+\}/.test(key))
++  .sort((a, b) => b.replace(/\{\w+\}/g, '').length - a.replace(/\{\w+\}/g, '').length).map(key => {
++  const names = [...key.matchAll(/\{(\w+)\}/g)].map(match => match[1]);
++  const parts = key.split(/\{\w+\}/);
++  const expression = parts.map((part, index) => escape(part) + (index < names.length
++    ? numericFields.has(names[index]) ? '(-?\\d+(?:\\.\\d+)?)' : '(.+?)' : '')).join('');
++  return { key, names, regex: new RegExp('^' + expression + '$', 'u') };
++});
++
++export function getLocale() { return locale; }
++export function setLocale(next) {
++  locale = SUPPORTED_LOCALES.includes(next) ? next : DEFAULT_LOCALE;
++  return locale;
++}
++export function hasTranslation(message) { return Object.hasOwn(catalog, message); }
++const format = (message, values) => message.replace(/\{(\w+)\}/g,
++  (token, key) => Object.hasOwn(values, key) ? String(values[key]) : token);
++
++// Exact messages and explicitly registered templates only; never rewrite game
++// objects, identifiers, HTML, or arbitrary substrings in diagnostic text.
++function translate(message, values, depth) {
++  if (message == null) return '';
++  const source = String(message);
++  if (locale === 'en') return format(source, values);
++  if (Object.hasOwn(catalog, source)) return format(catalog[source], values);
++  if (depth < 4 && /[A-Za-z]/.test(source)) {
++    for (const { key, names, regex } of patterns) {
++      const match = regex.exec(source);
++      if (!match) continue;
++      const captures = Object.fromEntries(names.map((name, index) =>
++        [name, translate(match[index + 1], {}, depth + 1)]));
++      return format(catalog[key], captures);
++    }
++  }
++  return format(source, values); // deterministic English fallback for missing messages
++}
++export function t(message, values = {}) { return translate(message, values, 0); }
++
++/** Resolve ?lang= before preference. Only the dedicated UI key may be written. */
++export function initializeLocale(search = '', storage) {
++  let saved;
++  try { storage ??= globalThis.localStorage; saved = storage?.getItem(LOCALE_KEY); } catch { /* optional preference */ }
++  const requested = new URLSearchParams(search).get('lang');
++  const chosen = SUPPORTED_LOCALES.includes(requested) ? requested
++    : SUPPORTED_LOCALES.includes(saved) ? saved : DEFAULT_LOCALE;
++  setLocale(chosen);
++  if (SUPPORTED_LOCALES.includes(requested) && saved !== chosen) {
++    try { storage?.setItem(LOCALE_KEY, chosen); } catch { /* quota must not stop gameplay */ }
++  }
++  return chosen;
++}
+diff --git a/src/ui/i18n/zh-TW.js b/src/ui/i18n/zh-TW.js
+new file mode 100644
+index 0000000..39e0742
+--- /dev/null
++++ b/src/ui/i18n/zh-TW.js
+@@ -0,0 +1,194 @@
++// Presentation-only Traditional Chinese catalog. Simulation/save identifiers stay untouched.
++export const buildingTranslations = {
++  hq: ['庇護所', '聚落的核心，日夜供應電力並容納四名倖存者。一旦淪陷，遊戲便會結束。'],
++  tent: ['帳篷', '供兩名倖存者休息的臨時住所。'],
++  shack: ['鐵皮屋', '可容納三名倖存者的鐵皮屋，造價低廉但較脆弱。'],
++  house: ['住宅', '可容納四名倖存者的堅固住宅。'],
++  farm: ['農場', '每天生產食物並消耗水，需要兩名工人。'],
++  garden: ['菜園', '耗水量低的小型食物來源，需要一名工人。'],
++  greenhouse: ['溫室', '加熱式高產量溫室，需要電力、水與兩名工人。'],
++  rain: ['集雨器', '收集珍貴的雨水，雨天產量增加，熱浪期間產量極低。'],
++  well: ['水井', '自動汲取地下水，無需工人；鄰近水域時產量較高。'],
++  cistern: ['蓄水池', '過濾水源並提高儲水上限。'],
++  hunt: ['獵人小屋', '獵取周圍的野生動物，鄰近森林時產量較高，需要一名工人。'],
++  fish: ['漁屋', '捕撈周圍水域的魚類，鄰近水域時產量較高，需要一名工人。'],
++  ranch: ['牧場', '飼養附近獸群，鄰近獸群時產量較高。有人工作時，役用動物可協助農耕與搬運，需要兩名工人。'],
++  lumber: ['伐木場', '砍伐附近森林直到資源耗盡，需要兩名工人。'],
++  forester: ['植林站', '種植新樹以恢復耗盡的森林，需要一名工人。'],
++  scavenger: ['拾荒站', '從舊世界的廢墟回收金屬，需要兩名工人。'],
++  mine: ['礦場', '從礦脈開採金屬，需要三名工人。'],
++  smelter: ['冶煉廠', '將廢料與木材冶煉成可用金屬，需要兩名工人。'],
++  distillery: ['燃料蒸餾廠', '將木材蒸餾成車輛燃料，缺乏木材時停止運作，需要一名工人。'],
++  garage: ['車庫', '維護聚落車輛；有人工作時採集產量增加 50%，效果不疊加。消耗燃料並需要一名工人。'],
++  warehouse: ['倉庫', '提高食物、木材與金屬的儲存上限。'],
++  lab: ['研究室', '研究舊世界的遺物並生產研究點數，需要兩名工人。'],
++  clinic: ['診療所', '照護倖存者；至少有一名工人時可減緩飢餓與口渴。'],
++  radio: ['緊急廣播站', '向荒野發出求援訊號；有人工作時，每次黎明額外迎來一名倖存者，需要一名工人。'],
++  road: ['道路', '改善資源搬運，每段道路增加 2% 採集效率，上限 40%。可像圍牆一樣拖曳鋪設。'],
++  solar: ['太陽能板', '僅在白天生產電力。'],
++  'solar-plant': ['太陽能電廠', '白天提供大量電力的太陽能板陣列。'],
++  wind: ['風力發電機', '日夜持續生產電力，雨天與暴風雨時產量較高。'],
++  generator: ['發電機', '燃燒木材發電，夜間也能運作，需要一名工人。'],
++  battery: ['蓄電池', '儲存多餘電力並提高電網容量。'],
++  motor: ['電動馬達', '電網有電時，採集產量增加 25%，效果不疊加。'],
++  palisade: ['木柵欄', '便宜且易於搭建，但不太堅固的木製防線。'],
++  'scrap-wall': ['廢鐵圍牆', '以焊接鐵皮製成的圍牆，成本適中且耐久度良好。'],
++  'brick-wall': ['磚牆', '可長時間抵擋屍潮攻擊的堅固圍牆。'],
++  'concrete-wall': ['混凝土圍牆', '幾乎能抵禦所有殭屍攻擊的終極防線。'],
++  tower: ['瞭望塔', '自動射擊範圍內的殭屍，需要電力與一名工人。'],
++  sniper: ['狙擊砲塔', '遠距離精準砲塔，需要大量電力與一名工人。'],
++  spotlight: ['野戰探照燈', '電網有電時，聚落防禦塔的傷害增加 20%，效果不疊加。'],
++  streetlamp: ['路燈', '電網有電時，駐軍與民兵的傷害增加 25%，效果不疊加。'],
++  trap: ['陷阱區', '傷害經過此處殭屍的陷阱陣地。'],
++};
++export const techTranslations = {
++  forestry: ['林業', '解鎖植林站，可在草地上種植新樹。'],
++  batteries: ['電力儲存', '解鎖蓄電池，可儲存多餘電力。'],
++  solar2: ['進階太陽能技術', '解鎖太陽能電廠，效率遠高於基本太陽能板。'],
++  mining: ['深層採礦', '解鎖礦場，可從礦脈開採金屬。'],
++  efficiency: ['生產效率', '採集設施的資源產量增加 25%。'],
++  medicine: ['醫療技術', '飢餓與口渴累積速度降低 30%。'],
++  ballistics: ['彈道學', '防禦塔傷害增加 50% 並提高射程，解鎖狙擊砲塔。'],
++  concrete: ['鋼筋混凝土', '解鎖混凝土圍牆，建立終極被動防線。'],
++};
++export const messages = {
++  'LAST REFUGE': '最後庇護所',
++  'Last Refuge — build by day, survive the night': '最後庇護所 — 白晝建設，守過長夜',
++  'The city has fallen. The night belongs to the undead. Build your refuge and hold on.': '城市已經淪陷，黑夜屬於亡者。建立庇護所，守住最後的希望。',
++  'Objective: survive as long as possible.': '生存目標：讓聚落撐過更多夜晚。',
++  'Start game': '開始遊戲', 'Play again': '再次挑戰', 'Confirm': '確認', 'Cancel': '取消',
++  'Restart': '重新開始', 'Restart the game?': '要重新開始嗎？',
++  'Current progress will be lost and the colony will start over from scratch.': '目前進度將回到全新聚落，舊檢查點會先備份。',
++  'THE REFUGE HAS FALLEN': '庇護所已淪陷', 'Days': '生存天數', 'Kills': '擊殺數', 'Survivors': '倖存者', 'Reputation': '聲望',
++  'move the camera': '移動視角', 'Mouse wheel': '滑鼠滾輪', 'zoom': '縮放', 'rotate the camera': '旋轉視角',
++  'Click': '點擊', 'build': '建造', 'rotate the building': '旋轉建築', 'cancel': '取消',
++  'Day': '白晝', 'Night': '夜晚', 'Day {day}': '第 {day} 天',
++  'Record: {count} nights': '最佳紀錄：撐過 {count} 夜', 'Record: {count} night': '最佳紀錄：撐過 {count} 夜',
++  'Nights survived: {nights} — Record: {record}.': '撐過 {nights} 夜 — 最佳紀錄：{record} 夜。',
++  'Nights survived: {nights}.': '撐過 {nights} 夜。', '{score} The hordes have prevailed.': '{score} 屍潮吞沒了這片防線。',
++  'Food': '食物', 'Water': '水', 'Wood': '木材', 'Metal': '金屬', 'Energy': '電力', 'Fuel': '燃料',
++  'Housing': '居住', 'Sustenance': '民生', 'Resources': '資源', 'Defense': '防禦', 'Infrastructure': '基礎設施',
++  'Free': '免費', 'Close': '關閉', 'Produces': '產出', 'Consumes': '消耗', 'Requires': '需求', 'Extracts': '採集',
++  'Research': '研究', 'Research points': '研究點數', 'Completed': '已完成', '🔬 Research': '🔬 科技研究',
++  'Unlocks: {name}': '解鎖：{name}', 'Extractor production {value}': '採集產量 {value}',
++  'Hunger {value}': '飢餓累積 {value}', 'Thirst {value}': '口渴累積 {value}', 'Tower damage {value}': '防禦塔傷害 {value}',
++  'Tower range {value}': '防禦塔射程 {value}',
++  'Storage: +{bonus} {icons} capacity': '儲存容量：{icons} +{bonus}',
++  'Produces: {amount}/day{suffix}': '產出：{amount}/天{suffix}', 'Produces: {amount}/day': '產出：{amount}/天',
++  'Consumes: {amount}/day': '消耗：{amount}/天', 'Extracts: {amount}/day': '採集：{amount}/天',
++  'Research: {amount}/day': '研究：{amount}/天', 'Requires: {amount}/day': '需求：{amount}/天',
++  'Workers: {count}': '工人：{count}', 'Beds: {count}': '床位：{count}', 'Damage: {damage} · Range: {range}': '傷害：{damage} · 射程：{range}',
++  'Trap damage: {damage} per trigger': '陷阱傷害：每次觸發 {damage}', ' (day only)': '（僅限白天）',
++  'Demolish': '拆除', '🔨 Demolish': '🔨 拆除', 'Demolish a building': '拆除建築', 'Cancel (ESC)': '取消（ESC）',
++  '🔒 Requires research: {name}': '🔒 需要研究：{name}', 'unknown': '未知',
++  'Workers panel': '工人管理', 'Research panel': '科技研究', 'Site yield (wells, hunting, fishing, ranches)': '地點產量（水井、狩獵、漁業、牧場）',
++  'Pause': '暫停', 'Restart game': '重新開始', 'Speed 1x': '速度 1 倍', 'Speed 2x': '速度 2 倍', 'Speed 3x': '速度 3 倍',
++  'Survivors (idle) / beds': '倖存者（閒置）／床位', 'Zombies killed': '殭屍擊殺數',
++  '{icon} {label} — daily balance': '{icon} {label} — 每日收支', 'Net: {rate}': '淨收益：{rate}',
++  '{count} idle': '{count} 人閒置', 'Clear': '晴朗', 'Rain': '下雨', 'Storm': '暴風雨', 'Fog': '濃霧', 'Heat Wave': '熱浪', 'Heat': '熱浪',
++  'no effect': '無額外效果', 'rain collectors ×2, farms and turbines ×1.25, zombies slowed': '集雨器 ×2、農場與風力 ×1.25，殭屍減速',
++  'rain collectors ×3, turbines ×2, solar ×0.5, towers −25% range': '集雨器 ×3、風力 ×2、太陽能 ×0.5，防禦塔射程 −25%',
++  'towers −30% range': '防禦塔射程 −30%', 'thirst ×1.5, rain collectors ×0.25, farms ×0.75, solar ×1.25': '口渴 ×1.5、集雨器 ×0.25、農場 ×0.75、太陽能 ×1.25',
++  'Weather: {name} — {effects}': '天氣：{name} — {effects}',
++  'Reputation: attracts survivors (+{count} recruits each dawn), grows by surviving and with Radios, drops with deaths': '聲望：每次黎明額外吸引 {count} 名倖存者；存活與廣播站可增加聲望，死亡會降低聲望',
++  '👷 Workers': '👷 工人管理', 'No buildings with job slots.': '目前沒有提供工作崗位的建築。', '— {count} free': '— {count} 人待命',
++  'Remove a worker': '移除一名工人', 'Assign a worker': '指派一名工人', 'Auto': '自動指派', 'auto': '自動', 'off': '停用',
++  'low': '低', 'normal': '一般', 'high': '高', 'Automatic worker assignment active': '已啟用自動指派',
++  'Automatic worker assignment is active': '已啟用自動指派', 'Return to automatic assignment': '恢復自動指派',
++  'Building switched off: inert, no workers': '建築已停用，不運作且不配置工人', 'Worker priority: {priority} (click to change)': '工人優先度：{priority}（點擊切換）',
++  'Loading assets…': '正在載入聚落資源…', 'Failed to load the assets: {error}': '資源載入失敗：{error}',
++  'Copy the link to this map': '複製此地圖連結', 'Link copied to the clipboard': '已複製地圖連結', 'Could not copy the link': '無法複製連結', 'seed #{seed}': '地圖種子 #{seed}',
++  'Skip tutorial': '略過教學', 'Step {step} / {total}': '教學 {step}／{total}',
++  '👋 Welcome! This is your colony. Move the camera with WASD, zoom with the mouse wheel, rotate with Q / E.': '👋 歡迎來到你的聚落。使用 WASD 移動、滑鼠滾輪縮放、Q／E 旋轉視角。',
++  'Your survivors need beds: build a {tent} or a {house} from the menu below.': '倖存者需要床位：從下方選單建造{tent}或{house}。',
++  'Now secure the supplies: build a food source (like a {garden} or a {farm}) and a {well}.': '接著確保補給：建造食物來源（例如{garden}或{farm}）與{well}。',
++  'Buildings only work with staff: open the 👷 panel in the top bar, or select a building and use +/−, to assign workers.': '建築需要工人才能運作：開啟上方 👷 面板，或選取建築後使用 +／− 指派工人。',
++  'At night the zombies come. Raise walls ({wall}) and a {tower} — and keep the grid powered ({solar}, {wind}, {generator}).': '殭屍將在夜間來襲。建造防線（{wall}）與{tower}，並以{solar}、{wind}或{generator}維持供電。',
++  '🍀 Good luck! Survive as many nights as you can.': '🍀 祝你好運！帶領聚落撐過更多夜晚。',
++  'Saves': '存檔', 'Save management': '存檔管理', 'Close saves': '關閉存檔', 'Export autosave JSON': '匯出自動存檔 JSON', 'Import JSON ': '匯入 JSON ',
++  'Import save JSON': '匯入存檔 JSON', 'No autosave yet.': '目前沒有自動存檔。', 'Autosave: Day {day}': '自動存檔：第 {day} 天',
++  'Autosave protected: {error}': '自動存檔受到保護：{error}', 'Empty': '空白', 'Protected / unreadable': '受到保護／無法讀取',
++  'Slot {slot}: {state}': '存檔槽 {slot}：{state}', 'Save slot {slot}': '儲存至槽位 {slot}', 'Load slot {slot}': '讀取槽位 {slot}', 'Export slot {slot}': '匯出槽位 {slot}',
++  'Replace slot {slot}? Its previous contents will be backed up.': '要覆寫槽位 {slot} 嗎？原有內容將先備份。',
++  'Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.': '要讀取這個黎明檢查點嗎？目前自動存檔將先備份，黎明之後尚未儲存的進度不會保留。',
++  'Dawn checkpoint saved.': '已儲存黎明檢查點。', 'Loaded.': '已讀取。', 'Imported.': '已匯入。',
++  'Recovery backups ({count})': '復原備份（{count}）', 'unavailable': '無法取得',
++  'Permanent': '永久保留', 'Rotating': '輪替', 'Export backup JSON': '匯出備份 JSON', 'Allow rotation': '允許輪替', 'Keep permanently': '永久保留',
++  '{retention} backup: {date} ({reason})': '{retention}備份：{date}（{reason}）',
++  'Allow this backup to be replaced by future saves? Export a copy first if it is important.': '要允許未來存檔取代此備份嗎？若資料重要，請先匯出副本。',
++  'Backup may now rotate.': '此備份已允許輪替。', 'Backup kept permanently. Automatic rotation cannot replace it.': '此備份已永久保留，自動輪替不會取代它。',
++  ' Recover a protected autosave by archiving it before this import': ' 匯入前先備份原檔，以復原受到保護的自動存檔',
++  'Recover using this import and reload? The protected original will be archived byte-for-byte before replacement. If backup fails, nothing will be replaced.': '要使用此檔案復原並重新載入嗎？系統會先完整備份受保護的原檔，備份失敗時不會覆寫。',
++  'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.': '要匯入檢查點並重新載入嗎？現有存檔將先備份，未知或損壞的原檔仍會受到保護。',
++  'Save protected: {error} Original data was retained. Export it before recovery.': '存檔受到保護：{error} 原始資料已保留，復原前請先匯出。',
++  'Import failed: {error}': '匯入失敗：{error}',
++  'Three manual slots preserve the latest dawn checkpoint. Loading restarts that day; current battles are not saved. Up to {count} normal backups rotate. Permanent backups, existing archives, and migration/recovery originals are excluded. Browser storage is finite: export important backups off-browser.': '三個手動槽保存最近的黎明檢查點。讀檔會從當日開始，不保存進行中的戰鬥。一般備份最多輪替 {count} 份；永久、既有及遷移／復原原檔不參與輪替。瀏覽器空間有限，請另外匯出重要備份。',
++  'Storage full (QuotaExceededError). Saving stopped; the previous save and permanent backups are retained. Export important saves and free browser storage before retrying.': '儲存空間已滿（QuotaExceededError）。已停止儲存，原存檔與永久備份均保留。請先匯出重要資料並釋放瀏覽器空間，再重試。',
++  'Autosave stopped: {error} Existing data is retained. Open Saves to export it.': '自動存檔已停止：{error} 原始資料已保留，請開啟存檔管理匯出。',
++  'Saved data could not be loaded: {error} Autosave is blocked; use Saves to export the original.': '無法載入存檔：{error} 已暫停自動存檔，請至存檔管理匯出原檔。',
++  'Restart stopped: {error} Existing data is retained.': '已停止重新開始：{error} 原始資料已保留。', 'Could not archive the save: {error} Existing data is retained.': '無法備份存檔：{error} 原始資料已保留。',
++  'Operator dossier': '倖存者檔案', 'Characters': '角色資訊', 'Close dossier': '關閉檔案',
++  'Survivor #{id}': '倖存者 #{id}', 'Awaiting assignment': '待命中', 'Assigned to {building}': '工作地點：{building}',
++  'Hunger level': '飢餓值', 'Thirst level': '口渴值', 'No survivors in the settlement.': '聚落目前沒有倖存者。',
++  'Portrait interface prototype': '角色立繪介面雛形', 'Original silhouette placeholder. No character artwork installed.': '原創剪影占位圖，尚未配置角色立繪。',
++  'Artwork: {credit} · License: {license}': '立繪：{credit} · 授權：{license}',
++  'Portraits are presentation only. They do not change survivor statistics or saved data.': '立繪僅用於介面呈現，不會變更倖存者能力或存檔資料。',
++  'Language': '語言', 'Changing language returns to the last dawn checkpoint. Continue?': '切換語言會重新載入最近的黎明檢查點，要繼續嗎？',
++};
++
++Object.assign(messages, {
++  'Water table': '地下水位', 'Rich': '豐富', 'Deep': '深層', 'Hunting grounds': '狩獵區', 'Poor': '貧乏',
++  'Fish abundance': '魚群數量', 'High': '高', 'Low': '低', 'Nearby herds': '附近獸群', 'Present': '存在', 'Far': '遙遠',
++  'Site yield': '地點產量', 'Full': '完整', 'Reduced': '降低', 'Grid capacity': '儲存上限',
++  'Nodes left in range': '範圍內剩餘資源點', 'Trap damage': '陷阱傷害', 'Effect': '效果', 'Militia': '民兵', 'Garrison': '駐軍',
++  'Demolish this building (partial refund)': '拆除此建築（退還部分資源）',
++  'Hunger and thirst −15% (when staffed)': '有人工作時，飢餓與口渴累積 −15%', '+1 survivor each dawn (when staffed)': '有人工作時，每次黎明增加 1 名倖存者',
++  'Towers +20% damage (grid active)': '電網運作時，防禦塔傷害 +20%', 'Garrison and militia +25% damage (grid active)': '電網運作時，駐軍與民兵傷害 +25%',
++  'Extraction +25% (grid active)': '電網運作時，採集效率 +25%', 'Extraction +2% per road (max +40%)': '每段道路採集效率 +2%（上限 +40%）',
++  'Extraction +50% (when staffed)': '有人工作時，採集效率 +50%', 'Farms +15% and extraction +10% (when staffed)': '有人工作時，農場產量 +15%、採集效率 +10%',
++  '🔧 Repairing…': '🔧 修復中…', '🔧 Repair': '🔧 修復', '🔧 Repair ({cost})': '🔧 修復（{cost}）',
++  'Repairs hp over time: cost is proportional to the damage': '逐步修復耐久度，費用與損傷程度成正比',
++  '⏻ Switch on': '⏻ 啟用', '⏻ Switch off': '⏻ 停用', 'Switch this building back on': '重新啟用此建築',
++  'Switch this building off: no production or consumption, workers are freed': '停用此建築：停止產出與消耗，釋出工人',
++  '⬆ Max level': '⬆ 已達最高等級', '⬆ Upgrade ({cost})': '⬆ 升級（{cost}）',
++  'This building is at max level (★{level})': '此建築已達最高等級（★{level}）',
++  'Upgrade the building to ★{level}: +50% production/extraction/damage and more hp': '升級至 ★{level}：產出／採集／傷害 +50%，並提高耐久度',
++  '{amount}/day': '{amount}/天', '{amount}/day (base {base}){suffix}': '{amount}/天（基礎 {base}）{suffix}',
++  '{amount}/day{suffix}': '{amount}/天{suffix}', '{damage} per trigger': '每次觸發 {damage}',
++  '{word} ×{count}': '{word} ×{count}', 'no idle survivors on guard': '沒有閒置倖存者可警戒', 'defenseless without staff': '無工人時缺乏防禦能力',
++  '{count} rifles · {dps} DPS': '{count} 把步槍 · 每秒傷害 {dps}', '{count} rifle · {dps} DPS': '{count} 把步槍 · 每秒傷害 {dps}',
++  'Survivor upkeep': '倖存者維生消耗', 'Survivors (food)': '倖存者（食物）', 'Survivors (water)': '倖存者（水）',
++  'Survivors (upkeep)': '倖存者維生消耗', '{name} ×{count}': '{name} ×{count}',
++  '☾ Night {day} — they\'re coming!': '☾ 第 {day} 夜 — 屍潮來襲！',
++  '☀ Day {day} — {icon} {weather}': '☀ 第 {day} 天 — {icon} {weather}',
++  'Not enough resources: need {cost} to repair.': '資源不足：修復需要 {cost}。', 'Not enough resources: need {cost} to upgrade.': '資源不足：升級需要 {cost}。',
++  'Unsupported save payload version.': '不支援的存檔資料版本。', 'Invalid save envelope.': '存檔封裝格式錯誤。',
++  'Existing save protected: {error}': '現有存檔受到保護：{error}', 'No save available.': '沒有可用存檔。', 'Slot is empty.': '槽位為空。',
++  'No dawn checkpoint available.': '沒有可用的黎明檢查點。', 'Save exceeds 2 MiB limit.': '存檔超過 2 MiB 上限。',
++  'Unknown date': '日期不明', 'Unreadable archive': '無法讀取的備份', 'Unknown archive': '未知備份',
++  'autosave/migration': '自動存檔／遷移', 'manual slot replacement': '手動槽位覆寫', 'load manual slot': '讀取手動槽位',
++  'JSON import': 'JSON 匯入', 'restart/defeat': '重新開始／戰敗',
++  'Unsupported backup format; permanently protected.': '不支援的備份格式，已永久保護。',
++  'Unrestorable archive; permanently protected: {error}': '無法還原的備份，已永久保護：{error}',
++});
++Object.assign(messages, {
++  '{amount}/day (base {base})': '{amount}/天（基礎 {base}）',
++  'Not enough resources': '資源不足', 'Resources depleted': '資源已耗盡',
++  'Invalid map seed.': '地圖種子無效。', 'Invalid day.': '天數無效。', 'Invalid resources.': '資源資料無效。',
++  'Invalid buildings.': '建築資料無效。', 'Unknown building.': '未知建築。', 'Unknown research.': '未知科技。',
++  'Mixed missing and explicit building IDs.': '建築識別碼資料不一致。',
++});
++Object.assign(messages, {
++  'Node depleted.': '資源點已耗盡。', 'The {name} planted a tree.': '{name}種植了一棵樹。',
++  'Requires research: {name}.': '需要研究：{name}。', '{name} built.': '已建造{name}。', '{name} demolished.': '已拆除{name}。',
++  'A new survivor has joined the colony. (#{id})': '一名新的倖存者加入聚落。（#{id}）',
++  'Research complete: {name}.': '研究完成：{name}。', '{name} is stalled: out of fuel.': '{name}因燃料耗盡而停止運作。',
++  'Survivor #{id} starved to death.': '倖存者 #{id} 因飢餓死亡。', 'Survivor #{id} died of thirst.': '倖存者 #{id} 因缺水死亡。',
++  '1 worker in danger': '1 名工人處於危險中', '{count} workers in danger': '{count} 名工人處於危險中',
++  '⚠ {name} under attack — {danger}! Switch it off or unassign the workers to save them.': '⚠ {name}遭到攻擊 — {danger}！請停用建築或撤離工人。',
++  'Destroyed: {name}!{casualties}': '建築已摧毀：{name}！{casualties}', 'Destroyed: {name}!': '建築已摧毀：{name}！',
++  ' 1 worker died.': ' 1 名工人死亡。', ' {count} workers died.': ' {count} 名工人死亡。',
++  'The Refuge has fallen. The colony is lost.': '庇護所已淪陷，聚落失守。',
++});
++Object.assign(messages, { 'Recovery backups (unavailable)': '復原備份（無法取得）' });
++Object.assign(messages, { '{rate}/d': '{rate}/天', '{seconds}s': '{seconds}秒' });
+diff --git a/src/ui/inspector.js b/src/ui/inspector.js
+index 3ac79a1..105b429 100644
+--- a/src/ui/inspector.js
++++ b/src/ui/inspector.js
+@@ -4,6 +4,7 @@
+ // the grid's occupiedBy id. No DOM access at import time: every element is
+ // built inside createInspector().
+ 
++import { t } from './i18n/index.js';
+ import { findBuilding, isUpgradeable, upgradeBuilding, upgradeCost, MAX_LEVEL, pushEvent } from '../sim/state.js';
+ import { assignWorker, unassignWorker, setBuildingEnabled, idleCount } from '../sim/survivors.js';
+ import { countNodesInRange, TILE_YIELDS } from '../sim/extraction.js';
+@@ -54,7 +55,7 @@ const PROXIMITY_ROW_FALLBACK = { label: 'Site yield', rich: 'Full', poor: 'Reduc
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -104,7 +105,7 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+   function select(b) {
+     selectedId = b.id;
+     dyn = {};
+-    rootEl.textContent = '';
++    rootEl.textContent = t('');
+     const def = defs[b.defId] ?? {};
+ 
+     const head = h('div', 'inspector-head');
+@@ -112,7 +113,7 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+     head.appendChild(dyn.titleEl);
+     const closeBtn = h('button', 'inspector-close', '✖');
+     closeBtn.type = 'button';
+-    closeBtn.title = 'Close';
++    closeBtn.title = t('Close');
+     closeBtn.addEventListener('click', deselect);
+     head.appendChild(closeBtn);
+     rootEl.appendChild(head);
+@@ -193,7 +194,7 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+       const wrap = h('div', 'inspector-workers');
+       dyn.minusBtn = h('button', 'inspector-worker-btn', '−');
+       dyn.minusBtn.type = 'button';
+-      dyn.minusBtn.title = 'Remove a worker';
++      dyn.minusBtn.title = t('Remove a worker');
+       dyn.minusBtn.addEventListener('click', () => {
+         const cur = findBuilding(state, selectedId);
+         if (cur && unassignWorker(state, cur.id)) update();
+@@ -201,20 +202,20 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+       dyn.workersText = h('span', 'inspector-workers-text');
+       dyn.plusBtn = h('button', 'inspector-worker-btn', '+');
+       dyn.plusBtn.type = 'button';
+-      dyn.plusBtn.title = 'Assign a worker';
++      dyn.plusBtn.title = t('Assign a worker');
+       dyn.plusBtn.addEventListener('click', () => {
+         const cur = findBuilding(state, selectedId);
+         if (cur && assignWorker(state, cur.id, defs)) update();
+       });
+       dyn.autoBadge = h('span', 'inspector-auto', 'auto');
+-      dyn.autoBadge.title = 'Automatic worker assignment is active';
++      dyn.autoBadge.title = t('Automatic worker assignment is active');
+       wrap.append(dyn.minusBtn, dyn.workersText, dyn.plusBtn, dyn.autoBadge);
+       rootEl.appendChild(wrap);
+     }
+ 
+     const demolishBtn = h('button', 'inspector-demolish', '🔨 Demolish');
+     demolishBtn.type = 'button';
+-    demolishBtn.title = 'Demolish this building (partial refund)';
++    demolishBtn.title = t('Demolish this building (partial refund)');
+     demolishBtn.addEventListener('click', () => {
+       const cur = findBuilding(state, selectedId);
+       if (!cur) {
+@@ -276,22 +277,22 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+       // Badge livello: ★2/★3 accanto al nome per gli edifici potenziati.
+       const level = b.level ?? 1;
+       dyn.titleEl.textContent =
+-        isUpgradeable(def) && level > 1 ? `${def.name ?? b.defId} ★${level}` : def.name ?? b.defId;
++        t(isUpgradeable(def) && level > 1 ? `${t(def.name ?? b.defId)} ★${level}` : def.name ?? b.defId);
+     }
+     if (dyn.hpFill) {
+       const ratio = b.maxHp > 0 ? Math.max(0, b.hp) / b.maxHp : 0;
+       dyn.hpFill.style.width = `${ratio * 100}%`;
+       dyn.hpFill.classList.toggle('inspector-hp-fill--low', ratio < 0.5);
+     }
+-    if (dyn.hpText) dyn.hpText.textContent = `${Math.max(0, Math.ceil(b.hp))}/${b.maxHp}`;
++    if (dyn.hpText) dyn.hpText.textContent = t(`${Math.max(0, Math.ceil(b.hp))}/${b.maxHp}`);
+     if (dyn.repairBtn) {
+       const cost = repairCost(b, def);
+-      dyn.repairBtn.textContent = b.repairing
++      dyn.repairBtn.textContent = t(b.repairing
+         ? '🔧 Repairing…'
+         : b.hp < b.maxHp
+           ? `🔧 Repair (${formatCost(cost)})`
+-          : '🔧 Repair';
+-      dyn.repairBtn.title = 'Repairs hp over time: cost is proportional to the damage';
++          : '🔧 Repair');
++      dyn.repairBtn.title = t('Repairs hp over time: cost is proportional to the damage');
+       dyn.repairBtn.disabled = b.repairing || b.hp >= b.maxHp;
+       dyn.repairBtn.setAttribute(
+         'aria-disabled',
+@@ -299,26 +300,26 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+       );
+     }
+     if (dyn.toggleBtn) {
+-      dyn.toggleBtn.textContent = off ? '⏻ Switch on' : '⏻ Switch off';
+-      dyn.toggleBtn.title = off
++      dyn.toggleBtn.textContent = t(off ? '⏻ Switch on' : '⏻ Switch off');
++      dyn.toggleBtn.title = t(off
+         ? 'Switch this building back on'
+-        : 'Switch this building off: no production or consumption, workers are freed';
++        : 'Switch this building off: no production or consumption, workers are freed');
+       dyn.toggleBtn.classList.toggle('inspector-toggle--off', off);
+     }
+     if (dyn.upgradeBtn) {
+       const level = b.level ?? 1;
+       const maxed = level >= MAX_LEVEL;
+       const cost = upgradeCost(b, def);
+-      dyn.upgradeBtn.textContent = maxed
++      dyn.upgradeBtn.textContent = t(maxed
+         ? '⬆ Max level'
+-        : `⬆ Upgrade (${formatCost(cost)})`;
+-      dyn.upgradeBtn.title = maxed
++        : `⬆ Upgrade (${formatCost(cost)})`);
++      dyn.upgradeBtn.title = t(maxed
+         ? `This building is at max level (★${MAX_LEVEL})`
+-        : `Upgrade the building to ★${level + 1}: +50% production/extraction/damage and more hp`;
++        : `Upgrade the building to ★${level + 1}: +50% production/extraction/damage and more hp`);
+       dyn.upgradeBtn.disabled = maxed;
+       dyn.upgradeBtn.setAttribute('aria-disabled', String(!maxed && !canAfford(state, { cost })));
+     }
+-    if (dyn.workersText) dyn.workersText.textContent = `👷 ${b.workers.length}/${def.jobs}`;
++    if (dyn.workersText) dyn.workersText.textContent = t(`👷 ${b.workers.length}/${def.jobs}`);
+     if (dyn.plusBtn) {
+       dyn.plusBtn.disabled = off || idleCount(state) === 0 || b.workers.length >= def.jobs;
+     }
+@@ -329,36 +330,36 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+       for (const row of dyn.produceRows) {
+         const rate = output[row.resource] ?? 0;
+         row.valueEl.textContent =
+-          Math.abs(rate - row.base) < 0.05
++          t(Math.abs(rate - row.base) < 0.05
+             ? `${icon(row.resource)} ${fmtRate(rate)}/day${row.suffix}`
+-            : `${icon(row.resource)} ${fmtRate(rate)}/day (base ${row.base})${row.suffix}`;
++            : `${icon(row.resource)} ${fmtRate(rate)}/day (base ${row.base})${row.suffix}`);
+       }
+     }
+     if (dyn.nodesValue) {
+-      dyn.nodesValue.textContent = String(countNodesInRange(grid, b, def.extracts));
++      dyn.nodesValue.textContent = t(String(countNodesInRange(grid, b, def.extracts)));
+     }
+     if (dyn.effValue) {
+       const eff = b.efficiency ?? 1;
+       const word = eff >= 1 ? dyn.proxRow.rich : dyn.proxRow.poor;
+-      dyn.effValue.textContent = `${word} ×${eff.toFixed(1)}`;
++      dyn.effValue.textContent = t(`${word} ×${eff.toFixed(1)}`);
+     }
+     if (dyn.capValue) {
+       // Effective caps (base + every capBonus on the map), one readout per
+       // resource this building boosts: '⚡ 150' for a battery.
+       const caps = effectiveCaps(state, defs);
+-      dyn.capValue.textContent = Object.keys(def.capBonus ?? {})
++      dyn.capValue.textContent = t(Object.keys(def.capBonus ?? {})
+         .map((resource) => `${icon(resource)} ${Math.floor(caps[resource] ?? 0)}`)
+-        .join(' · ');
++        .join(' · '));
+     }
+     if (dyn.garrisonValue) {
+       const guns = garrisonGuns(b, def, idleCount(state));
+       const dps = (GARRISON_DAMAGE * guns) / GARRISON_FIRE_INTERVAL;
+       dyn.garrisonValue.textContent =
+-        guns > 0
++        t(guns > 0
+           ? `${guns} ${guns === 1 ? 'rifle' : 'rifles'} · ${fmtRate(dps)} DPS`
+           : b.defId === 'hq'
+             ? 'no idle survivors on guard'
+-            : 'defenseless without staff';
++            : 'defenseless without staff');
+     }
+   }
+ 
+diff --git a/src/ui/interface-shell.js b/src/ui/interface-shell.js
+new file mode 100644
+index 0000000..44da26c
+--- /dev/null
++++ b/src/ui/interface-shell.js
+@@ -0,0 +1,39 @@
++// UI-only preferences. A locale change returns to a checkpoint, with consent.
++import { getLocale, t } from './i18n/index.js';
++import './anime-theme.css';
++
++export function createInterfaceShell(root) {
++  document.documentElement.lang = getLocale();
++  document.documentElement.dataset.uiTheme = 'anime-survival';
++  document.title = t('Last Refuge — build by day, survive the night');
++  const tools = document.createElement('div');
++  tools.className = 'interface-tools';
++  const label = document.createElement('label');
++  label.textContent = t('Language');
++  const select = document.createElement('select');
++  select.setAttribute('aria-label', t('Language'));
++  for (const [value, text] of [['zh-TW', '繁體中文'], ['en', 'English']]) {
++    const option = document.createElement('option');
++    option.value = value;
++    option.textContent = text;
++    select.append(option);
++  }
++  select.value = getLocale();
++  select.addEventListener('change', () => {
++    if (root.querySelector('.hud') && !window.confirm(t('Changing language returns to the last dawn checkpoint. Continue?'))) {
++      select.value = getLocale();
++      return;
++    }
++    const url = new URL(window.location.href);
++    url.searchParams.set('lang', select.value);
++    url.searchParams.delete('new');
++    url.searchParams.delete('autostart');
++    window.location.assign(url.href);
++  });
++  select.addEventListener('keydown', event => event.stopPropagation());
++  select.addEventListener('keyup', event => event.stopPropagation());
++  label.append(select);
++  tools.append(label);
++  root.append(tools);
++  return tools;
++}
+diff --git a/src/ui/laborpanel.js b/src/ui/laborpanel.js
+index 143f10c..61ff74a 100644
+--- a/src/ui/laborpanel.js
++++ b/src/ui/laborpanel.js
+@@ -7,6 +7,7 @@
+ // No DOM access at import time — everything is built inside
+ // createLaborPanel().
+ 
++import { t } from './i18n/index.js';
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+ import { assignWorker, unassignWorker, idleCount } from '../sim/survivors.js';
+ import { ICONS } from './buildmenu.js';
+@@ -22,7 +23,7 @@ const PRIORITIES = [
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -56,7 +57,7 @@ export function createLaborPanel(root) {
+   head.appendChild(idleEl);
+   const closeBtn = h('button', 'labor-close', '✖');
+   closeBtn.type = 'button';
+-  closeBtn.title = 'Close';
++  closeBtn.title = t('Close');
+   closeBtn.addEventListener('click', close);
+   head.appendChild(closeBtn);
+ 
+@@ -70,37 +71,37 @@ export function createLaborPanel(root) {
+   // keep their hover/focus state across routine refreshes.
+   function rebuild(state, jobBuildings) {
+     rows.clear();
+-    list.textContent = '';
++    list.textContent = t('');
+     for (const b of jobBuildings) {
+       const def = BUILDING_DEFS[b.defId];
+       const row = h('div', 'labor-row');
+-      row.appendChild(h('span', 'labor-name', `${ICONS[b.defId] ?? '🏗'} ${def.name}`));
++      row.appendChild(h('span', 'labor-name', `${ICONS[b.defId] ?? '🏗'} ${t(def.name)}`));
+ 
+       const controls = h('div', 'labor-controls');
+       const minusBtn = h('button', 'labor-btn', '−');
+       minusBtn.type = 'button';
+-      minusBtn.title = 'Remove a worker';
++      minusBtn.title = t('Remove a worker');
+       minusBtn.addEventListener('click', () => {
+         if (unassignWorker(state, b.id)) update(state);
+       });
+       const workersEl = h('span', 'labor-workers');
+       const plusBtn = h('button', 'labor-btn', '+');
+       plusBtn.type = 'button';
+-      plusBtn.title = 'Assign a worker';
++      plusBtn.title = t('Assign a worker');
+       plusBtn.addEventListener('click', () => {
+         if (assignWorker(state, b.id, BUILDING_DEFS)) update(state);
+       });
+       const autoBadge = h('span', 'labor-auto', 'auto');
+-      autoBadge.title = 'Automatic worker assignment active';
++      autoBadge.title = t('Automatic worker assignment active');
+       const autoBtn = h('button', 'labor-btn labor-auto-btn', 'Auto');
+       autoBtn.type = 'button';
+-      autoBtn.title = 'Return to automatic assignment';
++      autoBtn.title = t('Return to automatic assignment');
+       autoBtn.addEventListener('click', () => {
+         b.autoAssign = true;
+         update(state);
+       });
+       const offBadge = h('span', 'labor-off', 'off');
+-      offBadge.title = 'Building switched off: inert, no workers';
++      offBadge.title = t('Building switched off: inert, no workers');
+       // Priority cycle: also works while switched off (applies on reactivation).
+       const priorityBtn = h('button', 'labor-btn labor-priority');
+       priorityBtn.type = 'button';
+@@ -123,7 +124,7 @@ export function createLaborPanel(root) {
+     lastState = state;
+     if (!visible) return;
+     const idle = idleCount(state);
+-    idleEl.textContent = `— ${idle} free`;
++    idleEl.textContent = t(`— ${idle} free`);
+ 
+     const jobBuildings = state.buildings.filter(
+       (b) => (BUILDING_DEFS[b.defId]?.jobs ?? 0) > 0
+@@ -140,15 +141,15 @@ export function createLaborPanel(root) {
+       const off = b.enabled === false;
+       row.rowEl.classList.toggle('labor-row--off', off);
+       row.offBadge.style.display = off ? '' : 'none';
+-      row.workersEl.textContent = `${b.workers.length}/${def.jobs}`;
++      row.workersEl.textContent = t(`${b.workers.length}/${def.jobs}`);
+       row.plusBtn.disabled = off || idle === 0 || b.workers.length >= def.jobs;
+       row.minusBtn.disabled = off || b.workers.length === 0;
+       const isAuto = b.autoAssign !== false;
+       row.autoBadge.style.display = !off && isAuto ? '' : 'none';
+       row.autoBtn.style.display = !off && !isAuto ? '' : 'none';
+       const pri = PRIORITIES[b.priority ?? 1] ?? PRIORITIES[1];
+-      row.priorityBtn.textContent = pri.icon;
+-      row.priorityBtn.title = `Worker priority: ${pri.label} (click to change)`;
++      row.priorityBtn.textContent = t(pri.icon);
++      row.priorityBtn.title = t(`Worker priority: ${pri.label} (click to change)`);
+     }
+   }
+ 
+diff --git a/src/ui/researchpanel.js b/src/ui/researchpanel.js
+index 7423d8f..9aa113b 100644
+--- a/src/ui/researchpanel.js
++++ b/src/ui/researchpanel.js
+@@ -4,13 +4,14 @@
+ // onResearch(id). No DOM access at import time: every element is built
+ // inside createResearchPanel().
+ 
++import { t } from './i18n/index.js';
+ import { TECHS, canResearch } from '../sim/research.js';
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+ 
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -70,7 +71,7 @@ export function createResearchPanel(root, { onResearch } = {}) {
+   head.appendChild(pointsEl);
+   const closeBtn = h('button', 'research-close', '✖');
+   closeBtn.type = 'button';
+-  closeBtn.title = 'Close';
++  closeBtn.title = t('Close');
+   closeBtn.addEventListener('click', close);
+   head.appendChild(closeBtn);
+ 
+@@ -101,7 +102,7 @@ export function createResearchPanel(root, { onResearch } = {}) {
+   /** Re-evaluates every tech card against the current game state. */
+   function update(state) {
+     lastState = state;
+-    pointsEl.textContent = `🔬 ${Math.floor(state?.researchPoints ?? 0)}`;
++    pointsEl.textContent = t(`🔬 ${Math.floor(state?.researchPoints ?? 0)}`);
+     for (const [id, tech] of Object.entries(TECHS)) {
+       const { card, iconEl, costEl } = cards.get(id);
+       const done = state?.researched?.includes(id) ?? false;
+@@ -109,8 +110,8 @@ export function createResearchPanel(root, { onResearch } = {}) {
+       card.classList.toggle('research-tech--done', done);
+       card.classList.toggle('research-tech--available', !done && available);
+       card.classList.toggle('research-tech--locked', !done && !available);
+-      iconEl.textContent = done ? '✓' : available ? '🔬' : '🔒';
+-      costEl.textContent = done ? 'Completed' : `🔬 ${tech.cost}`;
++      iconEl.textContent = t(done ? '✓' : available ? '🔬' : '🔒');
++      costEl.textContent = t(done ? 'Completed' : `🔬 ${tech.cost}`);
+     }
+   }
+ 
+diff --git a/src/ui/savepanel.js b/src/ui/savepanel.js
+index c8f02bf..c4f3ba2 100644
+--- a/src/ui/savepanel.js
++++ b/src/ui/savepanel.js
+@@ -1,4 +1,5 @@
+ // Save management UI. Slots store dawn checkpoints, never incomplete combat state.
++import { t } from './i18n/index.js';
+ import {
+   SAVE_KEY, MAX_SAVE_BYTES, inspectSave, listSlots, saveSlot, loadSlot,
+   importSave, exportSave, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
+@@ -6,7 +7,7 @@ import {
+ 
+ function el(tag, text) {
+   const node = document.createElement(tag);
+-  if (text !== undefined) node.textContent = text;
++  if (text !== undefined) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -20,18 +21,19 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
+   warning.hidden = true;
+   const dialog = el('dialog');
+   dialog.className = 'save-dialog';
+-  dialog.setAttribute('aria-label', 'Save management');
+-  root.append(launch, warning, dialog);
++  dialog.setAttribute('aria-label', t('Save management'));
++  (root.querySelector('.interface-tools') ?? root).append(launch);
++  root.append(warning, dialog);
+   let status;
+ 
+   function notify(message) {
+-    warning.textContent = message;
++    warning.textContent = t(message);
+     warning.hidden = false;
+-    if (status) status.textContent = message;
++    if (status) status.textContent = t(message);
+   }
+   function result(outcome, success) {
+     if (!outcome.ok) notify(`Save protected: ${outcome.error} Original data was retained. Export it before recovery.`);
+-    else { status.textContent = success; refresh(); if (outcome.warning) notify(outcome.warning); }
++    else { status.textContent = t(success); refresh(); if (outcome.warning) notify(outcome.warning); }
+     return outcome.ok;
+   }
+   function button(parent, label, action, disabled = false) {
+@@ -68,11 +70,11 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
+       row.className = 'save-slot';
+       row.append(el('strong', `Slot ${i + 1}: ${!slot.ok ? 'Protected / unreadable' : slot.empty ? 'Empty' : `Day ${slot.data.payload.day}`}`));
+       button(row, `Save slot ${i + 1}`, () => {
+-        if (!slot.empty && !window.confirm(`Replace slot ${i + 1}? Its previous contents will be backed up.`)) return;
++        if (!slot.empty && !window.confirm(t(`Replace slot ${i + 1}? Its previous contents will be backed up.`))) return;
+         result(saveSlot(slot.key), 'Dawn checkpoint saved.');
+       });
+       button(row, `Load slot ${i + 1}`, () => {
+-        if (!window.confirm('Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.')) return;
++        if (!window.confirm(t('Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.'))) return;
+         if (result(loadSlot(slot.key), 'Loaded.')) onLoad();
+       }, !slot.ok || slot.empty);
+       button(row, `Export slot ${i + 1}`, () => exportKey(slot.key, `last-refuge-slot-${i + 1}.json`), slot.empty === true);
+@@ -91,7 +93,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
+       button(row, 'Export backup JSON', () => download(entry.raw, 'last-refuge-backup.json'));
+       if (entry.mutable) {
+         button(row, entry.pinned ? 'Allow rotation' : 'Keep permanently', () => {
+-          if (entry.pinned && !window.confirm('Allow this backup to be replaced by future saves? Export a copy first if it is important.')) return;
++          if (entry.pinned && !window.confirm(t('Allow this backup to be replaced by future saves? Export a copy first if it is important.'))) return;
+           result(setBackupPinned(entry.backupKey, !entry.pinned),
+             entry.pinned ? 'Backup may now rotate.' : 'Backup kept permanently. Automatic rotation cannot replace it.');
+         });
+@@ -109,7 +111,7 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
+   const file = el('input');
+   file.type = 'file';
+   file.accept = '.json,application/json';
+-  file.setAttribute('aria-label', 'Import save JSON');
++  file.setAttribute('aria-label', t('Import save JSON'));
+   label.append(file);
+   dialog.append(label);
+   const recoveryLabel = el('label', ' Recover a protected autosave by archiving it before this import');
+@@ -123,9 +125,9 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
+       if (!selected) return;
+       if (selected.size > MAX_SAVE_BYTES) throw new Error('Save exceeds 2 MiB limit.');
+       const raw = await selected.text();
+-      if (!window.confirm(recovery.checked
++      if (!window.confirm(t(recovery.checked
+         ? 'Recover using this import and reload? The protected original will be archived byte-for-byte before replacement. If backup fails, nothing will be replaced.'
+-        : 'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.')) return;
++        : 'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.'))) return;
+       if (result(importSave(raw, { recoverProtected: recovery.checked }), 'Imported.')) onLoad();
+     } catch (error) { notify(`Import failed: ${error.message}`); }
+     finally { file.value = ''; }
+diff --git a/src/ui/screens.js b/src/ui/screens.js
+index af91643..f1e33ae 100644
+--- a/src/ui/screens.js
++++ b/src/ui/screens.js
+@@ -4,6 +4,7 @@
+ // screen is visible at a time; the overlay sits above the rest of the UI
+ // (z-index) and re-enables pointer events. No DOM access at import time.
+ 
++import { t } from './i18n/index.js';
+ const TITLE = 'LAST REFUGE';
+ 
+ const INSTRUCTIONS = [
+@@ -18,7 +19,7 @@ const INSTRUCTIONS = [
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -166,7 +167,7 @@ export function createScreens(root) {
+     panel.append(
+       h('h1', 'screen-title', title),
+       h('p', 'screen-subtitle', message),
+-      makeButton(confirmLabel, onConfirm),
++      makeButton(t(confirmLabel), onConfirm),
+       makeButton(cancelLabel, onCancel)
+     );
+     o.appendChild(panel);
+diff --git a/src/ui/tutorial.js b/src/ui/tutorial.js
+index b6071c9..fca6e99 100644
+--- a/src/ui/tutorial.js
++++ b/src/ui/tutorial.js
+@@ -8,6 +8,7 @@
+ // No DOM access at import time — everything is built inside
+ // createTutorial().
+ 
++import { t } from './i18n/index.js';
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+ 
+ const SEEN_KEY = 'cbs-tutorial-seen';
+@@ -35,7 +36,7 @@ function markTutorialSeen() {
+ function h(tag, className, text) {
+   const node = document.createElement(tag);
+   if (className) node.className = className;
+-  if (text != null) node.textContent = text;
++  if (text != null) node.textContent = t(text);
+   return node;
+ }
+ 
+@@ -83,8 +84,8 @@ export function createTutorial(root) {
+   root.appendChild(rootEl);
+ 
+   function render() {
+-    stepEl.textContent = `Step ${index + 1} / ${steps.length}`;
+-    textEl.textContent = steps[index];
++    stepEl.textContent = t(`Step ${index + 1} / ${steps.length}`);
++    textEl.textContent = t(steps[index]);
+   }
+ 
+   function dismiss(persist) {
+diff --git a/tests/i18n.test.js b/tests/i18n.test.js
+new file mode 100644
+index 0000000..666e876
+--- /dev/null
++++ b/tests/i18n.test.js
+@@ -0,0 +1,119 @@
++import { afterEach, describe, expect, it, vi } from 'vitest';
++import { BUILDING_DEFS, CATEGORIES } from '../src/buildings/definitions.js';
++import { TECHS } from '../src/sim/research.js';
++import { WEATHERS } from '../src/sim/weather.js';
++import { t, getLocale, setLocale, initializeLocale, hasTranslation, LOCALE_KEY } from '../src/ui/i18n/index.js';
++import { characterProfile, approvedPortrait } from '../src/ui/characterpanel.js';
++import { createGameState, addBuilding, addSurvivor } from '../src/sim/state.js';
++import { createSaveData, migrateSave, decodeSave, restoreSave } from '../src/persistence.js';
++
++afterEach(() => { setLocale('zh-TW'); vi.restoreAllMocks(); });
++describe('Traditional Chinese presentation catalog', () => {
++  it('covers all building names/descriptions without changing simulation definitions', () => {
++    const before = structuredClone(BUILDING_DEFS);
++    for (const def of Object.values(BUILDING_DEFS)) {
++      for (const text of [def.name, def.desc]) {
++        expect(hasTranslation(text), text).toBe(true);
++        expect(t(text)).toMatch(/[\u3400-\u9fff]/u);
++        expect(t(text)).not.toBe(text);
++      }
++    }
++    expect(BUILDING_DEFS).toEqual(before);
++  });
++  it('covers every technology, category, resource and weather label', () => {
++    const labels = [...Object.values(TECHS).flatMap(tech => [tech.name, tech.desc]),
++      ...CATEGORIES.map(category => category.name), ...Object.values(WEATHERS).map(weather => weather.name),
++      'Food', 'Water', 'Wood', 'Metal', 'Energy', 'Fuel'];
++    for (const label of labels) expect(hasTranslation(label), label).toBe(true);
++    expect(t('Unlocks: Forester')).toBe('解鎖：植林站');
++    expect(t('Extractor production +25%')).toBe('採集產量 +25%');
++  });
++  it('formats dynamic templates, nested labels and optional tooltip suffixes', () => {
++    expect(t('Day {day}', { day: 12 })).toBe('第 12 天');
++    expect(t('Day 12')).toBe('第 12 天');
++    expect(t('89s')).toBe('89秒');
++    expect(t('−6.7/d')).toBe('−6.7/天');
++    expect(t('Slot 2: Day 3')).toBe('存檔槽 2：第 3 天');
++    expect(t('🥫 Food — daily balance')).toBe('🥫 食物 — 每日收支');
++    expect(t('Produces: ⚡ 8/day (day only)')).toBe('產出：⚡ 8/天（僅限白天）');
++    expect(t('Weather: Rain — no effect')).toBe('天氣：下雨 — 無額外效果');
++    expect(t('Laboratory ×2')).toBe('研究室 ×2');
++    expect(t('Nights survived: 2 — Record: 3. The hordes have prevailed.')).toBe('撐過 2 夜 — 最佳紀錄：3 夜。 屍潮吞沒了這片防線。');
++    expect(t('Day invalid diagnostic')).toBe('Day invalid diagnostic');
++  });
++  it('keeps English and deterministic missing-message fallback available', () => {
++    setLocale('en');
++    expect(t('Start game')).toBe('Start game');
++    expect(t('Day {day}', { day: 3 })).toBe('Day 3');
++    setLocale('zh-TW');
++    expect(t('untranslated diagnostic <sample>')).toBe('untranslated diagnostic <sample>');
++    expect(t('__proto__')).toBe('__proto__');
++    expect(t('Day {day}')).toBe('第 {day} 天');
++  });
++  it('selects query, saved preference and default in order without touching game keys', () => {
++    const values = new Map([['cbs-save', 'precious'], [LOCALE_KEY, 'en']]);
++    const storage = { getItem: key => values.get(key) ?? null, setItem: vi.fn((key, value) => values.set(key, value)) };
++    expect(initializeLocale('', storage)).toBe('en');
++    expect(initializeLocale('?lang=zh-TW', storage)).toBe('zh-TW');
++    expect(storage.setItem).toHaveBeenCalledExactlyOnceWith(LOCALE_KEY, 'zh-TW');
++    expect(initializeLocale('?lang=unsupported', storage)).toBe('zh-TW');
++    expect(values.get('cbs-save')).toBe('precious');
++    expect(setLocale('unsupported')).toBe('zh-TW');
++  });
++  it('does not stop gameplay when preference storage is blocked/full', () => {
++    const storage = { getItem() { throw new Error('SecurityError'); }, setItem() { throw new Error('QuotaExceededError'); } };
++    expect(initializeLocale('?lang=en', storage)).toBe('en');
++    expect(getLocale()).toBe('en');
++    expect(initializeLocale('', storage)).toBe('zh-TW');
++  });
++});
++
++describe('read-only character presentation and save compatibility', () => {
++  const world = () => {
++    const state = createGameState();
++    const hq = addBuilding(state, 'hq', BUILDING_DEFS.hq, 30, 30);
++    const survivor = addSurvivor(state);
++    survivor.buildingId = hq.id;
++    survivor.hunger = 24; survivor.thirst = 12;
++    return { state, survivor };
++  };
++  it('adapts existing survivors without adding stats, portraits or translated IDs to the save', () => {
++    const { state, survivor } = world();
++    const before = structuredClone(state);
++    expect(characterProfile(survivor, state)).toMatchObject({ name: '倖存者 #1', assignment: '工作地點：庇護所', hunger: 24, thirst: 12 });
++    setLocale('en');
++    expect(characterProfile(survivor, state).name).toBe('Survivor #1');
++    expect(state).toEqual(before);
++    const data = createSaveData(state, 42, []);
++    expect(data.buildings[0].defId).toBe('hq');
++    expect(data).not.toHaveProperty('locale');
++    expect(data.survivors[0]).not.toHaveProperty('portrait');
++  });
++  it('preserves v4/v5 payloads and restored state across locales', () => {
++    const { state } = world();
++    const v4 = createSaveData(state, 42, []);
++    const original = structuredClone(v4);
++    const migrated = migrateSave(v4);
++    setLocale('en');
++    const english = restoreSave(decodeSave(JSON.stringify(migrated)).payload);
++    setLocale('zh-TW');
++    const chinese = restoreSave(decodeSave(JSON.stringify(v4)).payload);
++    expect(v4).toEqual(original);
++    expect(migrated.payload).toEqual(v4);
++    expect(chinese.state).toEqual(english.state);
++    expect(chinese.seed).toBe(42);
++  });
++  it('supports an empty/idle roster and clamps display values without mutating the survivor', () => {
++    const state = createGameState();
++    const survivor = { id: 5, hunger: -10, thirst: 110, buildingId: null };
++    expect(characterProfile(survivor, state)).toMatchObject({ assignment: '待命中', hunger: 0, thirst: 100 });
++    expect(survivor.hunger).toBe(-10);
++  });
++  it('requires local artwork plus explicit license, attribution and alt text', () => {
++    const valid = { src: 'assets/portraits/operator.webp', license: 'Original', credit: 'Project artist', alt: 'Operator portrait' };
++    expect(approvedPortrait(valid)).toBe(valid);
++    for (const invalid of [null, { ...valid, src: 'https://example.com/image.jpg' },
++      { ...valid, src: 'assets/portraits/../image.jpg' }, { ...valid, license: 'unknown' },
++      { ...valid, credit: '' }, { ...valid, alt: '' }]) expect(approvedPortrait(invalid)).toBeNull();
++  });
++});

@@ -1,0 +1,23 @@
+docs/M2-INTERFACE.md        | 110 +++++++++++++++++++++++++
+ docs/M2-PR.md               |  11 +++
+ e2e/m2-interface.spec.js    | 105 ++++++++++++++++++++++++
+ e2e/save-protection.spec.js |   5 ++
+ e2e/smoke.spec.js           |   5 ++
+ index.html                  |   4 +-
+ src/bootstrap.js            |   8 +-
+ src/main.js                 |  12 ++-
+ src/ui/anime-theme.css      | 127 +++++++++++++++++++++++++++++
+ src/ui/buildmenu.js         |  17 ++--
+ src/ui/characterpanel.js    | 105 ++++++++++++++++++++++++
+ src/ui/hud.js               |  64 ++++++++-------
+ src/ui/i18n/index.js        |  69 ++++++++++++++++
+ src/ui/i18n/zh-TW.js        | 194 ++++++++++++++++++++++++++++++++++++++++++++
+ src/ui/inspector.js         |  57 ++++++-------
+ src/ui/interface-shell.js   |  39 +++++++++
+ src/ui/laborpanel.js        |  27 +++---
+ src/ui/researchpanel.js     |  11 +--
+ src/ui/savepanel.js         |  26 +++---
+ src/ui/screens.js           |   5 +-
+ src/ui/tutorial.js          |   7 +-
+ tests/i18n.test.js          | 119 +++++++++++++++++++++++++++
+ 22 files changed, 1024 insertions(+), 103 deletions(-)

@@ -1,0 +1,35 @@
+{
+  "node": "v24.22.1",
+  "platform": "linux",
+  "architecture": "x64",
+  "kind": "CPU vacancy scheduler; 50 warmup + 500 measured; no rendering, battles or storage",
+  "results": [
+    {
+      "population": 8,
+      "buildings": 5,
+      "samples": 500,
+      "p50Ms": 0.01157100000000355,
+      "p95Ms": 0.5178589999999872,
+      "maxMs": 2.695129999999949,
+      "meanMs": 0.09816210799999954
+    },
+    {
+      "population": 32,
+      "buildings": 17,
+      "samples": 500,
+      "p50Ms": 0.05595299999998815,
+      "p95Ms": 1.2299990000000207,
+      "maxMs": 5.751351999999997,
+      "meanMs": 0.221393962
+    },
+    {
+      "population": 128,
+      "buildings": 65,
+      "samples": 500,
+      "p50Ms": 1.1770960000001196,
+      "p95Ms": 3.1458390000000236,
+      "maxMs": 10.30150100000003,
+      "meanMs": 1.4454839980000043
+    }
+  ]
+}
