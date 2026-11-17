@@ -326,7 +326,7 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
     if (dyn.minusBtn) dyn.minusBtn.disabled = off || b.workers.length === 0;
     if (dyn.autoBadge) dyn.autoBadge.style.display = b.autoAssign ? '' : 'none';
     if (dyn.produceRows) {
-      const output = buildingDailyOutput(b, def, getModifiers(state, grid));
+      const output = buildingDailyOutput(b, def, getModifiers(state, grid), state);
       for (const row of dyn.produceRows) {
         const rate = output[row.resource] ?? 0;
         row.valueEl.textContent =

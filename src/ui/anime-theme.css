@@ -146,3 +146,15 @@
   .portrait-frame .character-portrait { height: 360px; max-height: 65vh; }
   .character-expression-frame { width: 130px; }
 }
+
+.character-growth { margin-top: 16px; display: grid; gap: 12px; }
+.skill-grid { display: grid; gap: 8px; }
+.skill-row { display: grid; gap: 3px; font-size: 12px; }
+.skill-row progress { width: 100%; accent-color: #7ec9cf; }
+.resident-assignment { display: grid; gap: 8px; }
+.resident-assignment label { display: grid; gap: 5px; }
+.resident-assignment select { max-width: 100%; min-width: 0; padding: 7px; color: #e7f5f5; background: #172b40; }
+.character-growth small { color: #a9c7d5; }
+@media (min-width: 521px) {
+  .character-detail > .portrait-frame { align-self: start; position: sticky; top: 12px; }
+}

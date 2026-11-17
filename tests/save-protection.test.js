@@ -237,7 +237,7 @@ function oldArchive(id, raw = rawLegacy()) {
 
 describe('bounded rotation and permanent retention', () => {
   it('runs 200 dawns within a finite quota and retains exactly the three latest checkpoints', () => {
-    quota(16 * 1024);
+    quota(24 * 1024); // M4 stores six XP totals and fractional remainders per resident.
     for (let day = 1; day <= 200; day++) expect(advance(day).ok).toBe(true);
     expect(readSave().core.day).toBe(200);
     expect(rolling()).toHaveLength(ROLLING_BACKUP_LIMIT);

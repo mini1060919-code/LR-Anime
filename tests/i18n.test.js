@@ -91,6 +91,9 @@ describe('read-only character presentation and save compatibility', () => {
   });
   it('preserves v4/v5 payloads and restored state across locales', () => {
     const { state } = world();
+    // HQ has zero job slots: migration uses a valid idle roster; the view-only
+    // fixture above intentionally exercises display of an arbitrary workplace.
+    state.survivors[0].buildingId=null;
     const v4 = createSaveData(state, 42, []);
     const original = structuredClone(v4);
     const migrated = migrateSave(v4);

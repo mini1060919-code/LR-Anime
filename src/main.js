@@ -1,3 +1,5 @@
+import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
+import {setAbilityEffects} from './progression/work.js';
 // Entry point: hands boot() (bootstrap.js: URL params, engine, asset load)
 // the startGame below, which wires together world, simulation, zombies,
 // buildings and UI. Owns the main loop, the UI wiring and the endless defeat
@@ -287,6 +289,9 @@ function startGame({ engine, screens, assets, params }) {
   let pausedBeforeSaves = false;
   let pausedBeforeCharacters = false;
   createCharacterPanel(uiRoot, {
+    onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
+    onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
+    onEffects:enabled=>setAbilityEffects(state,enabled),
     getState: () => state,
     onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
     onClose: () => { paused = pausedBeforeCharacters; },

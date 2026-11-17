@@ -1,3 +1,4 @@
+import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
 // Validated v6 dawn checkpoints, character identity and safe v4/v5 migration.
 // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
 // from the save data, saveGame serializes them back. The endless mode has no
@@ -129,7 +130,8 @@ function validateEnvelope(data) {
   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
-  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length===1 && data.requiredFeatures[0]==='characters-v1', 'Unsupported required save feature.');
+  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures[0]==='characters-v1' && (data.requiredFeatures.length===1 || (data.requiredFeatures.length===2 && data.requiredFeatures[1]===GROWTH_FEATURE)), 'Unsupported required save feature.');
+  assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
   validateSave(data.core);
   assert(Object.keys(data.core).every(key=>CORE_FIELDS.includes(key)), 'Unknown core fields; original protected.');
   assert(Array.isArray(data.core.survivors), 'Missing v6 survivor roster.');
@@ -138,13 +140,28 @@ function validateEnvelope(data) {
   assert(data.core.survivors.every(s=>Object.keys(s).every(key=>residentFields.includes(key))) &&
     data.core.buildings.every(b=>Object.keys(b).every(key=>buildingFields.includes(key))) &&
     (data.core.changedTiles ?? []).every(tile=>Object.keys(tile).every(key=>['x','z','toType'].includes(key))), 'Unknown legacy entity fields; original protected.');
+  if(data.requiredFeatures.includes(GROWTH_FEATURE)){
+    for(const b of data.core.buildings){
+      const assigned=data.core.survivors.filter(s=>s.buildingId!=null&&s.buildingId===b.id).map(s=>s.id).sort((a,b)=>a-b);
+      assert(Array.isArray(b.workers) && b.workers.length<=(BUILDING_DEFS[b.defId].jobs ?? 0) && b.workers.length===assigned.length && [...b.workers].sort((a,b)=>a-b).every((id,i)=>id===assigned[i]),'Inconsistent work roster; original protected.');
+    }
+  }
   validateCharacters(data.run,data.characters,data.core.survivors);
   return data;
 }
 
+function fillLegacyWorkDefaults(core){
+  for(const b of core.buildings)if(b.workers===undefined)b.workers=core.survivors.filter(s=>b.id!==undefined&&s.buildingId===b.id).map(s=>s.id);
+  return core;
+}
+
 /** Pure, deterministic migration. No storage writes, no consumption of game RNG. */
 export function migrateSave(data) {
-  if (data?.version === 6) return structuredClone(validateEnvelope(data));
+  if (data?.version === 6) {
+    const copy=structuredClone(validateEnvelope(data));
+    if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
+    return validateEnvelope(copy);
+  }
   let core=data;
   if (data?.version === 5) {
     exactKeys(data,['format','version','checkpoint','savedAt','payload'],'v5 envelope');
@@ -157,8 +174,8 @@ export function migrateSave(data) {
   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1'],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
-    core:structuredClone(core),characters:structuredClone(restored.state.characters)};
+    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+    core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
   return validateEnvelope(envelope);
 }
 
@@ -251,7 +268,7 @@ function backup(key, raw, reason) {
   assert(result.ok, result.error);
   const entries = result.entries;
   let pinned = true;
-  try { decodeSave(raw); pinned = JSON.parse(raw).version !== SAVE_VERSION; }
+  try { decodeSave(raw); pinned = !currentSaveFormat(JSON.parse(raw)); }
   catch { /* A recovery original is never automatically rotated. */ }
   const duplicate = entries.find(entry => entry.key === key && entry.raw === raw &&
     (entry.pinned || !pinned));
@@ -288,6 +305,8 @@ function trimBackups(keep) {
   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
 }
 
+const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(GROWTH_FEATURE);
+
 const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
 
 function writeSave(key, raw, reason, recoverProtected = false, migrationSource = null) {
@@ -299,7 +318,7 @@ function writeSave(key, raw, reason, recoverProtected = false, migrationSource =
     // A reload of an unchanged v6 checkpoint must not consume storage. Legacy saves
     // still go through migration and an exact, permanently retained original backup.
     if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
-      JSON.parse(previous.raw).version === SAVE_VERSION &&
+      currentSaveFormat(JSON.parse(previous.raw)) &&
       checkpointContent(previous.data) === checkpointContent(JSON.parse(raw))) return { ok: true };
     if (migrationSource !== null) backup(key, migrationSource, 'JSON migration source');
     const archived = !previous.empty ? backup(key, previous.raw, reason) : null;
@@ -344,7 +363,7 @@ export function loadSlot(slot) {
 export function importSave(raw, { recoverProtected = false } = {}) {
   try {
     const candidate=decodeSave(raw);
-    const legacy=JSON.parse(raw).version!==SAVE_VERSION;
+    const legacy=!currentSaveFormat(JSON.parse(raw));
     return writeSave(SAVE_KEY, JSON.stringify(candidate), 'JSON import', recoverProtected, legacy ? raw : null);
   }
   catch (error) { return fail(error); }
@@ -550,17 +569,18 @@ function restoreCore(data, legacyPopulationFallback = true) {
 }
 
 
-/** Capture a complete dawn checkpoint. Character ranks are stored, never applied. */
+/** Capture a complete dawn checkpoint. Character growth and work assignments are captured atomically. */
 export function createCheckpoint(state, seed, changedTiles) {
   reconcileCharacters(state);
   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1'],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
   return validateEnvelope(data);
 }
 
 export function restoreSave(data) {
   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
+  if(!data.requiredFeatures?.includes(GROWTH_FEATURE))data=migrateSave(data);
   validateEnvelope(data);
   const restored=restoreCore(data.core,false);
   restored.state.runId=data.run.id;
