@@ -10,25 +10,15 @@
 
 ```mermaid
 flowchart LR
-  B["main = develop
-f6faebb"] --> M1["M1 #1
-642c8d2"]
-  M1 --> M2["M2 #2
-e89c3a7"]
-  M2 --> I["M3 身分提交
-e1c983d"]
-  I --> M3["M3 美術 #4
-14ddcdd"]
-  M3 --> M4["M4 #3
-2d1f408"]
-  M4 --> A["M5-A #5
-002529e"]
-  A --> C["M5-B 候選
-f2df451"]
-  M2 --> OLD["舊 M3 profiles
-4b7fc71（等價身分 patch）"]
-  C --> R["review/m1-m5b-integration
-只含審查文件與證據"]
+  B["main = develop<br/>f6faebb"] --> M1["M1 #1<br/>642c8d2"]
+  M1 --> M2["M2 #2<br/>e89c3a7"]
+  M2 --> I["M3 身分提交<br/>e1c983d"]
+  I --> M3["M3 美術 #4<br/>14ddcdd"]
+  M3 --> M4["M4 #3<br/>2d1f408"]
+  M4 --> A["M5-A #5<br/>002529e"]
+  A --> C["M5-B 候選<br/>f2df451"]
+  M2 --> OLD["舊 M3 profiles<br/>4b7fc71（等價身分 patch）"]
+  C --> R["review/m1-m5b-integration<br/>只含審查文件與證據"]
 ```
 
 箭頭表示 Git 祖先，舊 profiles 提交與 e1c983d 為 patch 等價但 SHA 不同；它不應額外合入，避免重複。證據為 `m3-alternate-range-diff.txt`。沒有刪除該分支。
