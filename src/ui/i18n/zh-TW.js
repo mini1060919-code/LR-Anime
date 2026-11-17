@@ -192,3 +192,31 @@ Object.assign(messages, {
 });
 Object.assign(messages, { 'Recovery backups (unavailable)': '復原備份（無法取得）' });
 Object.assign(messages, { '{rate}/d': '{rate}/天', '{seconds}s': '{seconds}秒' });
+
+// M3 original cast metadata; these labels do not change simulation rules.
+Object.assign(messages, {
+  'Survivor records · skill effects disabled':'倖存者檔案 · 技能效果未啟用',
+  'Background unavailable.':'尚無背景資料。', 'Appearance ID: {id}':'外觀 ID：{id}',
+  'Previous residents':'上一頁居民', 'Next residents':'下一頁居民', 'Page {page} / {total}':'第 {page}／{total} 頁',
+  'profession.generalist':'通才','profession.farmer':'農務員','profession.mechanic':'機械技師','profession.medic':'醫護',
+  'profession.scout':'斥候','profession.guard':'守衛','profession.researcher':'研究員','profession.logistician':'後勤',
+  'personality.steadfast':'堅定','personality.empathetic':'體貼','personality.pragmatic':'務實','personality.curious':'好奇',
+  'personality.reserved':'內斂','personality.optimistic':'樂觀','personality.patient':'耐心','personality.cautious':'謹慎',
+  'Legacy survivor roster is empty or missing; explicit recovery required.':'舊存檔居民名冊為空或缺失，請先匯出原檔並明確復原；不會自行補入居民。',
+  'Unsupported character schema/generator.':'不支援的角色資料或生成器版本。',
+  'Unsupported required save feature.':'存檔包含尚不支援的必要功能。',
+  'Character roster does not match survivors.':'角色檔案與存活居民不一致。',
+  'Invalid survivor high-water mark.':'居民 ID 高水位無效。',
+});
+Object.assign(messages, {
+  'A survivor seeking a new home after the catastrophe.':'一位在災變後尋找新家園的倖存者。',
+  'JSON migration source':'JSON 遷移原檔',
+});
+Object.assign(messages, {
+  'Export v5 compatibility copy':'匯出 v5 相容副本',
+  'This compatibility copy omits M3 character records. The original v6 save is retained. Continue?':'相容副本不包含 M3 角色檔案；原始 v6 存檔將保留。要繼續匯出嗎？',
+});
+Object.assign(messages, {
+  'Generalist':'通才','Farmer':'農務員','Mechanic':'機械技師','Medic':'醫護','Scout':'斥候','Guard':'守衛','Researcher':'研究員','Logistician':'後勤',
+  'Steadfast':'堅定','Empathetic':'體貼','Pragmatic':'務實','Curious':'好奇','Reserved':'內斂','Optimistic':'樂觀','Patient':'耐心','Cautious':'謹慎',
+});

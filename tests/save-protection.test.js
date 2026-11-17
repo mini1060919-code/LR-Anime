@@ -48,14 +48,14 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-describe('v4 to v5 compatibility', () => {
+describe('v4/v5 to v6 compatibility', () => {
   it('migrates without mutating or losing legacy data', () => {
     const data = legacy();
     const original = structuredClone(data);
     const migrated = migrateSave(data);
     expect(data).toEqual(original);
-    expect(migrated).toMatchObject({ version: 5, format: 'last-refuge', checkpoint: 'dawn', payload: original });
-    const restored = restoreSave(decodeSave(JSON.stringify(migrated)).payload);
+    expect(migrated).toMatchObject({ version: 6, format: 'last-refuge', checkpoint: 'dawn', core: original });
+    const restored = restoreSave(decodeSave(JSON.stringify(migrated)));
     expect(restored.state.resources.wood).toBe(200);
     expect(restored.state).toMatchObject({ day: 3, researched: ['forestry'], researchPoints: 12, kills: 10, reputation: 15 });
     expect(restored.state.buildings[2]).toMatchObject({ level: 2, priority: 2, enabled: false, repairing: true, workers: [1] });
@@ -68,20 +68,20 @@ describe('v4 to v5 compatibility', () => {
       for (const key of ['enabled', 'repairing', 'level', 'priority']) delete b[key];
     }
     delete data.reputation;
-    const restored = restoreSave(migrateSave(data).payload);
+    const restored = restoreSave(migrateSave(data));
     expect(restored.state.buildings[0]).toMatchObject({ enabled: true, repairing: false, level: 1, priority: 1 });
     expect(restored.state.reputation).toBe(0);
   });
-  it('reads v4 without writing and backs up its exact bytes before first v5 write', () => {
+  it('reads v4 without writing and backs up its exact bytes before first v6 write', () => {
     const raw = '  ' + rawLegacy();
     values.set(SAVE_KEY, raw);
-    expect(readSave()).toEqual(legacy());
+    expect(readSave().core).toEqual(legacy());
     expect(storage.setItem).not.toHaveBeenCalled();
     expect(saveGame(game(), 42, []).ok).toBe(true);
-    expect(JSON.parse(values.get(SAVE_KEY)).version).toBe(5);
+    expect(JSON.parse(values.get(SAVE_KEY)).version).toBe(6);
     expect(backups()[0].raw).toBe(raw);
   });
-  it('migration of v5 is idempotent', () => {
+  it('migration of v6 is idempotent', () => {
     const v5 = migrateSave(legacy());
     expect(migrateSave(v5)).toEqual(v5);
   });
@@ -163,10 +163,10 @@ describe('manual slots and JSON', () => {
       expect(saveGame(state, 42, []).ok).toBe(true);
       expect(saveSlot(key).ok).toBe(true);
     }
-    expect(listSlots().map(s => s.data.payload.day)).toEqual([1, 2, 3]);
+    expect(listSlots().map(s => s.data.core.day)).toEqual([1, 2, 3]);
     expect(loadSlot(SLOT_KEYS[0]).ok).toBe(true);
-    expect(readSave().day).toBe(1);
-    expect(JSON.parse(exportSave(SLOT_KEYS[2]).raw).payload.day).toBe(3);
+    expect(readSave().core.day).toBe(1);
+    expect(JSON.parse(exportSave(SLOT_KEYS[2]).raw).core.day).toBe(3);
     expect(backups().length).toBeGreaterThan(0);
   });
   it('preserves an unreadable manual slot and invalid imports', () => {
@@ -175,7 +175,7 @@ describe('manual slots and JSON', () => {
     expect(loadSlot(SLOT_KEYS[0]).ok).toBe(false);
     expect(importSave('{broken').ok).toBe(false);
     expect(values.get(SLOT_KEYS[0])).toBe('{broken');
-    expect(readSave().day).toBe(3);
+    expect(readSave().core.day).toBe(3);
   });
   it('round trips JSON from v4 and v5 and retains preceding snapshots', () => {
     const raw = rawLegacy();
@@ -187,7 +187,7 @@ describe('manual slots and JSON', () => {
     const first = backups()[0];
     expect(importSave(raw).ok).toBe(true);
     expect(backups()).toContainEqual(first);
-    expect([...values.keys()].filter(k => k.startsWith(BACKUP_PREFIX))).toHaveLength(2);
+    expect([...values.keys()].filter(k => k.startsWith(BACKUP_PREFIX))).toHaveLength(3);
   });
   it('rejects oversized imports without writing', () => {
     expect(importSave(' '.repeat(MAX_SAVE_BYTES + 1)).ok).toBe(false);
@@ -197,8 +197,8 @@ describe('manual slots and JSON', () => {
     const unknown = '{"version":99}'; values.set(SAVE_KEY, unknown);
     expect(importSave(rawLegacy()).ok).toBe(false);
     expect(importSave(rawLegacy(), { recoverProtected: true }).ok).toBe(true);
-    expect(backups()[0].raw).toBe(unknown);
-    expect(readSave().day).toBe(3);
+    expect(backups().some(entry=>entry.raw===unknown && entry.pinned)).toBe(true);
+    expect(readSave().core.day).toBe(3);
   });
   it('does not recover protected data when archiving fails', () => {
     values.set(SAVE_KEY, '{broken');
@@ -239,16 +239,16 @@ describe('bounded rotation and permanent retention', () => {
   it('runs 200 dawns within a finite quota and retains exactly the three latest checkpoints', () => {
     quota(16 * 1024);
     for (let day = 1; day <= 200; day++) expect(advance(day).ok).toBe(true);
-    expect(readSave().day).toBe(200);
+    expect(readSave().core.day).toBe(200);
     expect(rolling()).toHaveLength(ROLLING_BACKUP_LIMIT);
-    expect(rolling().map(entry => decodeSave(entry.raw).payload.day).sort((a, b) => a - b)).toEqual([197, 198, 199]);
+    expect(rolling().map(entry => decodeSave(entry.raw).core.day).sort((a, b) => a - b)).toEqual([197, 198, 199]);
     expect(values.size).toBe(4);
   }, 20000);
-  it('does not create a backup or rewrite an unchanged v5 checkpoint on repeated reloads', () => {
+  it('does not create a backup or rewrite an unchanged v6 checkpoint on repeated reloads', () => {
     expect(advance(3).ok).toBe(true);
     const raw = values.get(SAVE_KEY);
     storage.setItem.mockClear();
-    for (let i = 0; i < 10; i++) expect(advance(3).ok).toBe(true);
+    for (let i = 0; i < 10; i++) expect(saveGame(restoreSave(readSave()).state,42,[]).ok).toBe(true);
     expect(values.get(SAVE_KEY)).toBe(raw);
     expect(backups()).toHaveLength(0);
     expect(storage.setItem).not.toHaveBeenCalled();
@@ -372,7 +372,7 @@ describe('bounded rotation and permanent retention', () => {
     const result = advance(1);
     expect(result.ok).toBe(true);
     expect(result.warning).toContain('cleanup unavailable');
-    expect(readSave().day).toBe(1);
+    expect(readSave().core.day).toBe(1);
     expect(values.get(permanent.key)).toBe(permanent.value);
     expect(rolling()).toHaveLength(5);
   });

@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run verify:portraits && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:portraits": "node scripts/verify-portraits.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "^4.4.1",

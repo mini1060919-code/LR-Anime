@@ -215,6 +215,7 @@ export function housingCapacity(state, DEFS) {
 export function tryRecruit(state, DEFS, count = 1) {
   const recruited = [];
   for (let i = 0; i < count; i++) {
+    if (!Number.isSafeInteger(state.nextSurvivorId) || state.nextSurvivorId >= Number.MAX_SAFE_INTEGER) break; // never reuse/overflow identity
     if ((state.resources.food ?? 0) <= RECRUIT_MIN_FOOD) break;
     if ((state.resources.water ?? 0) <= RECRUIT_MIN_WATER) break;
     if (state.survivors.length >= housingCapacity(state, DEFS)) break;

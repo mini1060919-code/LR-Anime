@@ -109,6 +109,7 @@ export function upgradeBuilding(state, b, def) {
 }
 
 export function addSurvivor(state) {
+  if (!Number.isSafeInteger(state.nextSurvivorId) || state.nextSurvivorId < 1 || state.nextSurvivorId >= Number.MAX_SAFE_INTEGER) throw new Error('Survivor ID allocator exhausted.');
   const survivor = {
     id: state.nextSurvivorId++,
     hunger: 0,

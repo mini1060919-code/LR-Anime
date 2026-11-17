@@ -125,3 +125,10 @@
 [data-ui-theme] .tutorial { bottom: calc(var(--build-height, 130px) + 24px); }
 /* Safety notices must never cover the controls needed to export/recover a save. */
 [data-ui-theme] .save-warning { top: calc(var(--hud-bottom, 64px) + 90px); pointer-events: none; }
+.character-profession { color: var(--ui-accent); margin: 8px 0; font-weight: 600; }
+.character-personality, .character-background { margin: 10px 0; line-height: 1.7; }
+.character-uid, .character-appearance { display: block; overflow-wrap: anywhere; font-size: 10px; color: var(--ui-muted); margin: 8px 0; }
+.character-avatar, .character-avatar-placeholder { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.character-avatar-placeholder { background: radial-gradient(circle at 50% 30%, #9fb1ca 0 22%, transparent 23%), linear-gradient(145deg,#476d7b,#13283d); }
+.character-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.character-pagination button { padding: 6px; }
