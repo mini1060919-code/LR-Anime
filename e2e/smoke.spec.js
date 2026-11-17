@@ -8,6 +8,11 @@
 
 import { test, expect } from '@playwright/test';
 
+// Keep the original English assertions; M2 has separate zh-TW coverage.
+test.use({ storageState: { cookies: [], origins: [{
+  origin: 'http://localhost:4173', localStorage: [{ name: 'lr-ui-locale', value: 'en' }],
+}] } });
+
 const BASE = '/city-builder-survival/';
 const SAVE_KEY = 'cbs-save';
 // HUD resource labels, in DOM order (src/ui/hud.js BALANCE_RESOURCES).

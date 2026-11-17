@@ -10,6 +10,8 @@
 // Later additions: building repair (tickRepairs), the on/off switch, worker
 // priorities and building upgrade levels.
 
+import { t } from './ui/i18n/index.js';
+import { createCharacterPanel } from './ui/characterpanel.js';
 import * as THREE from 'three';
 import { createIsoCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
@@ -242,8 +244,8 @@ function startGame({ engine, screens, assets, params }) {
   const seedEl = document.createElement('button');
   seedEl.type = 'button';
   seedEl.className = 'seed-label';
-  seedEl.textContent = `seed #${seed}`;
-  seedEl.title = 'Copy the link to this map';
+  seedEl.textContent = t(`seed #${seed}`);
+  seedEl.title = t('Copy the link to this map');
   seedEl.addEventListener('click', () => {
     const url = `${location.origin}${location.pathname}?seed=${seed}`;
     navigator.clipboard?.writeText(url).then(
@@ -281,6 +283,12 @@ function startGame({ engine, screens, assets, params }) {
   let speed = 1; // 1 | 2 | 3; pause is tracked separately (timeScale 0)
   let paused = false;
   let pausedBeforeSaves = false;
+  let pausedBeforeCharacters = false;
+  createCharacterPanel(uiRoot, {
+    getState: () => state,
+    onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
+    onClose: () => { paused = pausedBeforeCharacters; },
+  });
   savePanel = createSavePanel(uiRoot, {
     onOpen: () => { pausedBeforeSaves = paused; paused = true; input.keys.clear(); },
     onClose: () => { paused = pausedBeforeSaves; },

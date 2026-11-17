@@ -4,6 +4,8 @@
 // imports boot() and calls it with its startGame. Nothing runs at import
 // time here, so the module stays importable outside the browser.
 
+import { initializeLocale, t } from './ui/i18n/index.js';
+import { createInterfaceShell } from './ui/interface-shell.js';
 import { createEngine } from './core/engine.js';
 import { loadAll } from './assets/loader.js';
 import { createScreens } from './ui/screens.js';
@@ -26,7 +28,7 @@ export function randomSeed() {
 // Small centered status line used while assets load (and for load errors).
 export function showMessage(text) {
   const el = document.createElement('div');
-  el.textContent = text;
+  el.textContent = t(text);
   el.style.cssText =
     'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;' +
     'color:#cfd8e3;font:16px/1.4 system-ui,sans-serif;pointer-events:none;z-index:200;';
@@ -35,6 +37,8 @@ export function showMessage(text) {
 }
 
 export function boot({ startGame }) {
+  initializeLocale(window.location.search);
+  createInterfaceShell(document.getElementById('ui'));
   const params = new URLSearchParams(window.location.search);
   const engine = createEngine(document.getElementById('game'));
   const screens = createScreens(document.getElementById('ui'));
@@ -49,7 +53,7 @@ export function boot({ startGame }) {
         startGame({ engine, screens, assets, params });
       })
       .catch((err) => {
-        loading.textContent = `Failed to load the assets: ${err.message}`;
+        loading.textContent = t(`Failed to load the assets: ${err.message}`);
       });
   };
 

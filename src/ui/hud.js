@@ -5,6 +5,7 @@
 // plus a toast area. No DOM access at import time — all elements are built
 // inside createHud().
 
+import { t } from './i18n/index.js';
 import './ui.css';
 import { WEATHERS } from '../sim/weather.js';
 import { BUILDING_DEFS } from '../buildings/definitions.js';
@@ -46,7 +47,7 @@ const WEATHER_EFFECTS = {
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -125,7 +126,9 @@ export function createHud(root) {
     const el = h('span', 'hud-stat hud-res');
     const textEl = h('span');
     const netEl = h('span', 'hud-net');
-    el.append(textEl, netEl);
+    const labelEl = h('span', 'hud-resource-name', label);
+    el.setAttribute('aria-label', t(label));
+    el.append(labelEl, textEl, netEl);
     el.addEventListener('mouseenter', () => {
       hoveredResource = key;
       balancePanel.classList.add('open');
@@ -140,11 +143,11 @@ export function createHud(root) {
   }
 
   const researchEl = h('span', 'hud-stat');
-  researchEl.title = 'Research points';
+  researchEl.title = t('Research points');
   const survivorsEl = h('span', 'hud-stat');
-  survivorsEl.title = 'Survivors (idle) / beds';
+  survivorsEl.title = t('Survivors (idle) / beds');
   const killsEl = h('span', 'hud-stat');
-  killsEl.title = 'Zombies killed';
+  killsEl.title = t('Zombies killed');
   const reputationEl = h('span', 'hud-stat');
   center.append(researchEl, survivorsEl, killsEl, reputationEl);
 
@@ -180,13 +183,13 @@ export function createHud(root) {
   }
 
   function renderBalance() {
-    balancePanel.textContent = '';
+    balancePanel.textContent = t('');
     if (!hoveredResource || !balanceCache) return;
     const meta = resourceEls.get(hoveredResource);
     const data = balanceCache[hoveredResource];
     if (!meta || !data) return;
     balancePanel.appendChild(
-      h('span', 'hud-balance-title', `${meta.icon} ${meta.label} — daily balance`)
+      h('span', 'hud-balance-title', `${meta.icon} ${t(meta.label)} — daily balance`)
     );
     const cols = h('div', 'hud-balance-cols');
     cols.append(
@@ -203,7 +206,7 @@ export function createHud(root) {
   const right = h('div', 'hud-section hud-speed');
   const laborBtn = h('button', 'hud-btn', '👷');
   laborBtn.type = 'button';
-  laborBtn.title = 'Workers panel';
+  laborBtn.title = t('Workers panel');
   laborBtn.addEventListener('click', () => {
     for (const cb of laborCbs) cb();
   });
@@ -211,7 +214,7 @@ export function createHud(root) {
 
   const researchBtn = h('button', 'hud-btn', '🔬');
   researchBtn.type = 'button';
-  researchBtn.title = 'Research panel';
+  researchBtn.title = t('Research panel');
   researchBtn.addEventListener('click', () => {
     for (const cb of researchCbs) cb();
   });
@@ -219,7 +222,7 @@ export function createHud(root) {
 
   const overlayBtn = h('button', 'hud-btn', '🔍');
   overlayBtn.type = 'button';
-  overlayBtn.title = 'Site yield (wells, hunting, fishing, ranches)';
+  overlayBtn.title = t('Site yield (wells, hunting, fishing, ranches)');
   overlayBtn.addEventListener('click', () => {
     overlayOn = !overlayOn;
     overlayBtn.classList.toggle('active', overlayOn);
@@ -229,7 +232,7 @@ export function createHud(root) {
 
   const pauseBtn = h('button', 'hud-btn', '⏸');
   pauseBtn.type = 'button';
-  pauseBtn.title = 'Pause';
+  pauseBtn.title = t('Pause');
   pauseBtn.addEventListener('click', () => {
     isPaused = !isPaused;
     refreshSpeedButtons();
@@ -239,7 +242,7 @@ export function createHud(root) {
 
   const restartBtn = h('button', 'hud-btn', '🔄');
   restartBtn.type = 'button';
-  restartBtn.title = 'Restart game';
+  restartBtn.title = t('Restart game');
   restartBtn.addEventListener('click', () => {
     for (const cb of restartCbs) cb();
   });
@@ -249,7 +252,7 @@ export function createHud(root) {
   for (const { speed, icon, label } of SPEEDS) {
     const btn = h('button', 'hud-btn', icon);
     btn.type = 'button';
-    btn.title = label;
+    btn.title = t(label);
     btn.addEventListener('click', () => {
       currentSpeed = speed;
       refreshSpeedButtons();
@@ -266,6 +269,11 @@ export function createHud(root) {
 
   rootEl.append(top, balancePanel, toastArea);
   root.appendChild(rootEl);
+  // Presentation layout only: utility controls follow a wrapping HUD at any width.
+  const measureHud = () => document.documentElement.style.setProperty('--hud-bottom', `${top.offsetHeight}px`);
+  const resizeObserver = new ResizeObserver(measureHud);
+  resizeObserver.observe(top);
+  measureHud();
 
   function refreshSpeedButtons() {
     pauseBtn.classList.toggle('active', isPaused);
@@ -285,15 +293,15 @@ export function createHud(root) {
    */
   function update(state, defs, extra = {}) {
     if (extra.grid) lastGrid = extra.grid;
-    dayEl.textContent = `Day ${state.day}`;
+    dayEl.textContent = t(`Day ${state.day}`);
 
     const night = state.phase === 'night';
-    phaseIcon.textContent = night ? '☾' : '☀';
-    phaseLabel.textContent = night ? 'Night' : 'Day';
+    phaseIcon.textContent = t(night ? '☾' : '☀');
+    phaseLabel.textContent = t(night ? 'Night' : 'Day');
     phaseWrap.classList.toggle('hud-phase--night', night);
 
     if (typeof extra.phaseTimeLeft === 'number') {
-      phaseCount.textContent = `${Math.max(0, Math.ceil(extra.phaseTimeLeft))}s`;
+      phaseCount.textContent = t(`${Math.max(0, Math.ceil(extra.phaseTimeLeft))}s`);
     }
     if (
       typeof extra.phaseTimeLeft === 'number' &&
@@ -308,31 +316,31 @@ export function createHud(root) {
     const caps = effectiveCaps(state, defs ?? BUILDING_DEFS);
     const balance = currentBalance(state, defs);
     for (const [key, { textEl, netEl, icon }] of resourceEls) {
-      textEl.textContent = `${icon} ${fmt(res[key])}/${fmt(caps[key])}`;
+      textEl.textContent = t(`${icon} ${fmt(res[key])}/${fmt(caps[key])}`);
       const net = Math.round((balance[key]?.net ?? 0) * 10) / 10;
-      netEl.textContent = fmtNet(net);
+      netEl.textContent = t(fmtNet(net));
       netEl.classList.toggle('hud-net--pos', net >= 0);
       netEl.classList.toggle('hud-net--neg', net < 0);
     }
     if (hoveredResource) renderBalance(); // keeps the open breakdown live
 
-    researchEl.textContent = `🔬 ${fmt(state.researchPoints)}`;
+    researchEl.textContent = t(`🔬 ${fmt(state.researchPoints)}`);
 
     const survivorCount = state.survivors?.length ?? 0;
     survivorsEl.textContent =
-      typeof extra.idle === 'number'
-        ? `👥 ${survivorCount} (${extra.idle} idle)/${extra.housing ?? 0}`
-        : `👥 ${survivorCount}/${extra.housing ?? 0}`;
-    killsEl.textContent = `💀 ${state.kills ?? 0}`;
+      t(typeof extra.idle === 'number'
+        ? `👥 ${survivorCount} (${t('{count} idle', { count: extra.idle })})/${extra.housing ?? 0}`
+        : `👥 ${survivorCount}/${extra.housing ?? 0}`);
+    killsEl.textContent = t(`💀 ${state.kills ?? 0}`);
 
     const reputation = Math.floor(state.reputation ?? 0);
-    reputationEl.textContent = `⭐ ${reputation}`;
-    reputationEl.title = `Reputation: attracts survivors (+${Math.floor(reputation / 25)} recruits each dawn), grows by surviving and with Radios, drops with deaths`;
+    reputationEl.textContent = t(`⭐ ${reputation}`);
+    reputationEl.title = t(`Reputation: attracts survivors (+${Math.floor(reputation / 25)} recruits each dawn), grows by surviving and with Radios, drops with deaths`);
 
     const weatherId = state.weather?.current ?? 'clear';
     const weather = WEATHERS[weatherId] ?? WEATHERS.clear;
-    weatherEl.textContent = `${weather.icon} ${weather.name}`;
-    weatherEl.title = `Weather: ${weather.name} — ${WEATHER_EFFECTS[weatherId] ?? WEATHER_EFFECTS.clear}`;
+    weatherEl.textContent = t(`${weather.icon} ${t(weather.name)}`);
+    weatherEl.title = t(`Weather: ${t(weather.name)} — ${WEATHER_EFFECTS[weatherId] ?? WEATHER_EFFECTS.clear}`);
 
     if (typeof extra.speed === 'number') currentSpeed = extra.speed;
     if (typeof extra.paused === 'boolean') isPaused = extra.paused;

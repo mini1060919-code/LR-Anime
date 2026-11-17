@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+// Keep the original English assertions; M2 has separate zh-TW coverage.
+test.use({ storageState: { cookies: [], origins: [{
+  origin: 'http://localhost:4173', localStorage: [{ name: 'lr-ui-locale', value: 'en' }],
+}] } });
+
 const BASE = '/city-builder-survival/';
 test('v4 migration, three slots, JSON transfers and protected corrupt saves', async ({ page }) => {
   test.setTimeout(360_000);
