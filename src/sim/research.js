@@ -1,4 +1,4 @@
-import {abilityMultiplier,completeWork} from '../progression/work.js';
+import {crewEfficiency,abilityMultiplier,completeWork} from '../progression/work.js';
 // Tech tree: research point generation, spending and unlock checks.
 // Pure logic, no I/O.
 
@@ -76,7 +76,7 @@ export function tickResearch(state, dt, DEFS) {
     if (!def || !(def.researchRate > 0)) continue;
     const ratio = def.jobs ? Math.min(b.workers.length, def.jobs) / def.jobs : 1;
     if (ratio <= 0) continue;
-    const actual=(def.researchRate * ratio * dt) / DAY_LENGTH * abilityMultiplier(state,b,'engineering');
+    const actual=(def.researchRate * ratio * dt) / DAY_LENGTH * abilityMultiplier(state,b,'engineering') * crewEfficiency(state,b);
     gain += actual;
     completeWork(state,b,'engineering',actual);
   }

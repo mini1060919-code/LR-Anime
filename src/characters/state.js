@@ -1,3 +1,4 @@
+import {upgradeNeeds,validateNeeds} from '../needs/schema.js';
 // Identity and growth records; work effects live in independent progression modules.
 import { ARCHETYPES, SKILLS, PROFESSIONS, PERSONALITIES } from './catalog.js';
 import { upgradeProgression,validateProgression } from '../progression/schema.js';
@@ -45,6 +46,7 @@ export function reconcileCharacters(state) {
   }
   rosterCache.set(state,{array:state.survivors,count:state.survivors.length,next:state.nextSurvivorId});
   upgradeProgression(state.characters);
+  upgradeNeeds(state.characters);
   return state.characters;
 }
 export function validateCharacters(run, characters, survivors) {
@@ -52,7 +54,8 @@ export function validateCharacters(run, characters, survivors) {
   check(validRunId(run.id),'Invalid run identity.');
   check(Number.isSafeInteger(run.nextSurvivorId) && run.nextSurvivorId>Math.max(0,...survivors.map(s=>s.id)) && run.nextSurvivorId<=Number.MAX_SAFE_INTEGER,'Invalid survivor high-water mark.');
   const growth=Object.hasOwn(characters,'progression');
-  exactKeys(characters,[...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
+  const survival=Object.hasOwn(characters,'survival');
+  exactKeys(characters,[...(survival?['survival']:[]),...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
   check(characters.schemaVersion===1 && [1,2].includes(characters.generatorVersion),'Unsupported character schema/generator.');
   check(typeof characters.contentPackId==='string' && /^[a-z0-9-]{1,64}$/.test(characters.contentPackId) && Number.isSafeInteger(characters.contentPackVersion) && characters.contentPackVersion>0,'Invalid character content pack.');
   check(Array.isArray(characters.usedUniqueArchetypeIds) && characters.usedUniqueArchetypeIds.length<=128 && new Set(characters.usedUniqueArchetypeIds).size===characters.usedUniqueArchetypeIds.length && characters.usedUniqueArchetypeIds.every(id=>typeof id==='string' && /^chr_[a-z0-9_]{1,64}$/.test(id)), 'Invalid reserved archetypes.');
@@ -61,7 +64,7 @@ export function validateCharacters(run, characters, survivors) {
   const usedLive=new Set();
   for (const id of ids) {
     const record=characters.records[id];
-    exactKeys(record,[...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
+    exactKeys(record,[...(survival?['needs']:[]),...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
     check(record.uid===`${run.id}:${id}`,'Character UID mismatch.');
     check(typeof record.archetypeId==='string' && /^chr_[a-z0-9_]{1,64}$/.test(record.archetypeId) && Number.isSafeInteger(record.archetypeRevision) && record.archetypeRevision>0,'Invalid character archetype.');
     exactKeys(record.nameSnapshot,['zh-TW','en'],'name snapshot');
@@ -78,5 +81,6 @@ export function validateCharacters(run, characters, survivors) {
     }
   }
   if(growth)validateProgression(characters,exactKeys,check);
+  if(survival)validateNeeds(characters,exactKeys,check);
   return characters;
 }

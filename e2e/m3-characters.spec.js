@@ -37,7 +37,11 @@ test('persistent named residents, high-water recruitment, v5 import and complete
  expect(dawn.core.survivors.map(s=>s.id)).toEqual([1,2,3,5]);
  expect(dawn.characters.records['4']).toBeUndefined();expect(dawn.characters.records['5'].uid).toBe(`${initial.run.id}:5`);
  expect(dawn.characters.records['5'].archetypeId).toBe('chr_generic');
- expect(dawn.characters.records['1']).toEqual(initial.characters.records['1']);
+ const {needs:initialNeeds,...initialIdentity}=initial.characters.records['1'];
+ const {needs:dawnNeeds,...dawnIdentity}=dawn.characters.records['1'];
+ expect(dawnIdentity).toEqual(initialIdentity);
+ expect(dawnNeeds.fatigue).toBe(0);expect(dawnNeeds.health).toBe(100);
+ expect(dawnNeeds.morale).toBeGreaterThanOrEqual(initialNeeds.morale);expect(dawnNeeds.morale).toBeLessThanOrEqual(100);
  await page.getByRole('button',{name:'角色資訊',exact:true}).click();
  const panel=page.getByRole('dialog',{name:'倖存者檔案'});
  await panel.locator('[data-survivor-id="5"]').click();

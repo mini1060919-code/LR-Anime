@@ -1,4 +1,4 @@
-import {abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
+import {crewEfficiency,abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
 // Node extraction: depletable resource tiles (forest/ruins/ore) drained by
 // extractors, and renewable planting by foresters. Pure logic, no I/O.
 
@@ -106,7 +106,7 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
   const yieldDef = TILE_YIELDS[def.extracts];
   if (!yieldDef) return;
   if (countNodesInRange(grid, b, def.extracts) === 0) return; // no nodes: idle
-  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
+  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state) * crewEfficiency(state,b);
   const gained = (perDay * dt) / DAY_LENGTH;
   const cap = caps?.[yieldDef.resource] ?? Infinity;
   const before = state.resources[yieldDef.resource] ?? 0;
@@ -132,7 +132,7 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
 function tickForester(state, grid, b, ratio, dt, result) {
   if (!hasFreeGrassInRange(grid, b, PLANT_RANGE)) return;
   if ((state.resources.water ?? 0) < PLANT_WATER_COST) return;
-  b.extracted = Math.min(PLANT_WORK, (b.extracted ?? 0) + dt * ratio);
+  b.extracted = Math.min(PLANT_WORK, (b.extracted ?? 0) + dt * ratio * crewEfficiency(state,b));
   if (b.extracted < PLANT_WORK) return;
   const tile = nearestFreeGrass(grid, b, PLANT_RANGE);
   if (!tile) return; // the tile was taken mid-tick: keep the progress

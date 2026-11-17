@@ -1,3 +1,5 @@
+import {upgradeNeeds} from './needs/schema.js';
+import {NEEDS_FEATURE} from './needs/rules.js';
 import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
 // Validated v6 dawn checkpoints, character identity and safe v4/v5 migration.
 // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
@@ -130,7 +132,9 @@ function validateEnvelope(data) {
   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
-  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures[0]==='characters-v1' && (data.requiredFeatures.length===1 || (data.requiredFeatures.length===2 && data.requiredFeatures[1]===GROWTH_FEATURE)), 'Unsupported required save feature.');
+  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE];
+  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length>=1 && data.requiredFeatures.length<=supported.length && data.requiredFeatures.every((f,i)=>f===supported[i]), 'Unsupported required save feature.');
+  assert(data.requiredFeatures.includes(NEEDS_FEATURE)===Object.hasOwn(data.characters ?? {},'survival'),'Missing or unmarked survival data.');
   assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
   validateSave(data.core);
   assert(Object.keys(data.core).every(key=>CORE_FIELDS.includes(key)), 'Unknown core fields; original protected.');
@@ -160,6 +164,7 @@ export function migrateSave(data) {
   if (data?.version === 6) {
     const copy=structuredClone(validateEnvelope(data));
     if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
+    if(!copy.requiredFeatures.includes(NEEDS_FEATURE)){upgradeNeeds(copy.characters);copy.requiredFeatures.push(NEEDS_FEATURE);}
     return validateEnvelope(copy);
   }
   let core=data;
@@ -174,7 +179,7 @@ export function migrateSave(data) {
   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
     core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
   return validateEnvelope(envelope);
 }
@@ -305,7 +310,7 @@ function trimBackups(keep) {
   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
 }
 
-const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(GROWTH_FEATURE);
+const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(NEEDS_FEATURE);
 
 const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
 
@@ -314,7 +319,10 @@ function writeSave(key, raw, reason, recoverProtected = false, migrationSource =
     decodeSave(raw);
     const previous = inspectSave(key);
     assert(previous.ok || (recoverProtected && typeof previous.raw === 'string'), `Existing save protected: ${previous.error}`);
-    if (previous.raw === raw) return { ok: true };
+    if (previous.raw === raw) {
+      if(migrationSource!==null)backup(key,migrationSource,'JSON migration source');
+      return { ok: true };
+    }
     // A reload of an unchanged v6 checkpoint must not consume storage. Legacy saves
     // still go through migration and an exact, permanently retained original backup.
     if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
@@ -573,14 +581,14 @@ function restoreCore(data, legacyPopulationFallback = true) {
 export function createCheckpoint(state, seed, changedTiles) {
   reconcileCharacters(state);
   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
   return validateEnvelope(data);
 }
 
 export function restoreSave(data) {
   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
-  if(!data.requiredFeatures?.includes(GROWTH_FEATURE))data=migrateSave(data);
+  if(!data.requiredFeatures?.includes(NEEDS_FEATURE))data=migrateSave(data);
   validateEnvelope(data);
   const restored=restoreCore(data.core,false);
   restored.state.runId=data.run.id;

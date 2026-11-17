@@ -1,3 +1,4 @@
+import {tickNeeds,setNeedsEffects} from './needs/simulation.js';
 import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
 import {setAbilityEffects} from './progression/work.js';
 // Entry point: hands boot() (bootstrap.js: URL params, engine, asset load)
@@ -292,6 +293,7 @@ function startGame({ engine, screens, assets, params }) {
     onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
     onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
     onEffects:enabled=>setAbilityEffects(state,enabled),
+    onNeedsEffects:enabled=>setNeedsEffects(state,enabled),
     getState: () => state,
     onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
     onClose: () => { paused = pausedBeforeCharacters; },
@@ -302,6 +304,7 @@ function startGame({ engine, screens, assets, params }) {
     onLoad: () => { window.location.href = window.location.pathname; },
   });
   if (!initialSave.ok) savePanel.notify(`Saved data could not be loaded: ${initialSave.error} Autosave is blocked; use Saves to export the original.`);
+  let survivalStep=state.characters.survival.lastStep;
   let jobTimer = JOB_INTERVAL; // staff the buildings on the first frame
   let menuTimer = 0;
   // Day/night transitions and the wave plan (currentWave + spawnSchedule).
@@ -511,6 +514,7 @@ function startGame({ engine, screens, assets, params }) {
 
     zombies.update(dt, mods);
     combat.update(dt, zombies, mods);
+    tickNeeds(state,dt,++survivalStep,BUILDING_DEFS);
 
     if (state.timeInPhase >= phases.phaseDuration()) {
       if (state.phase === 'day') phases.startNight();
