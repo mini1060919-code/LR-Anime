@@ -1,7 +1,8 @@
 // Read-only presentation adapter. Saves contain identity snapshots and asset IDs, never image bytes.
 import { BUILDING_DEFS } from '../buildings/definitions.js';
 import { ARCHETYPES } from '../characters/catalog.js';
-import { createPortraitManager, chooseExpression } from '../characters/portraits.js';
+import { createPortraitManager } from '../characters/portraits.js';
+import { ANIME_EXPRESSIONS } from '../characters/anime.js';
 import { t, getLocale } from './i18n/index.js';
 
 export function characterProfile(survivor, state) {
@@ -78,26 +79,43 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
     silhouette.setAttribute('aria-label', t('Original silhouette placeholder. No character artwork installed.'));
     silhouette.append(el('span', 'silhouette-head'), el('span', 'silhouette-body'));
     frame.append(silhouette, el('small', 'portrait-credit', 'Original silhouette placeholder. No character artwork installed.'));
-    async function loadPortrait(expression) {
-      const portrait=await portraitManager.resolve(profile.appearanceId,expression);
-      if(token!==selectionToken || !dialog.open)return;
-      if(!portrait){frame.dataset.portraitStatus='fallback';return;}
+    async function loadPortrait(expression, target=frame, kind='full') {
+      const request=String(Number(target.dataset.request ?? 0)+1);target.dataset.request=request;
+      target.dataset.portraitStatus='loading';
+      const portrait=await portraitManager.resolve(profile.appearanceId,expression,kind);
+      if(token!==selectionToken || !dialog.open || target.dataset.request!==request)return;
+      if(!portrait){if(target!==frame)target.replaceChildren(el('span','','Portrait unavailable.'));target.dataset.portraitStatus='fallback';return;}
       let lease;
-      const image=el('img','character-portrait');image.alt=portrait.alt[getLocale()];
+      const image=el('img',kind==='full'?'character-portrait':'character-expression-image');image.dataset.assetId=portrait.assetId;image.alt=portrait.alt[getLocale()];
       try {
         lease=portrait.acquire();image.src=lease.src;
         await image.decode();
         if(image.naturalWidth!==portrait.width || image.naturalHeight!==portrait.height)throw new Error('Portrait dimensions mismatch.');
-        if(token!==selectionToken || !dialog.open)return;
-        frame.replaceChildren(image,el('small','portrait-credit',t('Artwork: {credit} · License: {license}',portrait)));
-        frame.dataset.portraitStatus='ready';
+        if(token!==selectionToken || !dialog.open || target.dataset.request!==request)return;
+        target.replaceChildren(image,el('small','portrait-credit',t('Artwork: {credit} · License: {license}',portrait)));
+        target.dataset.portraitStatus='ready';
       } catch {
-        if(expression!=='neutral' && token===selectionToken)await loadPortrait('neutral');
-        else if(token===selectionToken)frame.dataset.portraitStatus='fallback';
+        if(token!==selectionToken || target.dataset.request!==request)return;
+        if(expression!=='neutral')await loadPortrait('neutral',target,kind);
+        else {if(target!==frame)target.replaceChildren(el('span','','Portrait unavailable.'));target.dataset.portraitStatus='fallback';}
       } finally {lease?.release();}
     }
-    void loadPortrait(chooseExpression(survivor));
+    void loadPortrait('neutral');
     const info = el('div', 'character-info');
+    const expressionFrame=el('div','character-expression-frame');
+    expressionFrame.setAttribute('aria-label',t('Expression portrait'));
+    const expressions=el('div','character-expressions');expressions.setAttribute('role','group');expressions.setAttribute('aria-label',t('Expressions'));
+    const labels={neutral:'Calm',happy:'Happy',alert:'Alert',tired:'Tired',injured:'Injured'};
+    for(const expression of ANIME_EXPRESSIONS){
+      const button=el('button','',labels[expression]);button.type='button';button.dataset.expression=expression;
+      button.setAttribute('aria-pressed',String(expression==='neutral'));
+      button.addEventListener('click',()=>{
+        for(const item of expressions.children)item.setAttribute('aria-pressed',String(item===button));
+        void loadPortrait(expression,expressionFrame,'portrait');
+      });expressions.append(button);
+    }
+    info.append(expressionFrame,expressions);
+    void loadPortrait('neutral',expressionFrame,'portrait');
     info.append(el('h3', 'character-name', profile.name), el('p', 'character-assignment', profile.assignment),
       el('p','character-profession',profile.profession),el('p','character-personality',profile.personalities),
       el('p','character-background',profile.background),el('small','character-uid',profile.uid ?? ''),

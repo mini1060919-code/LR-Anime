@@ -219,4 +219,5 @@ Object.assign(messages, {
 Object.assign(messages, {
   'Generalist':'通才','Farmer':'農務員','Mechanic':'機械技師','Medic':'醫護','Scout':'斥候','Guard':'守衛','Researcher':'研究員','Logistician':'後勤',
   'Steadfast':'堅定','Empathetic':'體貼','Pragmatic':'務實','Curious':'好奇','Reserved':'內斂','Optimistic':'樂觀','Patient':'耐心','Cautious':'謹慎',
+  'Expressions':'表情', 'Expression portrait':'表情肖像', 'Calm':'平靜', 'Happy':'開心', 'Alert':'警戒', 'Tired':'疲憊', 'Injured':'受傷', 'Portrait unavailable.':'肖像暫時無法顯示。',
 });

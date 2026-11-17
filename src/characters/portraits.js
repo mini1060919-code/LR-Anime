@@ -1,17 +1,19 @@
-// Separate from GLTF boot. No external art ships: draft entries always fall back.
+// Separate from GLTF boot. User-supplied art and draft entries have separate evidence and size policies.
 import { sha256 } from './hash.js';
-const PATH = /^assets\/portraits\/[a-zA-Z0-9_/-]+\.(png|webp|jpe?g)$/;
+const PATH = /^assets\/(?:portraits|anime)\/[a-zA-Z0-9_/-]+\.(png|webp|jpe?g)$/;
 const PERMISSIONS = ['display','commercial','modify','webDistribution','repositoryRedistribution'];
 export function approvedAsset(asset, rights, kind='portrait') {
   const grant = rights?.records?.[asset?.licenseRef];
+  const supplied=grant?.licenseId==='User-provided-generated' && asset?.path?.startsWith('assets/anime/');
+  const limit=supplied ? (kind==='avatar'?600:3072) : (kind==='avatar'?24:350);
   return !!(asset?.status==='approved' && PATH.test(asset.path) && !asset.path.includes('//') &&
-    /^[a-f0-9]{64}$/.test(asset.sha256) && Number.isSafeInteger(asset.byteLength) && asset.byteLength>0 && asset.byteLength<=(kind==='avatar'?24:350)*1024 &&
+    /^[a-f0-9]{64}$/.test(asset.sha256) && Number.isSafeInteger(asset.byteLength) && asset.byteLength>0 && asset.byteLength<=limit*1024 &&
     Number.isInteger(asset.width) && asset.width>0 && asset.width<=2048 && Number.isInteger(asset.height) && asset.height>0 && asset.height<=2048 &&
     typeof asset.alt?.en==='string' && asset.alt.en.trim() && typeof asset.alt?.['zh-TW']==='string' && asset.alt['zh-TW'].trim() &&
-    grant?.status==='approved' && ['Original','CC0','CC-BY-4.0','MIT'].includes(grant.licenseId) &&
+    grant?.status==='approved' && ['Original','CC0','CC-BY-4.0','MIT','User-provided-generated'].includes(grant.licenseId) &&
     typeof grant.creator==='string' && grant.creator.trim() && typeof grant.evidenceRef==='string' && grant.evidenceRef.trim() &&
     typeof grant.reviewedBy==='string' && grant.reviewedBy.trim() && Number.isFinite(Date.parse(grant.reviewedAt)) &&
-    typeof grant.attributionText==='string' && grant.attributionText.trim() && PERMISSIONS.every(key=>grant.permissions?.[key]===true));
+    typeof grant.attributionText==='string' && grant.attributionText.trim() && (supplied ? ['display','webDistribution','repositoryRedistribution'] : PERMISSIONS).every(key=>grant.permissions?.[key]===true));
 }
 export function chooseExpression(survivor) {
   if (survivor.hunger>=75 || survivor.thirst>=75) return 'worried';
@@ -77,11 +79,12 @@ export function createPortraitManager({ fetcher=(...args)=>fetch(...args), baseU
     try{return await task;}finally{pending.delete(id);}
   }
   async function resolve(setId, expression='neutral', kind='portrait') {
+    if(disposed)return null;
     try {
       const {manifest,rights}=await ready();
       const set=Object.hasOwn(manifest.portraitSets,setId)?manifest.portraitSets[setId]:null;
       if(!set)return null;
-      const candidates=kind==='avatar'?[set.avatarAssetId]:[set.expressions?.[expression],set.neutralAssetId];
+      const candidates=kind==='avatar'?[set.avatarAssetId]:kind==='full'?[set.fullAssetId,set.neutralAssetId]:[set.expressions?.[expression],set.neutralAssetId];
       for(const id of new Set(candidates.filter(id=>typeof id==='string'))) {
         try {const asset=await loadAsset(id,manifest,rights,kind);if(asset)return asset;}catch{/* try neutral, then CSS silhouette */}
       }

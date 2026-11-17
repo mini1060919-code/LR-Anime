@@ -75,7 +75,7 @@ test('verified transparent PNG loading and checksum/decode failure default portr
  test.setTimeout(180000);
  await page.setViewportSize({width:600,height:600});
  const png=transparentPng();const digest=createHash('sha256').update(png).digest('hex');
- const setIds=['chr_isumi_rin','chr_asagiri_mio','chr_tachibana_yuma','chr_shiraishi_tsumugi','chr_generic'].map(id=>`pset.${id}.standard.v001`);
+ const setIds=['chr_isumi_rin','chr_asagiri_mio','chr_tachibana_yuma','chr_shiraishi_tsumugi','chr_satsuki','chr_ren','chr_generic'].map(id=>`pset.${id}.standard.v001`);
  const asset={path:'assets/portraits/synthetic/neutral_v001.png',status:'approved',sha256:digest,byteLength:png.length,width:1,height:1,licenseRef:'test-only',alt:{en:'Synthetic transparent test pixel','zh-TW':'合成透明測試像素'}};
  const inventory={schemaVersion:1,portraitSets:Object.fromEntries(setIds.map(id=>[id,{neutralAssetId:'test-pixel',expressions:{neutral:'test-pixel',focused:'test-pixel',worried:'test-pixel'}}])),assets:{'test-pixel':asset}};
  const grants={schemaVersion:1,records:{'test-only':{creator:'Synthetic test fixture',status:'approved',licenseId:'Original',evidenceRef:'generated-in-test',reviewedBy:'Automated fixture',reviewedAt:'2026-11-17T00:00:00Z',attributionText:'Original synthetic test pixel',permissions:{display:true,commercial:true,modify:true,webDistribution:true,repositoryRedistribution:true}}}};
@@ -89,7 +89,7 @@ test('verified transparent PNG loading and checksum/decode failure default portr
  await expect(page.locator('.portrait-frame')).toHaveAttribute('data-portrait-status','ready');
  await expect(page.locator('.character-portrait')).toBeVisible();
  await expect(page.locator('.character-portrait')).toHaveAttribute('alt','合成透明測試像素');
- await expect(page.locator('.portrait-credit')).toContainText('Original synthetic test pixel');
+ await expect(page.locator('.portrait-frame .portrait-credit')).toContainText('Original synthetic test pixel');
  // Reload releases URL/cache state; the same approved metadata must reject tampered bytes.
  corrupt=true;await page.goto(BASE);await begin(page);
  const rejectedImage=page.waitForResponse(response=>response.url().endsWith('/synthetic/neutral_v001.png'));

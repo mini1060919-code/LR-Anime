@@ -132,3 +132,17 @@
 .character-avatar-placeholder { background: radial-gradient(circle at 50% 30%, #9fb1ca 0 22%, transparent 23%), linear-gradient(145deg,#476d7b,#13283d); }
 .character-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
 .character-pagination button { padding: 6px; }
+
+/* Full body uses contain; source pixels and transparency are retained. */
+.portrait-frame .character-portrait { height: min(60vh, 560px); object-fit: contain; }
+.character-expression-frame { width: min(100%, 180px); min-height: 130px; }
+.character-expression-image { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }
+.character-expression-frame .portrait-credit { display: none; }
+.character-expressions { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
+.character-expressions button[aria-pressed="true"] { border-color: var(--ui-accent); background: #315564; }
+.character-info { min-width: 0; }
+.character-uid, .character-appearance { overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  .portrait-frame .character-portrait { height: 360px; max-height: 65vh; }
+  .character-expression-frame { width: 130px; }
+}

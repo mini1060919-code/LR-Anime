@@ -1,8 +1,10 @@
 import {describe,it,expect,vi,afterEach} from 'vitest';
 import {sha256} from '../src/characters/hash.js';
 import {approvedAsset,createPortraitManager,chooseExpression} from '../src/characters/portraits.js';
-import manifest from '../public/assets/portraits/manifest.v1.json';
+import shippedManifest from '../public/assets/portraits/manifest.v1.json';
 import rights from '../public/assets/portraits/rights.v1.json';
+const manifest=structuredClone(shippedManifest);
+for(const asset of Object.values(manifest.assets))asset.status='draft';
 // Synthetic test bytes, not shipped character artwork. Native decode is tested in browser.
 const bytes=new Uint8Array([137,80,78,71,13,10,26,10,1,2,3,4]);
 const approved={status:'approved',path:'assets/portraits/test/neutral.png',sha256:sha256(bytes),byteLength:bytes.length,width:1,height:1,licenseRef:'test',alt:{en:'Synthetic test pixel','zh-TW':'測試像素'}};
@@ -14,8 +16,8 @@ function setup({assets={neutral:approved},set={neutralAssetId:'neutral',avatarAs
 afterEach(()=>vi.restoreAllMocks());
 describe('portrait inventory and licensing gate',()=>{
  it('ships only draft fixed IDs, no falsely approved portraits or unknown third-party files',()=>{
-  expect(Object.keys(manifest.portraitSets)).toHaveLength(5);
-  expect(Object.keys(manifest.assets)).toHaveLength(30);
+  expect(Object.keys(manifest.portraitSets)).toHaveLength(7);
+  expect(Object.keys(manifest.assets)).toHaveLength(46);
   for(const asset of Object.values(manifest.assets)){expect(asset.status).toBe('draft');expect(approvedAsset(asset,rights)).toBe(false);}
  });
  it('gates on complete approval and validates local web image paths',()=>{
@@ -90,7 +92,7 @@ describe('lazy verified image loader and fallback',()=>{
 describe('build-time artwork verification',()=>{
  it('accepts the pending inventory without claiming any finished artwork',async()=>{
   const {verifyPortraitInventory}=await import('../scripts/verify-portraits.mjs');
-  const read=vi.fn();expect(await verifyPortraitInventory(manifest,rights,read)).toEqual({approved:0,draft:30});
+  const read=vi.fn();expect(await verifyPortraitInventory(manifest,rights,read)).toEqual({approved:0,draft:46});
   expect(read).not.toHaveBeenCalled();
  });
  it('fails build validation for unapproved art and broken ID references',async()=>{

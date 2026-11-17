@@ -41,8 +41,9 @@ test('Traditional Chinese interface, read-only character dossier and v4/v5 langu
   const dossier = page.getByRole('dialog', { name: '倖存者檔案' });
   await expect(dossier).toBeVisible();
   await expect(dossier.locator('.character-roster-button')).toHaveCount(4);
-  await expect(dossier.getByRole('img', { name: '原創剪影占位圖，尚未配置角色立繪。' })).toBeVisible();
-  await expect(dossier.locator('img')).toHaveCount(0);
+  await expect(dossier.locator('.portrait-frame')).toHaveAttribute('data-portrait-status','ready');
+  await expect(dossier.locator('.character-portrait')).toBeVisible();
+  await expect(dossier.locator('.character-avatar')).toHaveCount(4);
   await expect(dossier.getByRole('meter')).toHaveCount(2);
   const residentName=await page.evaluate(()=>window.__game.state.characters.records['2'].nameSnapshot['zh-TW']);
   await dossier.locator('[data-survivor-id="2"]').click();

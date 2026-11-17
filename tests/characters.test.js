@@ -112,7 +112,7 @@ describe('v6 complete save contract and safe legacy migration',()=>{
  });
  const corruptions=[
   data=>{data.version=99;}, data=>{data.future='unknown';}, data=>{data.requiredFeatures=['skills-enabled'];},
-  data=>{data.characters.generatorVersion=2;}, data=>{data.characters.schemaVersion=2;},
+  data=>{data.characters.generatorVersion=999;}, data=>{data.characters.schemaVersion=2;},
   data=>{data.run.nextSurvivorId=1;}, data=>{data.run.id='bad';},
   data=>{delete data.characters.records[1];}, data=>{data.characters.records[1].uid=`${RUN}:2`;},
   data=>{data.characters.records[1].abilityRanks.medicine=Infinity;},

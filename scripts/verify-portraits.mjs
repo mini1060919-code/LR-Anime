@@ -14,6 +14,10 @@ export async function verifyPortraitInventory(manifest,rights,readAsset) {
       if(!Object.hasOwn(manifest.assets,assetId))throw new Error(`Missing portrait asset ID: ${assetId}`);
       kinds.set(assetId,'portrait');
     }
+    if(set.fullAssetId) {
+      if(!Object.hasOwn(manifest.assets,set.fullAssetId))throw new Error('Missing full portrait asset ID.');
+      kinds.set(set.fullAssetId,'full');
+    }
     if(set.avatarAssetId) {
       if(!Object.hasOwn(manifest.assets,set.avatarAssetId))throw new Error('Missing avatar asset ID.');
       kinds.set(set.avatarAssetId,'avatar');

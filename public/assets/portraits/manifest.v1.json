@@ -4,15 +4,16 @@
   "packVersion": 1,
   "portraitSets": {
     "pset.chr_isumi_rin.standard.v001": {
-      "characterArchetypeId": "chr_isumi_rin",
-      "neutralAssetId": "portrait.chr_isumi_rin.standard.neutral.v001",
-      "avatarAssetId": "avatar.chr_isumi_rin.standard.v001",
+      "sourceCharacterId": "char_rin",
+      "fullAssetId": "char_rin.full.v001",
+      "avatarAssetId": "char_rin.avatar.v001",
+      "neutralAssetId": "char_rin.neutral.v001",
       "expressions": {
-        "neutral": "portrait.chr_isumi_rin.standard.neutral.v001",
-        "focused": "portrait.chr_isumi_rin.standard.focused.v001",
-        "worried": "portrait.chr_isumi_rin.standard.worried.v001",
-        "smile": "portrait.chr_isumi_rin.standard.smile.v001",
-        "fatigued": "portrait.chr_isumi_rin.standard.fatigued.v001"
+        "neutral": "char_rin.neutral.v001",
+        "happy": "char_rin.happy.v001",
+        "alert": "char_rin.alert.v001",
+        "tired": "char_rin.tired.v001",
+        "injured": "char_rin.injured.v001"
       }
     },
     "pset.chr_asagiri_mio.standard.v001": {
@@ -28,15 +29,16 @@
       }
     },
     "pset.chr_tachibana_yuma.standard.v001": {
-      "characterArchetypeId": "chr_tachibana_yuma",
-      "neutralAssetId": "portrait.chr_tachibana_yuma.standard.neutral.v001",
-      "avatarAssetId": "avatar.chr_tachibana_yuma.standard.v001",
+      "sourceCharacterId": "char_yuma",
+      "fullAssetId": "char_yuma.full.v001",
+      "avatarAssetId": "char_yuma.avatar.v001",
+      "neutralAssetId": "char_yuma.neutral.v001",
       "expressions": {
-        "neutral": "portrait.chr_tachibana_yuma.standard.neutral.v001",
-        "focused": "portrait.chr_tachibana_yuma.standard.focused.v001",
-        "worried": "portrait.chr_tachibana_yuma.standard.worried.v001",
-        "smile": "portrait.chr_tachibana_yuma.standard.smile.v001",
-        "fatigued": "portrait.chr_tachibana_yuma.standard.fatigued.v001"
+        "neutral": "char_yuma.neutral.v001",
+        "happy": "char_yuma.happy.v001",
+        "alert": "char_yuma.alert.v001",
+        "tired": "char_yuma.tired.v001",
+        "injured": "char_yuma.injured.v001"
       }
     },
     "pset.chr_shiraishi_tsumugi.standard.v001": {
@@ -62,87 +64,35 @@
         "smile": "portrait.chr_generic.standard.smile.v001",
         "fatigued": "portrait.chr_generic.standard.fatigued.v001"
       }
+    },
+    "pset.chr_satsuki.standard.v001": {
+      "sourceCharacterId": "char_satsuki",
+      "fullAssetId": "char_satsuki.full.v001",
+      "avatarAssetId": "char_satsuki.avatar.v001",
+      "neutralAssetId": "char_satsuki.neutral.v001",
+      "expressions": {
+        "neutral": "char_satsuki.neutral.v001",
+        "happy": "char_satsuki.happy.v001",
+        "alert": "char_satsuki.alert.v001",
+        "tired": "char_satsuki.tired.v001",
+        "injured": "char_satsuki.injured.v001"
+      }
+    },
+    "pset.chr_ren.standard.v001": {
+      "sourceCharacterId": "char_ren",
+      "fullAssetId": "char_ren.full.v001",
+      "avatarAssetId": "char_ren.avatar.v001",
+      "neutralAssetId": "char_ren.neutral.v001",
+      "expressions": {
+        "neutral": "char_ren.neutral.v001",
+        "happy": "char_ren.happy.v001",
+        "alert": "char_ren.alert.v001",
+        "tired": "char_ren.tired.v001",
+        "injured": "char_ren.injured.v001"
+      }
     }
   },
   "assets": {
-    "portrait.chr_isumi_rin.standard.neutral.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/neutral_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_isumi_rin.standard.focused.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/focused_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_isumi_rin.standard.worried.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/worried_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_isumi_rin.standard.smile.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/smile_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_isumi_rin.standard.fatigued.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/fatigued_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "avatar.chr_isumi_rin.standard.v001": {
-      "path": "assets/portraits/chr_isumi_rin/standard/avatar_v001.png",
-      "width": 128,
-      "height": 128,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色頭像（尚未提供）",
-        "en": "Character avatar (not supplied)"
-      },
-      "licenseRef": "rights.chr_isumi_rin.v001",
-      "status": "draft",
-      "sha256": null
-    },
     "portrait.chr_asagiri_mio.standard.neutral.v001": {
       "path": "assets/portraits/chr_asagiri_mio/standard/neutral_v001.webp",
       "width": 1024,
@@ -218,84 +168,6 @@
         "en": "Character avatar (not supplied)"
       },
       "licenseRef": "rights.chr_asagiri_mio.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_tachibana_yuma.standard.neutral.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/neutral_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_tachibana_yuma.standard.focused.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/focused_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_tachibana_yuma.standard.worried.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/worried_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_tachibana_yuma.standard.smile.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/smile_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "portrait.chr_tachibana_yuma.standard.fatigued.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/fatigued_v001.webp",
-      "width": 1024,
-      "height": 1536,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色立繪（尚未提供）",
-        "en": "Character portrait (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
-      "status": "draft",
-      "sha256": null
-    },
-    "avatar.chr_tachibana_yuma.standard.v001": {
-      "path": "assets/portraits/chr_tachibana_yuma/standard/avatar_v001.png",
-      "width": 128,
-      "height": 128,
-      "byteLength": null,
-      "alt": {
-        "zh-TW": "角色頭像（尚未提供）",
-        "en": "Character avatar (not supplied)"
-      },
-      "licenseRef": "rights.chr_tachibana_yuma.v001",
       "status": "draft",
       "sha256": null
     },
@@ -454,6 +326,370 @@
       "licenseRef": "rights.chr_generic.v001",
       "status": "draft",
       "sha256": null
+    },
+    "char_rin.full.v001": {
+      "path": "assets/anime/portraits/char_rin_full_v1.png",
+      "status": "approved",
+      "sha256": "6e1c4901f9cdc6b4936c4803d58eea194f9efe93a6988b1ead3ef57c468e2e00",
+      "byteLength": 2047623,
+      "width": 1024,
+      "height": 1536,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — full",
+        "zh-TW": "凜 — 全身立繪"
+      }
+    },
+    "char_rin.avatar.v001": {
+      "path": "assets/anime/avatars/char_rin_avatar_v1.png",
+      "status": "approved",
+      "sha256": "cca8098fadc711ea2a10eb8185ae5d5da92fea400caa8dbb34ebc8b0d29df78d",
+      "byteLength": 514547,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — avatar",
+        "zh-TW": "凜 — 頭像"
+      }
+    },
+    "char_rin.neutral.v001": {
+      "path": "assets/anime/expressions/char_rin_neutral_v1.png",
+      "status": "approved",
+      "sha256": "cca8098fadc711ea2a10eb8185ae5d5da92fea400caa8dbb34ebc8b0d29df78d",
+      "byteLength": 514547,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — neutral",
+        "zh-TW": "凜 — 平靜"
+      }
+    },
+    "char_rin.happy.v001": {
+      "path": "assets/anime/expressions/char_rin_happy_v1.png",
+      "status": "approved",
+      "sha256": "29ce891a762d1f9579b83ecae361b6812cabb23265197e886dfa18cbcf190d4f",
+      "byteLength": 521948,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — happy",
+        "zh-TW": "凜 — 開心"
+      }
+    },
+    "char_rin.alert.v001": {
+      "path": "assets/anime/expressions/char_rin_alert_v1.png",
+      "status": "approved",
+      "sha256": "792f264cf002a4a4974c192e028bfe3193f48c029b1b93c774e54dac857bc288",
+      "byteLength": 521386,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — alert",
+        "zh-TW": "凜 — 警戒"
+      }
+    },
+    "char_rin.tired.v001": {
+      "path": "assets/anime/expressions/char_rin_tired_v1.png",
+      "status": "approved",
+      "sha256": "8da2ae9ebabe548f81eb2dde883aec1ba6e6c9b69c349ebd9e3484aa7ef4ce81",
+      "byteLength": 518597,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — tired",
+        "zh-TW": "凜 — 疲憊"
+      }
+    },
+    "char_rin.injured.v001": {
+      "path": "assets/anime/expressions/char_rin_injured_v1.png",
+      "status": "approved",
+      "sha256": "f3a04ca3bfe50035b98c35c5f2765db754a140532725e2ec0730d4e4ddb3923d",
+      "byteLength": 533892,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Rin — injured",
+        "zh-TW": "凜 — 受傷"
+      }
+    },
+    "char_yuma.full.v001": {
+      "path": "assets/anime/portraits/char_yuma_full_v1.png",
+      "status": "approved",
+      "sha256": "57470309970d5d33b9f6ae5dffb524004a65ace401a58469f059f517e343bd7e",
+      "byteLength": 1953073,
+      "width": 1024,
+      "height": 1536,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — full",
+        "zh-TW": "悠真 — 全身立繪"
+      }
+    },
+    "char_yuma.avatar.v001": {
+      "path": "assets/anime/avatars/char_yuma_avatar_v1.png",
+      "status": "approved",
+      "sha256": "baf93d746e3b6946adc5980c5ae1d017227c04f829b1a7a585e2565a3078f5cb",
+      "byteLength": 475465,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — avatar",
+        "zh-TW": "悠真 — 頭像"
+      }
+    },
+    "char_yuma.neutral.v001": {
+      "path": "assets/anime/expressions/char_yuma_neutral_v1.png",
+      "status": "approved",
+      "sha256": "baf93d746e3b6946adc5980c5ae1d017227c04f829b1a7a585e2565a3078f5cb",
+      "byteLength": 475465,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — neutral",
+        "zh-TW": "悠真 — 平靜"
+      }
+    },
+    "char_yuma.happy.v001": {
+      "path": "assets/anime/expressions/char_yuma_happy_v1.png",
+      "status": "approved",
+      "sha256": "52709a5cafe52ea051a84517905488b315252f0a84075508f3abd7de5e0dea6a",
+      "byteLength": 474669,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — happy",
+        "zh-TW": "悠真 — 開心"
+      }
+    },
+    "char_yuma.alert.v001": {
+      "path": "assets/anime/expressions/char_yuma_alert_v1.png",
+      "status": "approved",
+      "sha256": "43add6a7f9232018ae17014548f168d95f300e03486e2c7d7d2a5745935a68f2",
+      "byteLength": 482493,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — alert",
+        "zh-TW": "悠真 — 警戒"
+      }
+    },
+    "char_yuma.tired.v001": {
+      "path": "assets/anime/expressions/char_yuma_tired_v1.png",
+      "status": "approved",
+      "sha256": "7c462ceb8f4d3087a7a6d0699da8e1b6641f431dd96c33fe88d247be3a073934",
+      "byteLength": 475755,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — tired",
+        "zh-TW": "悠真 — 疲憊"
+      }
+    },
+    "char_yuma.injured.v001": {
+      "path": "assets/anime/expressions/char_yuma_injured_v1.png",
+      "status": "approved",
+      "sha256": "ae947e0fd373ebe6a9bebcc3e7007a33fbcce10946d110f066bdb6d9ef1db8f5",
+      "byteLength": 487210,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Yuma — injured",
+        "zh-TW": "悠真 — 受傷"
+      }
+    },
+    "char_satsuki.full.v001": {
+      "path": "assets/anime/portraits/char_satsuki_full_v1.png",
+      "status": "approved",
+      "sha256": "7294ea3083b16bf67b8bd83e54288cb030df1383e78a6250695d00b5ab1ac894",
+      "byteLength": 2193110,
+      "width": 1024,
+      "height": 1536,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — full",
+        "zh-TW": "紗月 — 全身立繪"
+      }
+    },
+    "char_satsuki.avatar.v001": {
+      "path": "assets/anime/avatars/char_satsuki_avatar_v1.png",
+      "status": "approved",
+      "sha256": "c4d19183871dc58507755c5cc76b5a375569e75d5a938f2b01d9791986e04cae",
+      "byteLength": 491011,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — avatar",
+        "zh-TW": "紗月 — 頭像"
+      }
+    },
+    "char_satsuki.neutral.v001": {
+      "path": "assets/anime/expressions/char_satsuki_neutral_v1.png",
+      "status": "approved",
+      "sha256": "c4d19183871dc58507755c5cc76b5a375569e75d5a938f2b01d9791986e04cae",
+      "byteLength": 491011,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — neutral",
+        "zh-TW": "紗月 — 平靜"
+      }
+    },
+    "char_satsuki.happy.v001": {
+      "path": "assets/anime/expressions/char_satsuki_happy_v1.png",
+      "status": "approved",
+      "sha256": "f59817249eb71b599e837cfc6b432f4af6f7f8e3b089e04adf1b01f92625a4b0",
+      "byteLength": 498309,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — happy",
+        "zh-TW": "紗月 — 開心"
+      }
+    },
+    "char_satsuki.alert.v001": {
+      "path": "assets/anime/expressions/char_satsuki_alert_v1.png",
+      "status": "approved",
+      "sha256": "5b121b41fc748e5ce705305111c7bf29127b65cc85b8ea8d8380fe7360db9958",
+      "byteLength": 499997,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — alert",
+        "zh-TW": "紗月 — 警戒"
+      }
+    },
+    "char_satsuki.tired.v001": {
+      "path": "assets/anime/expressions/char_satsuki_tired_v1.png",
+      "status": "approved",
+      "sha256": "dd24eadc39019e624ffc044469f7ee113c45f9cde1ac3ad8a5f73f7311df05e2",
+      "byteLength": 496770,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — tired",
+        "zh-TW": "紗月 — 疲憊"
+      }
+    },
+    "char_satsuki.injured.v001": {
+      "path": "assets/anime/expressions/char_satsuki_injured_v1.png",
+      "status": "approved",
+      "sha256": "5d4487088794228a11112c90e21ac2bf10f43d9234a207606daebdbd4511caed",
+      "byteLength": 509307,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Satsuki — injured",
+        "zh-TW": "紗月 — 受傷"
+      }
+    },
+    "char_ren.full.v001": {
+      "path": "assets/anime/portraits/char_ren_full_v1.png",
+      "status": "approved",
+      "sha256": "ff9e71e945f97184151c5982bd96ef9c9caceac79ee48a85d204165432dbf78f",
+      "byteLength": 2344577,
+      "width": 1024,
+      "height": 1536,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — full",
+        "zh-TW": "蓮 — 全身立繪"
+      }
+    },
+    "char_ren.avatar.v001": {
+      "path": "assets/anime/avatars/char_ren_avatar_v1.png",
+      "status": "approved",
+      "sha256": "c033e223036cd1a334a13020728ee3f9f386758aabfee93fe12e110b62016547",
+      "byteLength": 510022,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — avatar",
+        "zh-TW": "蓮 — 頭像"
+      }
+    },
+    "char_ren.neutral.v001": {
+      "path": "assets/anime/expressions/char_ren_neutral_v1.png",
+      "status": "approved",
+      "sha256": "c033e223036cd1a334a13020728ee3f9f386758aabfee93fe12e110b62016547",
+      "byteLength": 510022,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — neutral",
+        "zh-TW": "蓮 — 平靜"
+      }
+    },
+    "char_ren.happy.v001": {
+      "path": "assets/anime/expressions/char_ren_happy_v1.png",
+      "status": "approved",
+      "sha256": "c3c549dd0a0a9d4f35b09875ca279c414cded6b0791818cff887597e76da2446",
+      "byteLength": 523759,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — happy",
+        "zh-TW": "蓮 — 開心"
+      }
+    },
+    "char_ren.alert.v001": {
+      "path": "assets/anime/expressions/char_ren_alert_v1.png",
+      "status": "approved",
+      "sha256": "accb2557df23f511793b30d02ac39e04688694f2935b999537c5a5ce5d490fc6",
+      "byteLength": 524132,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — alert",
+        "zh-TW": "蓮 — 警戒"
+      }
+    },
+    "char_ren.tired.v001": {
+      "path": "assets/anime/expressions/char_ren_tired_v1.png",
+      "status": "approved",
+      "sha256": "5036d9842f1d539b685dd27362d521a51775dff74a278fb74cf14c47640e1384",
+      "byteLength": 530461,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — tired",
+        "zh-TW": "蓮 — 疲憊"
+      }
+    },
+    "char_ren.injured.v001": {
+      "path": "assets/anime/expressions/char_ren_injured_v1.png",
+      "status": "approved",
+      "sha256": "f6fd870d96eb7382db2740c62dc01e9f10f84d3c8bf9d0619d861c0f2db04955",
+      "byteLength": 536686,
+      "width": 512,
+      "height": 512,
+      "licenseRef": "user-m3-art-v1",
+      "alt": {
+        "en": "Ren — injured",
+        "zh-TW": "蓮 — 受傷"
+      }
     }
   }
 }

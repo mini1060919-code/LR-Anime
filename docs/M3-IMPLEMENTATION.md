@@ -1,5 +1,7 @@
 # M3 角色系統實作與驗收紀錄
 
+> 前一階段紀錄；本次正式素材整合的狀態與驗證請見 [M3 素材整合交付](M3-ART-INTEGRATION.md)。
+
 基準：M2 `e89c3a7ffd3b4131a8be76ca28e5a864edee6fda`，分支 `feature/m3-survivor-profiles`。PR 目標為 `feature/m2-zh-tw-anime-ui`，依賴 M1 #1 與 M2 #2；不合併、不部署。
 
 ## 已完成範圍

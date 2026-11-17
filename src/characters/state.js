@@ -8,9 +8,9 @@ export function exactKeys(value, keys, label) {
   check(object(value) && Object.keys(value).every(key=>keys.includes(key)) && keys.every(key=>Object.hasOwn(value,key)), `Invalid ${label} fields.`);
 }
 export function validRunId(id) { return typeof id === 'string' && /^run_(?:[a-f0-9]{64}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/.test(id); }
-function generateRecord(runId, id, used) {
-  const available = ARCHETYPES.filter(item=>!used.includes(item.id));
-  const pick = available[Number.parseInt(sha256(`${runId}:${id}:generator1`).slice(0,8),16) % available.length];
+function generateRecord(runId, id, used, generator) {
+  const available = ARCHETYPES.filter(item=>(generator===1 ? !item.introducedIn : !item.legacy) && !used.includes(item.id));
+  const pick = available[Number.parseInt(sha256(`${runId}:${id}:generator${generator}`).slice(0,8),16) % available.length];
   if (pick) used.push(pick.id);
   const genericIndex=Number.parseInt(sha256(`${runId}:${id}:generic1`).slice(0,8),16);
   const genericNames=[['星野葵','Aoi Hoshino'],['月見蓮','Ren Tsukimi'],['青川晴','Haru Aokawa'],['水原凪','Nagi Mizuhara']][genericIndex%4];
@@ -26,7 +26,7 @@ export function initializeCharacters(state, runId = `run_${crypto.randomUUID()}`
   check(validRunId(runId),'Invalid run identity.');
   check(!state.characters && !state.runId,'Character identity already initialized.');
   state.runId=runId;
-  state.characters={schemaVersion:1,generatorVersion:1,contentPackId:'lr-original-cast',contentPackVersion:1,usedUniqueArchetypeIds:[],records:{}};
+  state.characters={schemaVersion:1,generatorVersion:2,contentPackId:'lr-original-cast',contentPackVersion:2,usedUniqueArchetypeIds:[],records:{}};
   return reconcileCharacters(state);
 }
 export function reconcileCharacters(state) {
@@ -40,7 +40,7 @@ export function reconcileCharacters(state) {
   for (const id of Object.keys(records)) if (!alive.has(id)) delete records[id];
   for (const survivor of [...state.survivors].sort((a,b)=>a.id-b.id)) {
     check(Number.isSafeInteger(survivor.id) && survivor.id>0,'Invalid survivor identity.');
-    if (!Object.hasOwn(records,String(survivor.id))) records[survivor.id]=generateRecord(state.runId,survivor.id,state.characters.usedUniqueArchetypeIds);
+    if (!Object.hasOwn(records,String(survivor.id))) records[survivor.id]=generateRecord(state.runId,survivor.id,state.characters.usedUniqueArchetypeIds,state.characters.generatorVersion);
   }
   rosterCache.set(state,{array:state.survivors,count:state.survivors.length,next:state.nextSurvivorId});
   return state.characters;
@@ -50,7 +50,7 @@ export function validateCharacters(run, characters, survivors) {
   check(validRunId(run.id),'Invalid run identity.');
   check(Number.isSafeInteger(run.nextSurvivorId) && run.nextSurvivorId>Math.max(0,...survivors.map(s=>s.id)) && run.nextSurvivorId<=Number.MAX_SAFE_INTEGER,'Invalid survivor high-water mark.');
   exactKeys(characters,['schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
-  check(characters.schemaVersion===1 && characters.generatorVersion===1,'Unsupported character schema/generator.');
+  check(characters.schemaVersion===1 && [1,2].includes(characters.generatorVersion),'Unsupported character schema/generator.');
   check(typeof characters.contentPackId==='string' && /^[a-z0-9-]{1,64}$/.test(characters.contentPackId) && Number.isSafeInteger(characters.contentPackVersion) && characters.contentPackVersion>0,'Invalid character content pack.');
   check(Array.isArray(characters.usedUniqueArchetypeIds) && characters.usedUniqueArchetypeIds.length<=128 && new Set(characters.usedUniqueArchetypeIds).size===characters.usedUniqueArchetypeIds.length && characters.usedUniqueArchetypeIds.every(id=>typeof id==='string' && /^chr_[a-z0-9_]{1,64}$/.test(id)), 'Invalid reserved archetypes.');
   const ids=survivors.map(s=>String(s.id));
