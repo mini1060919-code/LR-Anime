@@ -1,3 +1,4 @@
+import {abilityMultiplier,completeWork} from '../progression/work.js';
 // Combat module: tower auto-fire, building garrisons and HQ militia (tracer +
 // hit flash effects) and building destruction handling. three.js objects are
 // created only inside the factory — no DOM access, no side effects at import.
@@ -157,7 +158,9 @@ export function createCombat({ scene, state, grid, visuals, onShot, onDestroyed 
         if (target) {
           spawnShotEffect(towerMuzzle(b), new THREE.Vector3(target.wx, ZOMBIE_HIT_Y, target.wz));
           // Il danno scala col livello della torre (potenziamento).
-          zombieManager.damageZombie(target, def.damage * damageMul * levelMultiplier(b.level));
+          const hp=target.hp;
+          zombieManager.damageZombie(target, def.damage * damageMul * levelMultiplier(b.level) * abilityMultiplier(state,b,'defense'));
+          completeWork(state,b,'defense',Math.max(0,Math.min(hp,hp-target.hp))/10);
           onShot?.(target);
           cooldown = 1 / def.fireRate;
         } else {
@@ -197,7 +200,10 @@ export function createCombat({ scene, state, grid, visuals, onShot, onDestroyed 
             new THREE.Vector3(target.wx, ZOMBIE_HIT_Y, target.wz),
             GARRISON_TRACER_COLOR
           );
-          zombieManager.damageZombie(target, GARRISON_DAMAGE * guns * damageMul);
+          const hp=target.hp;
+          const fighters={militia:b.defId==='hq',limit:guns};
+          zombieManager.damageZombie(target, GARRISON_DAMAGE * guns * damageMul * abilityMultiplier(state,b,'defense',fighters));
+          completeWork(state,b,'defense',Math.max(0,Math.min(hp,hp-target.hp))/10,fighters);
           onShot?.(target);
           cooldown = GARRISON_FIRE_INTERVAL;
         } else {

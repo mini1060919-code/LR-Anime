@@ -221,3 +221,15 @@ Object.assign(messages, {
   'Steadfast':'堅定','Empathetic':'體貼','Pragmatic':'務實','Curious':'好奇','Reserved':'內斂','Optimistic':'樂觀','Patient':'耐心','Cautious':'謹慎',
   'Expressions':'表情', 'Expression portrait':'表情肖像', 'Calm':'平靜', 'Happy':'開心', 'Alert':'警戒', 'Tired':'疲憊', 'Injured':'受傷', 'Portrait unavailable.':'肖像暫時無法顯示。',
 });
+
+Object.assign(messages,{
+  "Survivor records · skills and growth":"倖存者檔案・能力與成長",
+  "Skills and experience":"技能與經驗", "Agriculture":"農業", "Engineering":"工程", "Medicine skill":"醫療能力", "Scavenging":"探索採集", "Defense":"防禦", "Logistics":"後勤",
+  "Level {rank} · MAX":"等級 {rank}・已達上限", "Level {rank} · XP {current}/{needed}":"等級 {rank}・經驗 {current}/{needed}",
+  "Workplace":"工作建築", "Unassigned":"待命", "Assign resident":"指派居民", "Restore building auto-assignment":"恢復建築自動派工",
+  "Enable bounded ability bonuses":"啟用有上限的能力加成",
+  "Experience comes only from completed work. Jobs remain open to every profession.":"經驗僅來自實際完成的工作；所有職業皆可參與各類工作。",
+  "Resident is no longer alive.":"該居民已不在存活名冊中。", "Building is unavailable.":"此建築目前無法工作。", "Building has no free job slots.":"此建築已無工作空位。"
+});
+
+Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%, clinic care +3%.":"技能加成上限：工作與防禦 +10%、搬運 +5%、診所照護 +3%。"});

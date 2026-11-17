@@ -1,3 +1,4 @@
+import {abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
 // Node extraction: depletable resource tiles (forest/ruins/ore) drained by
 // extractors, and renewable planting by foresters. Pure logic, no I/O.
 
@@ -105,12 +106,15 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
   const yieldDef = TILE_YIELDS[def.extracts];
   if (!yieldDef) return;
   if (countNodesInRange(grid, b, def.extracts) === 0) return; // no nodes: idle
-  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level);
+  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
   const gained = (perDay * dt) / DAY_LENGTH;
   const cap = caps?.[yieldDef.resource] ?? Infinity;
   const before = state.resources[yieldDef.resource] ?? 0;
   const after = Math.min(cap, before + gained);
   state.resources[yieldDef.resource] = after;
+  const actual=Math.max(0,after-before);
+  completeWork(state,b,'scavenging',actual);
+  const garage=supportingGarage(state);if(garage)completeWork(state,garage,'logistics',actual/4);
   b.extracted = (b.extracted ?? 0) + (after - before);
   while (b.extracted >= yieldDef.amount) {
     const node = nearestNode(grid, b, def.extracts);
@@ -136,6 +140,7 @@ function tickForester(state, grid, b, ratio, dt, result) {
   tile.cell.type = 'forest';
   tile.cell.walkable = true; // planted forest stays walkable like mapgen forest
   result.planted.push({ x: tile.x, z: tile.z });
+  if(dt>0)completeWork(state,b,'agriculture',1);
   b.extracted = 0;
 }
 
@@ -144,6 +149,7 @@ function tickForester(state, grid, b, ratio, dt, result) {
 // { depleted: [{ x, z, fromType }], planted: [{ x, z }] }.
 export function tickExtraction(state, grid, dt, DEFS, mods) {
   const result = { depleted: [], planted: [] };
+  if(!(dt>0) || !Number.isFinite(dt))return result;
   // Effective caps (storage bonuses included): the same ceiling the HUD
   // shows, so extraction never stalls below the displayed capacity.
   const caps = effectiveCaps(state, DEFS);

@@ -1,4 +1,5 @@
-// Read-only presentation adapter. Saves contain identity snapshots and asset IDs, never image bytes.
+import {createProgressionControls} from './progressionpanel.js';
+// Presentation adapter with validated command callbacks. Saves contain identity snapshots and asset IDs, never image bytes.
 import { BUILDING_DEFS } from '../buildings/definitions.js';
 import { ARCHETYPES } from '../characters/catalog.js';
 import { createPortraitManager } from '../characters/portraits.js';
@@ -43,8 +44,8 @@ function el(tag, className, text) {
   return node;
 }
 
-/** Snapshot the paused roster. Only callbacks control pause; this panel never mutates state. */
-export function createCharacterPanel(root, { getState, onOpen, onClose, portraitManager = createPortraitManager() }) {
+/** Snapshot the paused roster. Assignment/effect changes go through injected core commands. */
+export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, portraitManager = createPortraitManager() }) {
   const launch = el('button', 'character-launch', 'Characters');
   launch.type = 'button';
   const dialog = el('dialog', 'character-dialog');
@@ -57,7 +58,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
   roster.setAttribute('aria-label', t('Survivors'));
   const detail = el('section', 'character-detail');
   detail.setAttribute('aria-live', 'polite');
-  dialog.append(el('p', 'dossier-eyebrow', 'Survivor records · skill effects disabled'),
+  dialog.append(el('p', 'dossier-eyebrow', 'Survivor records · skills and growth'),
     el('h2', 'dossier-title', 'Operator dossier'), close, roster, detail,
     el('p', 'character-note', 'Portraits are presentation only. They do not change survivor statistics or saved data.'));
   (root.querySelector('.interface-tools') ?? root).append(launch);
@@ -128,13 +129,14 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
       row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
       info.append(row);
     }
+    info.append(createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh:()=>{renderPage(survivor.id);}}));
     detail.append(frame, info);
   }
   const pagination=el('div','character-pagination');
   const previous=el('button','','Previous residents');previous.type='button';
   const next=el('button','','Next residents');next.type='button';
   const pageLabel=el('span');pagination.append(previous,pageLabel,next);dialog.insertBefore(pagination,detail);
-  function renderPage() {
+  function renderPage(selectedId) {
     const state=getState();roster.replaceChildren();
     const pages=Math.max(1,Math.ceil(state.survivors.length/PAGE_SIZE));
     pageIndex=Math.min(pageIndex,pages-1);
@@ -153,7 +155,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
     }
     previous.disabled=pageIndex===0;next.disabled=pageIndex>=pages-1;
     pageLabel.textContent=t('Page {page} / {total}',{page:pageIndex+1,total:pages});
-    if(members.length)select(members[0],state);
+    if(members.length)select(members.find(s=>s.id===selectedId) ?? members[0],state);
     else {selectionToken++;detail.replaceChildren(el('p','','No survivors in the settlement.'));}
   }
   previous.addEventListener('click',()=>{pageIndex--;renderPage();});

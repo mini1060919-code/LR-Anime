@@ -1,3 +1,4 @@
+import {abilityMultiplier,supportingBuilding,registerCare} from '../progression/work.js';
 // Gameplay modifiers: the current weather and every researched tech folded
 // into a single multiplier set. Pure logic, no I/O.
 
@@ -64,8 +65,11 @@ export function getModifiers(state, grid) {
     (b) => b.defId === 'clinic' && b.enabled !== false && (b.workers?.length ?? 0) > 0
   );
   if (clinicActive) {
-    mods.hungerRate *= 0.85;
-    mods.thirstRate *= 0.85;
+    const clinic=supportingBuilding(state,'clinic');
+    const skill=clinic?1-(abilityMultiplier(state,clinic,'medicine')-1)*0.3:1;
+    if(clinic)registerCare(mods,clinic,mods.hungerRate,mods.thirstRate);
+    mods.hungerRate *= 0.85*skill;
+    mods.thirstRate *= 0.85*skill;
   }
   let ranchCount = 0;
   let roadCount = 0;

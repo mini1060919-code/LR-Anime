@@ -1,3 +1,4 @@
+import {completeWork,supportingBuilding,careProof} from '../progression/work.js';
 // Survivor lifecycle: hunger, thirst, eating, drinking, death, jobs,
 // recruitment. Pure logic.
 
@@ -17,6 +18,8 @@ const RECRUIT_MIN_WATER = 20; // water stock required to attract a survivor
 // seconds. mods (optional) scales the hunger/thirst rates via
 // mods.hungerRate / mods.thirstRate.
 export function tickSurvivors(state, dt, mods) {
+  if(!(dt>0) || !Number.isFinite(dt))return;
+  const patients=state.survivors.length;
   const hungerGain = (100 * dt * (mods?.hungerRate ?? 1)) / (STARVATION_DAYS * DAY_LENGTH);
   const thirstGain = (100 * dt * (mods?.thirstRate ?? 1)) / (DEHYDRATION_DAYS * DAY_LENGTH);
   const starved = [];
@@ -34,6 +37,12 @@ export function tickSurvivors(state, dt, mods) {
     }
     if (s.hunger >= 100) starved.push(s);
     else if (s.thirst >= 100) dehydrated.push(s);
+  }
+  const clinic=supportingBuilding(state,'clinic');
+  const care=careProof(mods);
+  if(clinic && care?.buildingId===clinic.id){
+    const avoided=(Math.max(0,care.baseHunger-mods.hungerRate)*100*dt/(STARVATION_DAYS*DAY_LENGTH)+Math.max(0,care.baseThirst-mods.thirstRate)*100*dt/DAY_LENGTH)*patients;
+    completeWork(state,clinic,'medicine',avoided/10);
   }
   bury(state, starved, (s) => `Survivor #${s.id} starved to death.`);
   bury(state, dehydrated, (s) => `Survivor #${s.id} died of thirst.`);
@@ -222,6 +231,9 @@ export function tryRecruit(state, DEFS, count = 1) {
     const s = addSurvivor(state);
     pushEvent(state, 'recruit', `A new survivor has joined the colony. (#${s.id})`);
     recruited.push(s);
+  }
+  if(recruited.length){
+    const radio=supportingBuilding(state,'radio');if(radio)completeWork(state,radio,'logistics',recruited.length);
   }
   return recruited;
 }

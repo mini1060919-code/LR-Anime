@@ -67,9 +67,10 @@ describe('stable identity and roster lifecycle',()=>{
   const random=vi.spyOn(Math,'random');const state=game();initializeCharacters(state,RUN);reconcileCharacters(state);
   expect(random).not.toHaveBeenCalled();random.mockRestore();
  });
- it('leaves jobs, economy, survival and recruitment equivalent with ranks even at five',()=>{
+ it('leaves jobs, economy, survival and recruitment equivalent when ability effects are disabled, even at rank five',()=>{
   const original=game(),decorated=structuredClone(original);initializeCharacters(decorated,RUN);
-  for(const record of Object.values(decorated.characters.records))for(const skill of SKILLS)record.abilityRanks[skill]=5;
+  decorated.characters.progression.effectsEnabled=false;
+  for(const record of Object.values(decorated.characters.records))for(const skill of SKILLS){record.abilityRanks[skill]=5;record.experience[skill]=150000;}
   for(let i=0;i<100;i++)for(const state of [original,decorated]){
    assignJobs(state,BUILDING_DEFS);tickEconomy(state,0.1,BUILDING_DEFS);tickSurvivors(state,0.1);
   }
