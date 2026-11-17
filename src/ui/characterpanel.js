@@ -1,3 +1,4 @@
+import {createNeedsPanel} from './needspanel.js';
 import {createProgressionControls} from './progressionpanel.js';
 // Presentation adapter with validated command callbacks. Saves contain identity snapshots and asset IDs, never image bytes.
 import { BUILDING_DEFS } from '../buildings/definitions.js';
@@ -45,7 +46,7 @@ function el(tag, className, text) {
 }
 
 /** Snapshot the paused roster. Assignment/effect changes go through injected core commands. */
-export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, portraitManager = createPortraitManager() }) {
+export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, onNeedsEffects, portraitManager = createPortraitManager() }) {
   const launch = el('button', 'character-launch', 'Characters');
   launch.type = 'button';
   const dialog = el('dialog', 'character-dialog');
@@ -129,6 +130,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign
       row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
       info.append(row);
     }
+    info.append(createNeedsPanel(state.characters?.records?.[survivor.id],state,{onEffects:onNeedsEffects,onRefresh:()=>renderPage(survivor.id)}));
     info.append(createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh:()=>{renderPage(survivor.id);}}));
     detail.append(frame, info);
   }

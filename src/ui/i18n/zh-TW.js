@@ -233,3 +233,7 @@ Object.assign(messages,{
 });
 
 Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%, clinic care +3%.":"技能加成上限：工作與防禦 +10%、搬運 +5%、診所照護 +3%。"});
+
+Object.assign(messages,{"Survival needs":"居民生存需求","Fatigue":"疲勞","Health":"健康","Morale":"士氣","Exhausted":"精疲力竭","Rested":"精神充足","Unwell":"欠佳","Critical":"危急","Low spirits":"低落","Uneasy":"不安","Stable":"穩定","Healthy":"良好","Needs work efficiency: {value}%":"需求造成的工作效率：{value}%","Unassign or switch off the workplace to rest. Needs do not introduce new death rules.":"解除工作或關閉建築即可休息；需求數值不會新增死亡條件。","Apply survival efficiency":"套用生存需求效率"});
+
+Object.assign(messages,{"Idle or stopped workplaces allow rest. Automatic assignment may allocate another job.":"待命或建築停工時可休息；自動派工可能再分配其他工作。","Efficiency applies to production, extraction, planting and research. Combat and support auras retain their existing rules.":"需求效率適用生產、採集、植林與研究；戰鬥及支援光環沿用既有規則。"});

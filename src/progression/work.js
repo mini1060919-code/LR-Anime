@@ -1,3 +1,5 @@
+import {needsEfficiency} from '../needs/rules.js';
+import {markDefenseActivity} from '../needs/simulation.js';
 // Synchronous completion receipts. No polling rewards, wall clock, UI or RNG.
 import {learningMultiplier,rankForExperience,THRESHOLDS} from './rules.js';
 import {BUILDING_DEFS} from '../buildings/definitions.js';
@@ -22,6 +24,11 @@ export function abilityMultiplier(state,building,skill,options){
  const mean=members.reduce((sum,s)=>sum+state.characters.records[s.id].abilityRanks[skill],0)/members.length;
  return 1+Math.min(0.1,Math.max(0,mean)*0.02);
 }
+export function crewEfficiency(state,building){
+ if(state?.characters?.survival?.effectsEnabled!==true)return 1;
+ const members=participants(state,building);if(!members.length)return 1;
+ return members.reduce((sum,s)=>sum+needsEfficiency(state.characters.records[s.id].needs),0)/members.length;
+}
 export function supportingBuilding(state,defId){
  return state.buildings.filter(b=>b.defId===defId&&participants(state,b).length>0).sort((a,b)=>a.id-b.id)[0] ?? null;
 }
@@ -45,7 +52,7 @@ export function settleWork(state,receipt){
  const eligible=new Set(participants(state,proof.building,proof.options).map(s=>s.id));
  for(const member of proof.members){
   const r=state.characters.records[member.id];if(!eligible.has(member.id)||r?.uid!==member.uid)continue;
-  const skill=receipt.skill;if(r.experience[skill]>=THRESHOLDS[5])continue;
+  const skill=receipt.skill;if(skill==='defense')markDefenseActivity(state,member.id);if(r.experience[skill]>=THRESHOLDS[5])continue;
   const raw=receipt.units*1000/proof.members.length*learningMultiplier(r,skill)+r.experienceRemainders[skill];
   const whole=Math.floor(raw+1e-9);
   r.experience[skill]=Math.min(THRESHOLDS[5],r.experience[skill]+whole);
