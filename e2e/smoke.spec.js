@@ -83,9 +83,9 @@ test('boots to the HUD with day 1, resources and a working build menu', async ({
     (key) => JSON.parse(localStorage.getItem(key)),
     SAVE_KEY
   );
-  expect(save?.version).toBe(5);
-  expect(save?.payload?.seed).toBe(42);
-  expect(save?.payload?.day).toBe(1);
+  expect(save?.version).toBe(6);
+  expect(save?.core?.seed).toBe(42);
+  expect(save?.core?.day).toBe(1);
 
   expect(errors).toEqual([]);
 });
@@ -118,7 +118,7 @@ test('autosaves at dawn and restores the run after a reload', async ({ page }) =
     (key) => JSON.parse(localStorage.getItem(key)),
     SAVE_KEY
   );
-  expect(save?.payload?.day).toBe(2);
+  expect(save?.core?.day).toBe(2);
 
   // Reload without ?autostart: the title screen shows and the save loads
   // (autostart would force a fresh game instead). The restored run starts

@@ -2,7 +2,7 @@
 import { t } from './i18n/index.js';
 import {
   SAVE_KEY, MAX_SAVE_BYTES, inspectSave, listSlots, saveSlot, loadSlot,
-  importSave, exportSave, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
+  importSave, exportSave, exportLegacyCopy, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
 } from '../persistence.js';
 
 function el(tag, text) {
@@ -62,13 +62,18 @@ export function createSavePanel(root, { onOpen, onClose, onLoad }) {
     body.replaceChildren();
     const active = inspectSave();
     body.append(el('p', active.ok
-      ? (active.empty ? 'No autosave yet.' : `Autosave: Day ${active.data.payload.day}`)
+      ? (active.empty ? 'No autosave yet.' : `Autosave: Day ${active.data.core.day}`)
       : `Autosave protected: ${active.error}`));
     button(body, 'Export autosave JSON', () => exportKey(SAVE_KEY, 'last-refuge-autosave.json'));
+    if(active.ok && !active.empty)button(body,'Export v5 compatibility copy',()=>{
+      if(!window.confirm(t('This compatibility copy omits M3 character records. The original v6 save is retained. Continue?')))return;
+      const out=exportLegacyCopy();
+      if(out.ok)download(out.raw,'last-refuge-legacy-v5.json');else notify(out.error);
+    });
     for (const [i, slot] of listSlots().entries()) {
       const row = el('div');
       row.className = 'save-slot';
-      row.append(el('strong', `Slot ${i + 1}: ${!slot.ok ? 'Protected / unreadable' : slot.empty ? 'Empty' : `Day ${slot.data.payload.day}`}`));
+      row.append(el('strong', `Slot ${i + 1}: ${!slot.ok ? 'Protected / unreadable' : slot.empty ? 'Empty' : `Day ${slot.data.core.day}`}`));
       button(row, `Save slot ${i + 1}`, () => {
         if (!slot.empty && !window.confirm(t(`Replace slot ${i + 1}? Its previous contents will be backed up.`))) return;
         result(saveSlot(slot.key), 'Dawn checkpoint saved.');

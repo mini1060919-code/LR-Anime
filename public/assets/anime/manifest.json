@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "type": "generated-original-character-art",
+  "characters": {
+    "char_rin": {
+      "name_zh_TW": "凜",
+      "portraitId": "portrait_rin",
+      "full": "portraits/char_rin_full_v1.png",
+      "avatar": "avatars/char_rin_avatar_v1.png",
+      "expressions": {
+        "neutral": "expressions/char_rin_neutral_v1.png",
+        "happy": "expressions/char_rin_happy_v1.png",
+        "alert": "expressions/char_rin_alert_v1.png",
+        "tired": "expressions/char_rin_tired_v1.png",
+        "injured": "expressions/char_rin_injured_v1.png"
+      }
+    },
+    "char_yuma": {
+      "name_zh_TW": "悠真",
+      "portraitId": "portrait_yuma",
+      "full": "portraits/char_yuma_full_v1.png",
+      "avatar": "avatars/char_yuma_avatar_v1.png",
+      "expressions": {
+        "neutral": "expressions/char_yuma_neutral_v1.png",
+        "happy": "expressions/char_yuma_happy_v1.png",
+        "alert": "expressions/char_yuma_alert_v1.png",
+        "tired": "expressions/char_yuma_tired_v1.png",
+        "injured": "expressions/char_yuma_injured_v1.png"
+      }
+    },
+    "char_satsuki": {
+      "name_zh_TW": "紗月",
+      "portraitId": "portrait_satsuki",
+      "full": "portraits/char_satsuki_full_v1.png",
+      "avatar": "avatars/char_satsuki_avatar_v1.png",
+      "expressions": {
+        "neutral": "expressions/char_satsuki_neutral_v1.png",
+        "happy": "expressions/char_satsuki_happy_v1.png",
+        "alert": "expressions/char_satsuki_alert_v1.png",
+        "tired": "expressions/char_satsuki_tired_v1.png",
+        "injured": "expressions/char_satsuki_injured_v1.png"
+      }
+    },
+    "char_ren": {
+      "name_zh_TW": "蓮",
+      "portraitId": "portrait_ren",
+      "full": "portraits/char_ren_full_v1.png",
+      "avatar": "avatars/char_ren_avatar_v1.png",
+      "expressions": {
+        "neutral": "expressions/char_ren_neutral_v1.png",
+        "happy": "expressions/char_ren_happy_v1.png",
+        "alert": "expressions/char_ren_alert_v1.png",
+        "tired": "expressions/char_ren_tired_v1.png",
+        "injured": "expressions/char_ren_injured_v1.png"
+      }
+    }
+  }
+}

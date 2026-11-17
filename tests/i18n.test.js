@@ -95,11 +95,11 @@ describe('read-only character presentation and save compatibility', () => {
     const original = structuredClone(v4);
     const migrated = migrateSave(v4);
     setLocale('en');
-    const english = restoreSave(decodeSave(JSON.stringify(migrated)).payload);
+    const english = restoreSave(decodeSave(JSON.stringify(migrated)));
     setLocale('zh-TW');
-    const chinese = restoreSave(decodeSave(JSON.stringify(v4)).payload);
+    const chinese = restoreSave(decodeSave(JSON.stringify(v4)));
     expect(v4).toEqual(original);
-    expect(migrated.payload).toEqual(v4);
+    expect(migrated.core).toEqual(v4);
     expect(chinese.state).toEqual(english.state);
     expect(chinese.seed).toBe(42);
   });

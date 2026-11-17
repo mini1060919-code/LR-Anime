@@ -41,11 +41,13 @@ test('Traditional Chinese interface, read-only character dossier and v4/v5 langu
   const dossier = page.getByRole('dialog', { name: '倖存者檔案' });
   await expect(dossier).toBeVisible();
   await expect(dossier.locator('.character-roster-button')).toHaveCount(4);
-  await expect(dossier.getByRole('img', { name: '原創剪影占位圖，尚未配置角色立繪。' })).toBeVisible();
-  await expect(dossier.locator('img')).toHaveCount(0);
+  await expect(dossier.locator('.portrait-frame')).toHaveAttribute('data-portrait-status','ready');
+  await expect(dossier.locator('.character-portrait')).toBeVisible();
+  await expect(dossier.locator('.character-avatar')).toHaveCount(4);
   await expect(dossier.getByRole('meter')).toHaveCount(2);
-  await dossier.getByRole('button', { name: '倖存者 #2', exact: true }).click();
-  await expect(dossier.locator('.character-name')).toHaveText('倖存者 #2');
+  const residentName=await page.evaluate(()=>window.__game.state.characters.records['2'].nameSnapshot['zh-TW']);
+  await dossier.locator('[data-survivor-id="2"]').click();
+  await expect(dossier.locator('.character-name')).toHaveText(residentName);
   await page.keyboard.press('3'); // Game speed hotkeys must not unpause the modal.
   await expect(page.getByTitle('暫停', { exact: true })).toHaveClass(/active/);
   await page.screenshot({ path: '/tmp/lr-m2-character.png' });
@@ -60,13 +62,13 @@ test('Traditional Chinese interface, read-only character dossier and v4/v5 langu
   await saves.getByRole('button', { name: '儲存至槽位 1', exact: true }).click();
   await expect(saves.getByText('存檔槽 1：第 1 天', { exact: true })).toBeVisible();
   await saves.getByRole('button', { name: '關閉存檔', exact: true }).click();
-  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
+  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).core);
   await page.evaluate(data => localStorage.setItem('cbs-save', JSON.stringify(data)), legacy);
   await page.goto(BASE);
   await page.getByRole('button', { name: '開始遊戲', exact: true }).click();
   await expect(page.locator('.hud-day')).toHaveText('第 1 天', { timeout: 30_000 });
   const migrated = await page.evaluate(() => localStorage.getItem('cbs-save'));
-  expect(JSON.parse(migrated)).toMatchObject({ version: 5, payload: legacy });
+  expect(JSON.parse(migrated)).toMatchObject({ version: 6, core: legacy });
 
   page.once('dialog', dialog => dialog.dismiss());
   await page.getByLabel('語言', { exact: true }).selectOption('en');

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "records": {
+    "user-m3-art-v1": {
+      "status": "approved",
+      "licenseId": "User-provided-generated",
+      "creator": "User-supplied; source README reports OpenAI image generation",
+      "evidenceRef": "assets/anime/SOURCE-README.md",
+      "reviewedBy": "Integration validation; not legal clearance",
+      "reviewedAt": "2026-11-17T00:00:00Z",
+      "attributionText": "使用者提供生成角色美術 / User-provided generated character artwork",
+      "permissions": {
+        "display": true,
+        "webDistribution": true,
+        "repositoryRedistribution": true,
+        "commercial": null,
+        "modify": null
+      },
+      "releaseReview": "pending; no claim of exclusive copyright or trademark clearance"
+    }
+  }
+}
