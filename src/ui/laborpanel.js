@@ -1,3 +1,4 @@
+import {restoreAutomaticAssignment} from '../progression/assignments.js';
 // Labor panel: right-side overlay listing every standing building with job
 // slots. Each row shows icon, name, current workers x/y and +/− buttons
 // (manual assignment via survivors.js, which switches the building out of
@@ -9,7 +10,7 @@
 
 import { t } from './i18n/index.js';
 import { BUILDING_DEFS } from '../buildings/definitions.js';
-import { assignWorker, unassignWorker, idleCount } from '../sim/survivors.js';
+import { assignWorker, unassignWorker, availableWorkerCount, idleCount } from '../sim/survivors.js';
 import { ICONS } from './buildmenu.js';
 
 // Per-building worker priority (b.priority): the row button cycles
@@ -97,7 +98,7 @@ export function createLaborPanel(root) {
       autoBtn.type = 'button';
       autoBtn.title = t('Return to automatic assignment');
       autoBtn.addEventListener('click', () => {
-        b.autoAssign = true;
+        restoreAutomaticAssignment(state,b.id,BUILDING_DEFS);
         update(state);
       });
       const offBadge = h('span', 'labor-off', 'off');
@@ -142,7 +143,7 @@ export function createLaborPanel(root) {
       row.rowEl.classList.toggle('labor-row--off', off);
       row.offBadge.style.display = off ? '' : 'none';
       row.workersEl.textContent = t(`${b.workers.length}/${def.jobs}`);
-      row.plusBtn.disabled = off || idle === 0 || b.workers.length >= def.jobs;
+      row.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
       row.minusBtn.disabled = off || b.workers.length === 0;
       const isAuto = b.autoAssign !== false;
       row.autoBadge.style.display = !off && isAuto ? '' : 'none';

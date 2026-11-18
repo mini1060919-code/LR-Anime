@@ -161,7 +161,7 @@ describe('validated player assignment and original automation',()=>{
  });
 });
 describe('v4/v5/v6 add-on migration and protection',()=>{
- function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;delete data.characters.survival;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;delete r.needs;}return data;}
+ function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;delete data.characters.survival;delete data.characters.autonomy;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;delete r.needs;delete r.autonomy;}return data;}
  it('preserves v6 run, UID, art, names, ranks and safe defaults without version redesign',()=>{
   const old=oldV6();old.characters.records[1].abilityRanks.agriculture=3;const copy=structuredClone(old);const data=migrateSave(old);
   expect(old).toEqual(copy);expect(data.version).toBe(6);expect(data.run).toEqual(old.run);const r=data.characters.records[1];expect(r.uid).toBe(old.characters.records[1].uid);expect(r.portraitSetId).toBe(old.characters.records[1].portraitSetId);expect(r.experience.agriculture).toBe(60000);expect(r.abilityRanks.agriculture).toBe(3);expect(migrateSave(data)).toEqual(data);

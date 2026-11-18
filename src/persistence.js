@@ -1,3 +1,5 @@
+import {upgradeAutonomy} from './autonomy/schema.js';
+import {AUTONOMY_FEATURE} from './autonomy/rules.js';
 import {upgradeNeeds} from './needs/schema.js';
 import {NEEDS_FEATURE} from './needs/rules.js';
 import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
@@ -132,8 +134,9 @@ function validateEnvelope(data) {
   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
-  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE];
+  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE];
   assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length>=1 && data.requiredFeatures.length<=supported.length && data.requiredFeatures.every((f,i)=>f===supported[i]), 'Unsupported required save feature.');
+  assert(data.requiredFeatures?.includes(AUTONOMY_FEATURE)===Object.hasOwn(data.characters ?? {},'autonomy'),'Missing or unmarked autonomy data.');
   assert(data.requiredFeatures.includes(NEEDS_FEATURE)===Object.hasOwn(data.characters ?? {},'survival'),'Missing or unmarked survival data.');
   assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
   validateSave(data.core);
@@ -150,7 +153,7 @@ function validateEnvelope(data) {
       assert(Array.isArray(b.workers) && b.workers.length<=(BUILDING_DEFS[b.defId].jobs ?? 0) && b.workers.length===assigned.length && [...b.workers].sort((a,b)=>a-b).every((id,i)=>id===assigned[i]),'Inconsistent work roster; original protected.');
     }
   }
-  validateCharacters(data.run,data.characters,data.core.survivors);
+  validateCharacters(data.run,data.characters,data.core.survivors,data.core.buildings);
   return data;
 }
 
@@ -165,6 +168,7 @@ export function migrateSave(data) {
     const copy=structuredClone(validateEnvelope(data));
     if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
     if(!copy.requiredFeatures.includes(NEEDS_FEATURE)){upgradeNeeds(copy.characters);copy.requiredFeatures.push(NEEDS_FEATURE);}
+    if(!copy.requiredFeatures.includes(AUTONOMY_FEATURE)){upgradeAutonomy(copy.characters,copy.core);copy.requiredFeatures.push(AUTONOMY_FEATURE);}
     return validateEnvelope(copy);
   }
   let core=data;
@@ -179,7 +183,7 @@ export function migrateSave(data) {
   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
     core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
   return validateEnvelope(envelope);
 }
@@ -310,7 +314,7 @@ function trimBackups(keep) {
   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
 }
 
-const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(NEEDS_FEATURE);
+const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(AUTONOMY_FEATURE);
 
 const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
 
@@ -581,14 +585,14 @@ function restoreCore(data, legacyPopulationFallback = true) {
 export function createCheckpoint(state, seed, changedTiles) {
   reconcileCharacters(state);
   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
-    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
   return validateEnvelope(data);
 }
 
 export function restoreSave(data) {
   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
-  if(!data.requiredFeatures?.includes(NEEDS_FEATURE))data=migrateSave(data);
+  if(!data.requiredFeatures?.includes(AUTONOMY_FEATURE))data=migrateSave(data);
   validateEnvelope(data);
   const restored=restoreCore(data.core,false);
   restored.state.runId=data.run.id;

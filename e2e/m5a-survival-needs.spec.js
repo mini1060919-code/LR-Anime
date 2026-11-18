@@ -7,7 +7,7 @@ for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
  let save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
  if(width===1000){
-  const old=structuredClone(save);old.requiredFeatures.pop();delete old.characters.survival;for(const r of Object.values(old.characters.records))delete r.needs;
+  const old=structuredClone(save);old.requiredFeatures=old.requiredFeatures.slice(0,2);delete old.characters.survival;delete old.characters.autonomy;for(const r of Object.values(old.characters.records)){delete r.needs;delete r.autonomy;}
   await transfer(page,old);save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
   expect(save.characters.records['1'].needs).toEqual({fatigue:0,health:100,morale:70});expect(save.characters.records['1'].uid).toBe(old.characters.records['1'].uid);
   expect(save.characters.records['1'].experience).toEqual(old.characters.records['1'].experience);

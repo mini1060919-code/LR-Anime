@@ -237,3 +237,9 @@ Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%,
 Object.assign(messages,{"Survival needs":"居民生存需求","Fatigue":"疲勞","Health":"健康","Morale":"士氣","Exhausted":"精疲力竭","Rested":"精神充足","Unwell":"欠佳","Critical":"危急","Low spirits":"低落","Uneasy":"不安","Stable":"穩定","Healthy":"良好","Needs work efficiency: {value}%":"需求造成的工作效率：{value}%","Unassign or switch off the workplace to rest. Needs do not introduce new death rules.":"解除工作或關閉建築即可休息；需求數值不會新增死亡條件。","Apply survival efficiency":"套用生存需求效率"});
 
 Object.assign(messages,{"Idle or stopped workplaces allow rest. Automatic assignment may allocate another job.":"待命或建築停工時可休息；自動派工可能再分配其他工作。","Efficiency applies to production, extraction, planting and research. Combat and support auras retain their existing rules.":"需求效率適用生產、採集、植林與研究；戰鬥及支援光環沿用既有規則。"});
+
+Object.assign(messages,{"Resident autonomy":"居民自主安排","Manual idle":"手動待命","Manual assignment":"手動指定工作","Resting for fatigue":"自主休息：疲勞偏高","Awaiting autonomous work":"自主候工","Autonomous work":"自主工作中","Return resident to autonomy":"交回居民自主安排","Keep manual control":"保留手動控制","Resident control is unavailable.":"目前無法調整此居民的控制方式。"});
+
+Object.assign(messages,{"Reserved manual workplace: #{id}":"已保留手動工作意向：建築 #{id}","Manual jobs are reserved during rest and take priority on recovery. Existing HQ defense remains active.":"休息時保留手動工作意向，恢復後優先安排；原有庇護所防衛規則保持。","Autonomous vacancies use buildings with automatic assignment enabled.":"自主候工只填補已開啟自動派工的建築。"});
+
+Object.assign(messages,{"Awaiting manual workplace":"等待指定工作空位","Automatic rest at fatigue 85; resume at 35 after at least 10 seconds. Health below 50 lowers work priority.":"疲勞達 85 自主休息，至少 10 秒後恢復至 35 才候工；健康低於 50 時降低派工順位。"});

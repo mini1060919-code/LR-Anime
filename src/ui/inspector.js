@@ -6,7 +6,7 @@
 
 import { t } from './i18n/index.js';
 import { findBuilding, isUpgradeable, upgradeBuilding, upgradeCost, MAX_LEVEL, pushEvent } from '../sim/state.js';
-import { assignWorker, unassignWorker, setBuildingEnabled, idleCount } from '../sim/survivors.js';
+import { assignWorker, unassignWorker, setBuildingEnabled, availableWorkerCount, idleCount } from '../sim/survivors.js';
 import { countNodesInRange, TILE_YIELDS } from '../sim/extraction.js';
 import { effectiveCaps, buildingDailyOutput, canAfford } from '../sim/economy.js';
 import { repairCost, startRepair } from '../sim/repair.js';
@@ -321,7 +321,7 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
     }
     if (dyn.workersText) dyn.workersText.textContent = t(`👷 ${b.workers.length}/${def.jobs}`);
     if (dyn.plusBtn) {
-      dyn.plusBtn.disabled = off || idleCount(state) === 0 || b.workers.length >= def.jobs;
+      dyn.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
     }
     if (dyn.minusBtn) dyn.minusBtn.disabled = off || b.workers.length === 0;
     if (dyn.autoBadge) dyn.autoBadge.style.display = b.autoAssign ? '' : 'none';

@@ -35,7 +35,7 @@ for(const width of [1000,390])test(`Traditional Chinese skills, validated assign
  await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
  await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
  const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
- expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1','survival-needs-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
+ expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1','survival-needs-v1','autonomy-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
  expect(dawn.core.survivors.find(s=>String(s.id)===farmer).buildingId).toBe(2);
  await page.reload();await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
  await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
