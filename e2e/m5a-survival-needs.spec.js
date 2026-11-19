@@ -1,8 +1,10 @@
 import {test,expect} from '@playwright/test';
+// Keep the CSS viewport and gameplay checks while reducing software WebGL raster load.
+test.use({ deviceScaleFactor: 0.5 });
 const BASE='/city-builder-survival/';
 async function start(page){await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});}
 async function transfer(page,data){await page.getByRole('button',{name:'存檔',exact:true}).click();page.once('dialog',d=>d.accept());await page.getByLabel('匯入存檔 JSON',{exact:true}).setInputFiles({name:'needs.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(data))});await start(page);}
-for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth at ${width}px`,async({page})=>{
+for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth at ${width}px`,async({page},testInfo)=>{
  test.setTimeout(process.env.E2E_SLOW_WEBGL?600000:240000);await page.setViewportSize({width,height:900});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
  let save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
@@ -26,7 +28,7 @@ for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth
  await page.getByRole('button',{name:'角色資訊',exact:true}).click();
  const worked=await page.evaluate(()=>({worker:window.__game.state.characters.records['1'].needs.fatigue,idle:window.__game.state.characters.records['2'].needs.fatigue}));
  expect(worked.worker).toBeGreaterThan(before.worker);expect(worked.idle).toBeLessThan(before.idle);
- await page.locator('.resident-needs').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m5a-needs-${width}.png`});
+ await page.locator('.resident-needs').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`m5a-needs-${width}.png`)});
  await page.getByLabel('套用生存需求效率',{exact:true}).uncheck();await expect(page.locator('.needs-efficiency')).toContainText('100.0%');
  await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
  await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
