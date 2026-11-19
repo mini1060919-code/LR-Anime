@@ -1,6 +1,8 @@
 import {test,expect} from '@playwright/test';
+// Keep the CSS viewport and gameplay checks while reducing software WebGL raster load.
+test.use({ deviceScaleFactor: 0.5 });
 const BASE='/city-builder-survival/';
-for(const width of [1000,390])test(`Traditional Chinese skills, validated assignment and dawn persistence at ${width}px`,async({page})=>{
+for(const width of [1000,390])test(`Traditional Chinese skills, validated assignment and dawn persistence at ${width}px`,async({page},testInfo)=>{
  test.setTimeout(process.env.E2E_SLOW_WEBGL?600000:240000);
  await page.setViewportSize({width,height:900});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -28,8 +30,8 @@ for(const width of [1000,390])test(`Traditional Chinese skills, validated assign
  await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
  const xp=await page.evaluate(id=>window.__game.state.characters.records[id].experience.agriculture,farmer);expect(xp).toBeGreaterThanOrEqual(10000);
  await expect(page.locator('[data-skill="agriculture"]')).toContainText('等級 1');
- await page.locator('.character-portrait').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m4-dossier-${width}.png`});
- await page.locator('.character-growth').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m4-skills-${width}.png`});
+ await page.locator('.character-portrait').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`m4-dossier-${width}.png`)});
+ await page.locator('.character-growth').scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`m4-skills-${width}.png`)});
  await page.getByRole('button',{name:'關閉檔案',exact:true}).click();
  // Cross the existing dawn path; original smoke separately verifies a natural cycle.
  await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
