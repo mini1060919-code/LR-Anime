@@ -80,7 +80,7 @@ for (const viewport of VIEWPORTS) {
       const frame=page.locator('.character-expression-frame');
       await expect(frame).toHaveAttribute('data-portrait-status','ready',{timeout:60000});
       await expect(frame.locator('.character-expression-image'))
-        .toHaveAttribute('data-asset-id',/\\.neutral\\.v001$/);
+        .toHaveAttribute('data-asset-id',/\.neutral\.v001$/);
       expect(errors).toEqual([]);
     });
   });
