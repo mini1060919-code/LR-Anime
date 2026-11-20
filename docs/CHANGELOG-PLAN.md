@@ -55,3 +55,9 @@
 - [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) attempt 1，狀態 `completed/success`。Unit/Build job [136247490058](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) 為 `success`，GitHub 原始日誌確認 30 檔、Vitest 701/701 及正式建置成功。Complete Playwright E2E job [136247489680](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 為 `success`。 完整 E2E 原始日誌證實 **24/24 PASS、0 fail、0 skip、0 retry**（30.4 分鐘）；M2 2/2、M3 美術 10/10（1280px、390px neutral 各 1/1）、M3 角色 2/2、M4/M5-A/M5-B 各 2/2、存檔保護 2/2、Smoke 2/2。原始兩 Job 日誌皆記錄同一 PR merge ref。進行中的 log 曾回 404 BlobNotFound，結束後 connector 成功讀取；CLI 下載 redirect 的 Forbidden 以 connector 取回 ZIP，已驗證完整性，內有 10 張截圖。無測試失敗，留存模式未產生失敗 trace，無須修復分支。保存 GitHub 原始日誌、ZIP 及 checksum 於執行工作區 `/workspace/work/g1-ci02/`。
 - 追加 G1、DEVELOPMENT-STATUS、HANDOFF、CHANGELOG 四份紀錄。詳細分支保護 HTTP 403，兩個 required checks 的強制執行和實際批准未驗證。功能鏈及回復演練已完成，保留歷史快照。
 - **G1 NO-GO**。下一工作 **G1-GOV-01**。
+
+## 2026-11-20｜G1-GOV-01｜治理前置核對與全案固定回報格式
+- 已完成：[PROJECT-PROGRESS-REPORTING-RULES.md](PROJECT-PROGRESS-REPORTING-RULES.md) 建立每次報告必列全案 A～E／M0～M11、G1、GitHub 驗證與完整 Codex 下一階段可執行指令的固定契約；追加 G1、STATUS、HANDOFF、放行清單與本紀錄。
+- 即時 GitHub：PR #1～#11 全 Open／未合併；#9/#10/#11 Draft，reviews 空；develop→#11 ahead 14/behind 0；Actions run 44724242042 completed/success、兩 jobs success，沿用 G1-CI-02 701/701 及 E2E 24/24 的既有測試證據，沒有本輪新增遊戲測試。
+- 風險：先前 required checks off、管理詳細端點 HTTP 403（需 administration:read），真實 Ruleset、review、merge queue、bypass 和強制 checks 均需擁有者證明。
+- 未修改 main/develop、遊戲程式、PR Base、玩家存檔，未合併或部署。**G1 NO-GO**。下一 G1-GOV-02。
