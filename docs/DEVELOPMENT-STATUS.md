@@ -35,3 +35,9 @@
 - 驗收紀錄目前位於 Codex 工作區 `/workspace/work/g1-unified-evidence/`；未確認已提交為 GitHub 永久 artifact。
 - **G1 仍 NO-GO**：GitHub required checks 與 review 規則詳細核對遭 HTTP 403；整合合併順序與放行決策尚未完成。不可合併或部署。
 - 下一步：權限核查、保護規則、required checks、審查與整合排序；之後才可能進入 UX-01。
+
+
+## 2026-11-20｜GitHub CI 正式化進度
+- [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) 已新增 G1 validation workflow（純 CI 文件），GitHub Actions run `44724242042` **實際啟動**。
+- 初次查驗：Unit tests and production build job **SUCCESS**，Complete Playwright E2E job **IN_PROGRESS**，尚未宣告 GitHub CI 全綠。
+- 需確認 GitHub 保護規則與 review，正式整合 G1 **NO-GO**。
