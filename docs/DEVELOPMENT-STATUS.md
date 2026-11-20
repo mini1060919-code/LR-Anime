@@ -26,3 +26,12 @@
 
 ## 更新契約
 每次修改功能、設計或素材都應在相關階段檔案留下日期、成果路徑、PR／commit、測試及風險；同步更新本狀態頁與 [變更日誌](CHANGELOG-PLAN.md)，以免新對話出現版本錯置。
+
+
+## 2026-11-20｜最新覆核：G1 全套測試已通過（晚於上方初始快照）
+- [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) 已包含 Codex 對同一 Head `a2000b4e4700cd187aa0b1d2b2186364743850dc` 的正式驗收報告。
+- `npm ci` / `npm run build` PASS；Vitest **701/701 PASS**；Playwright 全套 **24/24 PASS**，0 fail / 0 skip / 0 retry；M3 missing PNG 備援另重跑 trace **2/2 PASS**。
+- v4/v5/v6 存檔相容、安全、黎明 Smoke **2/2 PASS**。先前列為「Smoke 修補未進 PR #9」的風險，已被本次實際回歸 PASS 降級為**待評估的測試差異**，不再是現行測試失敗。
+- 驗收紀錄目前位於 Codex 工作區 `/workspace/work/g1-unified-evidence/`；未確認已提交為 GitHub 永久 artifact。
+- **G1 仍 NO-GO**：GitHub required checks 與 review 規則詳細核對遭 HTTP 403；整合合併順序與放行決策尚未完成。不可合併或部署。
+- 下一步：權限核查、保護規則、required checks、審查與整合排序；之後才可能進入 UX-01。
