@@ -42,3 +42,8 @@ G1 → UX-01 → M5-C → M6-A → M6-B → M6-C → M6-D → M7 → M8 → M9 �
 - 不自行合併 main，不擅自部署。**開發完成 ≠ 整合完成 ≠ 正式發布**。
 
 > 此文件只建立正式文件索引，不代表 A～E 的成果已全部入庫，亦不代表 G1 已放行。
+
+## 各階段 GitHub 永久紀錄制度
+- 每完成一階段，使用 [單階段交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md) 保存成果與驗收，並 commit＋push、關聯 PR、重讀確認遠端檔案存在。
+- 更新對應 A～E／M 階段頁、[最新總狀態](DEVELOPMENT-STATUS.md)、[交接入口](HANDOFF.md)、[變更日誌](CHANGELOG-PLAN.md)；缺失任一項，僅能稱「成果已製作」，不可稱「GitHub 交接完成」。
+- 不得將文件進庫誤記為 G1 放行；不得擅自合併或部署。
