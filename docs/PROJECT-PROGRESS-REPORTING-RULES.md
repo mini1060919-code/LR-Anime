@@ -30,3 +30,11 @@
 - G1-GOV-01 待辦：required checks／review／ruleset 是否強制生效尚缺擁有者有權限證據；之前詳細端點因 `administration:read` 不足回 HTTP 403。
 - 歷史上曾以 G1-GOV-02 為下一階段；依 2026-11-20 晚間最新 G1-GOV-02 紀錄，**當前下一工作為 G1-GOV-03**：擁有者提交 Settings／保護規則／required checks／review／Pages 的實際證據及記名授權。工程 G1 解除前不進入 UX-01 功能整合。
 - [全專案總進度快照（2026-11-20）](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md) 是範例及歷史基準；每次回報須先查最新 GitHub。
+
+## 每一階段必須提交 GitHub 的交接閘門（強制）
+- **階段成果與交接同時入庫**：工程、企劃、美術、UI、測試及治理任一階段，結束時必須將成果或驗收證據 commit＋push 至 GitHub 可查分支，以新 PR 或現有 PR 留痕；不可只存在聊天、截圖或未推送的 Codex 工作區。
+- **採 [單階段交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md)**：填工作編號、完成／未完成、檔案路徑、Base/Head SHA、Commit、PR、測試（或未測）、存檔相容、美術授權、風險、GO/NO-GO、回復與下一工作。
+- **同步三個全域入口**：每階段更新對應 `docs/plans/` 或 `docs/milestones/`、`docs/DEVELOPMENT-STATUS.md`、`docs/HANDOFF.md` 和追加式 `docs/CHANGELOG-PLAN.md`；G1 同步 `G1.md` 及放行清單。新對話必須由 `HANDOFF.md` 找到最新工作編號與證據。
+- **交接讀回驗證**：提交後重新透過 GitHub 查詢 URL、Head SHA、Commit 和文件存在。只有 GitHub 可見且交接入口已同步才能標記「**GitHub 交接完成**」；本地成功但遠端失敗須註明「GitHub 交接未完成」並保留未交付清單。
+- **不能偷換完成定義**：階段檔已提交不等於功能已整合或驗收通過；未通過 G1 及正式授權，不動 main/develop、不部署。舊失敗與修復紀錄只可追加不刪除。
+- **每次給 Codex 的指令都要包含上述落盤流程**；最後輸出 GitHub PR、完整 SHA、證據 URL、交接狀態及下一階段 Codex 可執行指令。
