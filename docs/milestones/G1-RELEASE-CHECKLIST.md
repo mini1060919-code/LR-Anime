@@ -85,3 +85,17 @@
 擁有者從 [Settings → Rules → Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 及 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 提供兩分支的適用規則與 enforcement、checks/App、批准人數及撤銷過期批准、對話、strict/queue、force push/delete、bypass 與管理員範圍。由 [Settings → General → Pull Requests](https://github.com/mini1060919-code/LR-Anime/settings) 核對 merge 方法。從 [Settings → Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages) 及 [Settings → Environments → github-pages](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供來源、環境規則、允許分支及審查人。附日期、分支、適用範圍、記名決策與授權，無須分享憑證。
 
 **G1 NO-GO。下一工程工作 G1-GOV-04：接收擁有者實際設定證據，核驗發布隔離及記名授權。企劃可並行 B-04。**
+
+
+## 2026-11-20 22:23 Asia/Taipei｜G1-GOV-04｜保護規則與擁有者證據查核
+
+工程治理查核。文件基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `ce597a0e47b47f69d03296d538f048bbcccd15f2`，前次 G1 紀錄 `ca97a1c40ba45934fef1983c44fca661bfc6dcc6` 後只有治理文件變更。本輪未更動程式、美術、授權或存檔。
+
+- [x] 確認同一 CI merge ref、結果及既有演練適用性。
+- [ ] 生效 Rulesets／保護及 checks/reviews 取證，詳情 403。
+- [ ] Pages 與 github-pages 環境取證，兩端點 404。
+- [ ] 記名審查、整合及獨立發布授權。
+
+擁有者待提供：在 [Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 與 [Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 分別提供 develop/main 的生效範圍、enforcement、兩 checks/App 及其餘審查、隊列與權限設定；在 [General](https://github.com/mini1060919-code/LR-Anime/settings) 核對 merge 政策；於 [Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages) 和 [Environments](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供來源、允許分支、部署審查與環境防護。GET `/pages` 與 `/environments/github-pages` 均 HTTP 404，端點標示 pages:read／actions:read，原因無法從 404 判定。main push 會觸發有 build/E2E 前置的 Pages workflow，文件 #10 同樣需獨立發布授權。本輪沒有收到擁有者設定證據、記名 reviewer、整合決策人／操作人或正式授權。可交付截圖或具權限的 API 回應，勿分享憑證。
+
+**G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**

@@ -90,3 +90,12 @@
 - 原規範已有逐階段 MD、狀態頁、HANDOFF、追加式 CHANGELOG 及 Codex 指令要求；本次新增 [單階段 GitHub 交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md)，將提交 GitHub 分支／PR、完整 SHA、測試及回復證據、遠端讀回確認明文列為每一階段的交接完成條件。
 - 工程、企劃、美術、UI、治理均適用；每階段同步對應工作包、STATUS、HANDOFF、CHANGELOG，涉及 G1 另同步 G1 與放行清單。GitHub 寫入或讀回失敗則記錄「GitHub 交接未完成」，不得只靠聊天聲稱完成。
 - 本次只改文件，不改遊戲、不重新測試，G1 仍 **NO-GO**，下一 **G1-GOV-03**、並行 **B-04**；不動 main/develop、不合併部署。
+
+
+## 2026-11-20 22:23 Asia/Taipei｜G1-GOV-04｜保護規則與擁有者證據查核
+
+工程治理查核。文件基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `ce597a0e47b47f69d03296d538f048bbcccd15f2`，前次 G1 紀錄 `ca97a1c40ba45934fef1983c44fca661bfc6dcc6` 後只有治理文件變更。本輪未更動程式、美術、授權或存檔。
+
+已重核 PR #1～#11、同一 merge ref 的 CI 701/701 與 24/24、build 及存檔證據。候選相同，沿用演練。本輪追加五份治理紀錄。規則詳細 403，Pages／環境 404。
+
+**G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**

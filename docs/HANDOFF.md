@@ -98,3 +98,12 @@
 - 從本次起工程／企劃／美術／UI／治理任何階段結束，**成果及階段證據必須 commit＋push 至 GitHub 並重讀驗證**；需同時同步本檔、DEVELOPMENT-STATUS、CHANGELOG 及對應階段文件。只在聊天或 Codex 本機留存不算交接完成。
 - 未能寫入 GitHub 必須明示「GitHub 交接未完成」，保留後續補提交任務。後續報告仍須附完整「Codex｜下一階段可執行指令」，含 GitHub 入庫步驟。
 - 工作狀態延續：**G1 NO-GO**；當前下一工程編號 **G1-GOV-03**，並行企劃 **B-04**。請以每次重新讀取的最新 GitHub 狀態為準。
+
+
+## 2026-11-20 22:23 Asia/Taipei｜G1-GOV-04｜保護規則與擁有者證據查核
+
+工程治理查核。文件基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `ce597a0e47b47f69d03296d538f048bbcccd15f2`，前次 G1 紀錄 `ca97a1c40ba45934fef1983c44fca661bfc6dcc6` 後只有治理文件變更。本輪未更動程式、美術、授權或存檔。
+
+**G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**
+
+收到擁有者證據後，從本治理分支重讀總計畫、固定回報規則、快照、G1 與放行清單，再查 PR #1～#11、run 44724242042 和 merge ref。按 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 核對規則、Pages 與記名授權。候選未變則沿用 CI 701/701、24/24、build 與既有七段演練；有變更才重驗。完成後追加同五份文件、commit＋push，重新以 GitHub 讀回文件及 PR #10 Head。缺證維持 NO-GO，不合併、不部署。

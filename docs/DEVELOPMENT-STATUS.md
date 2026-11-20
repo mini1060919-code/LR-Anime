@@ -96,3 +96,14 @@ PR #1～#11 仍 Open、未合併；#7～#11 Draft，reviews 皆空。保護詳�
 ## 2026-11-20｜每階段 GitHub 交接永久化
 - 原有逐階段文件及總狀態更新制度已加上**遠端提交與讀回驗證**條件。每一階段均應依 [單階段交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md) 取得成果路徑、PR／Commit SHA、測試與授權、風險、下一 Codex 任務，並同步本頁、HANDOFF、CHANGELOG 及相關 A～E／M 階段文件。
 - GitHub API 實際確認前不能宣稱已入庫；純聊天成果或本機未推送檔案不能充當永久交接。此更新僅影響文件治理，不改動 G1 **NO-GO**、原工程順位 **G1-GOV-03**／企劃 **B-04**。
+
+
+## 2026-11-20 22:23 Asia/Taipei｜G1-GOV-04｜保護規則與擁有者證據查核
+
+工程治理查核。文件基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `ce597a0e47b47f69d03296d538f048bbcccd15f2`，前次 G1 紀錄 `ca97a1c40ba45934fef1983c44fca661bfc6dcc6` 後只有治理文件變更。本輪未更動程式、美術、授權或存檔。
+
+[Run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) 仍 completed/success。#11 Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`、#9 Head `a2000b4e4700cd187aa0b1d2b2186364743850dc` 和實際 merge ref `8a14ae5909425fcec10b980357a39fe2b68fdc55` 相符，tree `645fdb32759ebf36617c9b0de89e2f4c06b2df08` 與 #11 Head 相同。原始日誌及 ZIP 校驗通過。[Unit/Build job](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) npm ci、701/701、build 成功；[E2E job](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 24/24，零失敗／跳過／重試，單 worker，含兩種 viewport neutral、v4/v5/v6、角色穩定 ID、未知版本防覆寫與 quota 的既有證據（未知版本另有單元覆蓋）。[Artifact 14624558654](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/artifacts/14624558654) 既有 ZIP 含 10 張截圖，無失敗 trace。本輪未重跑。
+
+PR #1～#11 全 Open／未合併，#7～#11 Draft，reviews 全空。詳見 [G1](milestones/G1.md)。
+
+**G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**
