@@ -58,3 +58,10 @@
 - [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) attempt 1，狀態 `completed/success`。Unit/Build job [136247490058](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) 為 `success`，GitHub 原始日誌確認 30 檔、Vitest 701/701 及正式建置成功。Complete Playwright E2E job [136247489680](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 為 `success`。 完整 E2E 原始日誌證實 **24/24 PASS、0 fail、0 skip、0 retry**（30.4 分鐘）；M2 2/2、M3 美術 10/10（1280px、390px neutral 各 1/1）、M3 角色 2/2、M4/M5-A/M5-B 各 2/2、存檔保護 2/2、Smoke 2/2。原始兩 Job 日誌皆記錄同一 PR merge ref。進行中的 log 曾回 404 BlobNotFound，結束後 connector 成功讀取；CLI 下載 redirect 的 Forbidden 以 connector 取回 ZIP，已驗證完整性，內有 10 張截圖。無測試失敗，留存模式未產生失敗 trace，無須修復分支。保存 GitHub 原始日誌、ZIP 及 checksum 於執行工作區 `/workspace/work/g1-ci02/`。
 - `main`、`develop` 同指 `f6faebbb8096967854bacf0708b196ffac2712b9` 且顯示 `protected:true`；分支摘要的 required checks 為 `off`、contexts/checks 皆空。Repository rulesets（含父層）與兩分支 rules 查詢 HTTP 200、可見陣列皆空。詳細 `GET /branches/{main,develop}/protection` 及 `required_status_checks`、`required_pull_request_reviews`、`enforce_admins`、`restrictions` 子端點均 HTTP 403 `Resource not accessible by integration`，回應要求 `administration=read`。Required approvals、conversation resolution、strict、force-push／delete 限制以及 bypass／管理員適用範圍仍未驗證。Repository 允許 merge commit、squash 和 rebase，auto-merge 與合併後自動刪分支為 false。
 - 功能鏈與七段本機回復演練已核對，詳見 [G1](milestones/G1.md)。**G1 NO-GO**，下一工作 **G1-GOV-01**。
+
+## 2026-11-20｜G1-GOV-01 與固定專案回報格式
+- 最新 GitHub 查核 PR #1～#11 均 Open／未合併；#9/#10/#11 Draft；其 reviews API 皆空。
+- Run 44724242042 完成 success，兩 jobs success；G1-CI-02 的 Vitest 701/701、完整 E2E 24/24 及正式建置 PASS 已歸檔。**自動化通過不等於已整合。**
+- develop 到 PR #11 ahead 14、behind 0。先前 required checks off 摘要與詳情 HTTP 403 仍需擁有者查核 enforcement、review、App、merge queue、bypass、force push/delete。
+- 原順序不變：G1 → UX-01 → M5-C → M6-A～D → M7～M11。企劃 B-03 v0.1 已建立，下一 B-04；A/E 原交付待核實，C/D 仍規劃。
+- 建立 [LR-Anime 全專案總進度／Codex 固定報告規則](PROJECT-PROGRESS-REPORTING-RULES.md)：**每次成果必須含全專案總進度與「Codex｜下一階段可執行指令」**，並記錄 commit、測試、風險、GO/NO-GO、交接。G1 **NO-GO**，下一 **G1-GOV-02**。
