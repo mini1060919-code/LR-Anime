@@ -65,3 +65,14 @@
 - develop 到 PR #11 ahead 14、behind 0。先前 required checks off 摘要與詳情 HTTP 403 仍需擁有者查核 enforcement、review、App、merge queue、bypass、force push/delete。
 - 原順序不變：G1 → UX-01 → M5-C → M6-A～D → M7～M11。企劃 B-03 v0.1 已建立，下一 B-04；A/E 原交付待核實，C/D 仍規劃。
 - 建立 [LR-Anime 全專案總進度／Codex 固定報告規則](PROJECT-PROGRESS-REPORTING-RULES.md)：**每次成果必須含全專案總進度與「Codex｜下一階段可執行指令」**，並記錄 commit、測試、風險、GO/NO-GO、交接。G1 **NO-GO**，下一 **G1-GOV-02**。
+
+
+## 2026-11-20 20:50 Asia/Taipei｜G1-GOV-02｜正式整合治理查核
+
+治理基準 [PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `53b8f569535c5f77a3553dd0a983f08697d1a27c`。G1 候選 [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`，CI [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`。
+
+[Run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) attempt 1 仍為 completed/success。原始日誌和 ZIP 重新核對校驗碼。兩 Job checkout `8a14ae5909425fcec10b980357a39fe2b68fdc55`，父提交是 #9 與 #11，檔案樹 `645fdb32759ebf36617c9b0de89e2f4c06b2df08` 與 #11 Head 相同。[Unit tests and production build](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) 成功（npm ci、Vitest 701/701、正式建置）。[Complete Playwright E2E](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 24/24，0 fail／skip／retry，單 worker，兩種 viewport 的 neutral 備援均過。v4/v5 遷移、v6 重載及未知版本防覆寫有同版合成資料測試證據。[Artifact 14624558654](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/artifacts/14624558654) 仍列為未過期，既有 ZIP 有 10 張截圖，無失敗 trace。本輪無新遊戲測試。
+
+七段本機 merge/revert 重演成功，所有 #1～#11 仍 Open 未合併；#7～#11 Draft，reviews 皆空。分支詳細規則 403、Pages 設定 404，見 [G1](milestones/G1.md)。原有 A～E／M0～M11 開發階段沿用各工作包證據。
+
+**G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**

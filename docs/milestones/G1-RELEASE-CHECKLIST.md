@@ -51,3 +51,23 @@
 - [ ] 指定核准 reviewer、最終 G1 決策人和整合操作人，保存規則證據與正式審查紀錄。
 - [ ] 真正合併前以最新 SHA 分段重驗 #1→#2→#4→#3→#5→#6，再一次性導入 #9/#11 的測試及 CI；逐段存 before/after SHA、merge tree、CI、v4/v5/v6 與未知版安全證據；失敗以獨立 revert PR，勿 reset 或 force push。
 先前詳細規則端點 HTTP 403 `Resource not accessible by integration`，需 `administration:read`；本輪連線未提供規則詳細讀取，不能視作已證實生效。請見 [全專案固定回報規則](../PROJECT-PROGRESS-REPORTING-RULES.md)。**G1 NO-GO；下一工作 G1-GOV-02。**
+
+
+## 2026-11-20 20:50 Asia/Taipei｜G1-GOV-02｜正式整合治理查核
+
+治理基準 [PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `53b8f569535c5f77a3553dd0a983f08697d1a27c`。G1 候選 [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`，CI [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`。
+
+- [x] 同一候選的兩個 Actions job 成功，701/701、24/24。
+- [x] 最新 Base/Head、逐段合併與倒序回復演練完成。
+- [ ] 擁有者提供 develop/main 生效規則與 required checks 來源；詳細端點 403。
+- [ ] 核對 required approving reviews、對話解決、strict、queue／merge_group、bypass、force push／delete 與管理員範圍。
+- [ ] 核對 Pages 實際來源與環境保護（API 404）、發布授權與分段整合批准。
+- [ ] 整合各段的實際 merge ref 與 after SHA 另取得全套適用測試和審查。
+
+### 擁有者待提供證據
+
+- [Settings → Rules → Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 與 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches)：分別提供 develop、main 的完整適用規則截圖或有權限 API 回應，含 Active/Evaluate/Disabled、分支範圍、兩個 required contexts 與 App、strict、merge queue、批准人數、撤銷過期批准、最新推送審查、對話解決、force push/delete、限制推送、bypass 名單與管理員套用。API 證據需 repository Administration read，勿交付憑證。
+- [Settings → General → Pull Requests](https://github.com/mini1060919-code/LR-Anime/settings) 核對 merge 方法與 auto-merge／自動刪除；[Settings → Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages) 和 [Settings → Environments → github-pages](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供 Pages 來源、允許分支、發佈保護與審查人。任何 main 更新（包含文件）另需發布授權。
+- 提供 reviewer、正式決策人、操作人，以及綁定實際 merge ref 的批准與檢查；缺任一項維持 NO-GO。
+
+**G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**

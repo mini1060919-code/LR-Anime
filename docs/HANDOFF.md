@@ -69,3 +69,12 @@
 - 最新重核 PR #1～#11 均 Open 未合併，#9/#10/#11 Draft；run 44724242042 completed/success、兩 jobs success，既有 G1-CI-02 完整 Playwright 24/24、單元 701/701、build PASS。
 - PR #9/#10/#11 reviews 皆無批准；分支保護及 required checks 強制性仍缺擁有者的有權限證據，先前詳細端點 HTTP 403（需 administration:read）。**G1 NO-GO**。
 - 下一 **G1-GOV-02**：取得 develop/main ruleset enforcement、兩 required jobs 與 App、review 人數/對話、strict/merge queue、force push/delete、bypass/管理員適用、merge 方法及 main Pages 部署隔離的擁有者證據；記錄審核人與 G1 放行決定。禁止未核准合併、部署及更動玩家存檔。
+
+
+## 2026-11-20 20:50 Asia/Taipei｜G1-GOV-02｜正式整合治理查核
+
+治理基準 [PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `53b8f569535c5f77a3553dd0a983f08697d1a27c`。G1 候選 [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`，CI [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`。
+
+**G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**
+
+在新 Codex 任務先重抓治理分支，讀總計畫、固定回報規則、G1 和[放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)。重查 #1～#11 與 run 44724242042；相同 merge ref 沿用原始證據，變更則重驗。擁有者依 G1 的設定連結提供帶分支名、適用範圍、App、reviews、queue、保護、Pages 與決策人的證據。沿 #1→#2→#4→#3→#5→#6 再接一份統一 CI，核對每段 SHA/tree 與 revert 計畫。保留歷史並追加本次五份治理文件。證據或授權不足時保持 NO-GO，禁止合併、部署及動玩家資料。並行企劃 B-04；A/E 僅盤點原稿與權利。

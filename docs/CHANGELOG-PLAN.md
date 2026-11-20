@@ -61,3 +61,12 @@
 - 即時 GitHub：PR #1～#11 全 Open／未合併；#9/#10/#11 Draft，reviews 空；develop→#11 ahead 14/behind 0；Actions run 44724242042 completed/success、兩 jobs success，沿用 G1-CI-02 701/701 及 E2E 24/24 的既有測試證據，沒有本輪新增遊戲測試。
 - 風險：先前 required checks off、管理詳細端點 HTTP 403（需 administration:read），真實 Ruleset、review、merge queue、bypass 和強制 checks 均需擁有者證明。
 - 未修改 main/develop、遊戲程式、PR Base、玩家存檔，未合併或部署。**G1 NO-GO**。下一 G1-GOV-02。
+
+
+## 2026-11-20 20:50 Asia/Taipei｜G1-GOV-02｜正式整合治理查核
+
+治理基準 [PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `53b8f569535c5f77a3553dd0a983f08697d1a27c`。G1 候選 [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`，CI [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`。
+
+重新確認 run 44724242042 雙 Job SUCCESS，701/701 單元、24/24 E2E、建置與存檔案例通過，未新增測試。重演七段 merge／revert，追加 G1、放行清單、STATUS、HANDOFF、CHANGELOG。保護詳情 HTTP 403、Pages 設定 HTTP 404，保留舊快照。
+
+**G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**
