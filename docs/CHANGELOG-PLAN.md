@@ -85,3 +85,8 @@
 重新核對 #1～#11、CI 701/701 與 E2E 24/24、build 及同樹證據。沿用七段演練並追加五份治理紀錄；保護詳細端點 403、Pages 及環境 404。
 
 **G1 NO-GO。下一工程工作 G1-GOV-04：接收擁有者實際設定證據，核驗發布隔離及記名授權。企劃可並行 B-04。**
+
+## 2026-11-20｜PROJECT-HANDOFF-01｜每階段 GitHub 留痕成為必經門檻
+- 原規範已有逐階段 MD、狀態頁、HANDOFF、追加式 CHANGELOG 及 Codex 指令要求；本次新增 [單階段 GitHub 交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md)，將提交 GitHub 分支／PR、完整 SHA、測試及回復證據、遠端讀回確認明文列為每一階段的交接完成條件。
+- 工程、企劃、美術、UI、治理均適用；每階段同步對應工作包、STATUS、HANDOFF、CHANGELOG，涉及 G1 另同步 G1 與放行清單。GitHub 寫入或讀回失敗則記錄「GitHub 交接未完成」，不得只靠聊天聲稱完成。
+- 本次只改文件，不改遊戲、不重新測試，G1 仍 **NO-GO**，下一 **G1-GOV-03**、並行 **B-04**；不動 main/develop、不合併部署。
