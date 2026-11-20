@@ -70,3 +70,9 @@
 重新確認 run 44724242042 雙 Job SUCCESS，701/701 單元、24/24 E2E、建置與存檔案例通過，未新增測試。重演七段 merge／revert，追加 G1、放行清單、STATUS、HANDOFF、CHANGELOG。保護詳情 HTTP 403、Pages 設定 HTTP 404，保留舊快照。
 
 **G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**
+
+## 2026-11-20｜PROJECT-REPORT-01｜全專案總進度與 Codex 指令固定化
+- 交付：[全專案開發總進度快照](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md)；重用而非重建 [九項固定回報規則](PROJECT-PROGRESS-REPORTING-RULES.md)；同步總計畫、交接、狀態與變更日誌。
+- 範圍：A-01～E-06、M0～M11、G1/UX-01，分離已有成果、實測、待整合與未開發階段；不給未有可靠分母的百分比。
+- 決策：以 G1-GOV-02 為最新既有工程履歷，下一工作 **G1-GOV-03**；企劃 **B-04**。每次報告固定附「Codex｜下一階段可執行指令」。
+- 測試／程式：本次純文件治理，**未重新執行任何測試、未變更遊戲程式**，沿用已記錄 GitHub CI 成功證據，但 G1 仍 NO-GO。未更動 main/develop、未合併／部署。
