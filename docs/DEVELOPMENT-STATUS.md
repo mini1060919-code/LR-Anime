@@ -41,3 +41,12 @@
 - [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) 已新增 G1 validation workflow（純 CI 文件），GitHub Actions run `44724242042` **實際啟動**。
 - 初次查驗：Unit tests and production build job **SUCCESS**，Complete Playwright E2E job **IN_PROGRESS**，尚未宣告 GitHub CI 全綠。
 - 需確認 GitHub 保護規則與 review，正式整合 G1 **NO-GO**。
+
+## 2026-11-20｜G1-CI-01 GitHub 即時覆核（晚於上述 CI 啟動快照）
+- PR #9：Open/Draft，Head `a2000b4e4700cd187aa0b1d2b2186364743850dc`，保留歷史 Codex **24/24** 本機 E2E 報告；不是新的 GitHub Actions 最終 PASS。
+- PR #10：Open/Draft，治理文件仍在 `docs/ae-master-plan-v1-governance`，本段於該分支追加。
+- PR #11：Open/Draft，Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`，與 PR #9 候選相比只新增 `.github/workflows/g1-validation.yml`。
+- [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042)：重新查驗仍 `in_progress`；Unit/Build Job SUCCESS，GitHub 原始 log 證實 Vitest **701/701 PASS**、正式建置 PASS；完整 Playwright Job **in_progress**，**不宣稱已完成**。E2E 日誌下載 404 BlobNotFound，artifacts 暫為 `[]`。
+- PR #9／#11 reviews 均 `[]`；combined commit statuses `[]` 不能用於推定 Ruleset / GitHub Actions checks 的合規狀況。舊紀錄的 Rules API **403** 是前次回報；此輪可用 connector 無 Rules API，擁有者仍需查明是否強制保護 `develop/main`。
+- `develop` 至 G1 統一候選為 13 commits ahead / 0 behind；功能依賴 #1→#2→#4→#3→#5→#6，#7/#8 修補已納入 #9，避免重複匯入。
+- **本次未新跑本機測試、未修正程式、未合併／部署。G1 NO-GO。** 工程下一項 **G1-CI-02**：取得 CI E2E 最終結論及 artifacts，若 FAIL 獨立修復；之後 **G1-GOV-01**：擁有者核對 ruleset、reviews、required checks、逐段整合與安全回復。
