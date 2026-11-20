@@ -28,4 +28,5 @@
 - G1-CI-02 既有證據：GitHub Actions run [44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) completed/success；Vitest 701/701、E2E 24/24，build PASS；不是已合併／發布。
 - 2026-11-20 本輪查核：PR #1～#11 全部仍 Open／未合併；#9/#10/#11 Draft；其 reviews 尚無核准。G1 仍 NO-GO。
 - G1-GOV-01 待辦：required checks／review／ruleset 是否強制生效尚缺擁有者有權限證據；之前詳細端點因 `administration:read` 不足回 HTTP 403。
-- 正式後續工作：**G1-GOV-02（擁有者設定證據與放行門檻確認）**。工程 G1 解除之前，不進入 UX-01 功能整合。
+- 歷史上曾以 G1-GOV-02 為下一階段；依 2026-11-20 晚間最新 G1-GOV-02 紀錄，**當前下一工作為 G1-GOV-03**：擁有者提交 Settings／保護規則／required checks／review／Pages 的實際證據及記名授權。工程 G1 解除前不進入 UX-01 功能整合。
+- [全專案總進度快照（2026-11-20）](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md) 是範例及歷史基準；每次回報須先查最新 GitHub。
