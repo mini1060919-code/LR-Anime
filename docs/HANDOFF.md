@@ -92,3 +92,9 @@
 **G1 NO-GO。下一工程工作 G1-GOV-04：接收擁有者實際設定證據，核驗發布隔離及記名授權。企劃可並行 B-04。**
 
 先讀治理分支的總計畫、固定回報規則、晚間快照、G1 與放行清單，重查 GitHub PR #1～#11、run 44724242042、實際 merge ref。已有 CI 701/701、24/24 與 build PASS；候選不變則沿用。依 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 取得兩分支與 Pages 環境設定證據，缺證或授權時保持 NO-GO。先查後寫，保留歷史；禁止合併、部署或操作玩家資料。
+
+## 2026-11-20｜永久交接規則：每階段必須 GitHub 入庫
+- 詳見 [固定開發回報規則](PROJECT-PROGRESS-REPORTING-RULES.md) 和 [單階段 GitHub 交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md)。
+- 從本次起工程／企劃／美術／UI／治理任何階段結束，**成果及階段證據必須 commit＋push 至 GitHub 並重讀驗證**；需同時同步本檔、DEVELOPMENT-STATUS、CHANGELOG 及對應階段文件。只在聊天或 Codex 本機留存不算交接完成。
+- 未能寫入 GitHub 必須明示「GitHub 交接未完成」，保留後續補提交任務。後續報告仍須附完整「Codex｜下一階段可執行指令」，含 GitHub 入庫步驟。
+- 工作狀態延續：**G1 NO-GO**；當前下一工程編號 **G1-GOV-03**，並行企劃 **B-04**。請以每次重新讀取的最新 GitHub 狀態為準。
