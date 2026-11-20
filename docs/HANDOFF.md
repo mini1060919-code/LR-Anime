@@ -46,3 +46,12 @@
 - G1 已新增 [CI Draft PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11)，Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`，相對 PR #9 僅新增 GitHub Actions workflow。
 - CI run `44724242042` 已啟動；最初核對單元／建置 SUCCESS、完整 Playwright E2E IN_PROGRESS。接手後應先重新讀當下 GitHub Actions 狀態，不能沿用這個過渡狀態。
 - [G1 正式放行檢查表](milestones/G1-RELEASE-CHECKLIST.md) 列出 required checks／審查／合併順序尚未完成之項目；不得直接合併 develop/main。
+
+## 2026-11-20｜新對話交接：G1-CI-01 最新查核
+- **請以再次讀取 GitHub 為準**；此段記錄查核當下狀態，不保證未來不變。PR #9 Open/Draft Head `a2000b4e4700cd187aa0b1d2b2186364743850dc`；PR #10 Open/Draft（本文件分支）；PR #11 Open/Draft Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`。
+- PR #11 僅新增 GitHub Actions workflow；[run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) 最後查核仍 **in_progress**；Unit/Build job **success**（直接 GitHub log：701/701、build 成功）；Complete Playwright E2E **in_progress**，不是已通過。E2E job log 此時回傳 404 BlobNotFound；無 artifact。
+- #9 先前 Codex 曾在同一 Head 回報 24/24 E2E、Smoke 2/2、存檔 v4/v5/v6；不能取代 #11 這輪 GitHub CI 結果。
+- PR #9 與 #11 reviews 各為 `[]`；combined statuses `[]` 不能證明 required checks；先前 Rules API 有 403 紀錄，本次 connector 無保護規則讀取功能，**請擁有者至 Settings → Rules → Rulesets / Branches 核對 main/develop enforcement、必需 checks、review、merge-commit**。
+- 功能鏈 #1 M1 → #2 M2 → #4 M3 → #3 M4 → #5 M5-A → #6 M5-B；#7/#8 為測試修補，已匯入 #9，不得雙重匯入。統一候選與 develop 相比 ahead 13 / behind 0。
+- **下個任務：G1-CI-02** 重新抓取 run 44724242042 最終狀態、24 項 E2E 明細、logs/traces；若 failure，先定位根因再由獨立分支提交測試或程式修復，保留既有斷言及零重試原則。其次 **G1-GOV-01** 核查擁有者保護規則、required reviews、逐段合併與 revert PR 計畫。
+- **始終 NO-GO**：不得合併或直接更動 develop/main；不得部署、刪 PR/分支、觸碰玩家存檔。必要時參見 [G1 放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)。
