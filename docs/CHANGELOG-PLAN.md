@@ -32,3 +32,9 @@
 - 依 Codex 正式 PR 報告：Vitest 701/701、Playwright 24/24、M3 happy→neutral 補跑 2/2、存檔 v4/v5/v6、Smoke 2/2 皆 PASS；安裝與建置成功。
 - 仍須核對 GitHub required checks／review 規則（Codex 回報 HTTP 403）、分支依賴與放行順序；**G1 NO-GO**。
 - 已將早期「Smoke 修補缺席」風險調整為版本差異待審，不再標作實際回歸失敗；歷史紀錄保留。
+
+
+## 2026-11-20｜G1 正式 GitHub Actions 驗證啟動
+- 新建 [Draft PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11)，新增 `.github/workflows/g1-validation.yml`，維持 PR #9 原驗證 SHA 不變。
+- GitHub Actions run ID `44724242042`；最初查核單元／建置 SUCCESS，Playwright E2E 進行中。
+- 已建立 [G1 放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)；仍待 CI 完成、required checks／review、生效規則與正式合併順序核對。NO-GO。
