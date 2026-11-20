@@ -76,3 +76,8 @@
 七段本機 merge/revert 重演成功，所有 #1～#11 仍 Open 未合併；#7～#11 Draft，reviews 皆空。分支詳細規則 403、Pages 設定 404，見 [G1](milestones/G1.md)。原有 A～E／M0～M11 開發階段沿用各工作包證據。
 
 **G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**
+
+## 2026-11-20｜固定全專案總進度與 Codex 下一階段指令
+- 已建立 [全專案總進度晚間快照](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md)，依 A～E 及 M0～M11 分開記錄企劃、功能、測試、整合與發布狀態；不虛構百分比。
+- [固定九項回報契約](PROJECT-PROGRESS-REPORTING-RULES.md) 為每次交付要求；**所有後續回報結尾必附完整可複製「Codex｜下一階段可執行指令」**，包含 repo、最新 SHA、任務、命令、驗收、風險、權限、文件與交接。
+- 最新工程接續為 **G1-GOV-03**（擁有者規則／required checks／review／發布隔離／授權證據）；企劃並行 **B-04**。不重做 G1-CI-02 既有 CI 結果；G1 維持 **NO-GO**。
