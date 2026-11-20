@@ -38,3 +38,12 @@
 - 新建 [Draft PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11)，新增 `.github/workflows/g1-validation.yml`，維持 PR #9 原驗證 SHA 不變。
 - GitHub Actions run ID `44724242042`；最初查核單元／建置 SUCCESS，Playwright E2E 進行中。
 - 已建立 [G1 放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)；仍待 CI 完成、required checks／review、生效規則與正式合併順序核對。NO-GO。
+
+## 2026-11-20｜G1-CI-01｜GitHub Actions 及正式整合前置驗收重查
+- 版本／責任線：G1-CI-01；工程驗收與文件治理。
+- 已完成與檔案：直接查 PR #1～#11 狀態及 Base/Head、GitHub Actions run 44724242042／Jobs、單元建置原始 log、PR #9/#11 reviews、compare develop→G1、PR #9→#11；追加 G1、STATUS、HANDOFF、CHANGELOG 紀錄。
+- PR／Commit：#9 `a2000b4e4700cd187aa0b1d2b2186364743850dc`；#11 `cfa103c659aeb68aa97b448746ac944bbb16fd0d`；#10 文件治理分支另行追加本項。
+- 實際單元／建置／E2E／存檔驗證：GitHub Job Unit/Build success，log 為 Vitest 701/701 與 build 成功；完整 E2E job 尚 in_progress，無最終結果；本輪沒有重新實行本機測試，沿用 Codex v4/v5/v6 舊回歸僅作背景證據。
+- 錯誤／風險：E2E job log 此時下載 404 BlobNotFound；artifacts 空，**不是 E2E 測試失敗的證明**。PR reviews 仍空，required checks 與 develop/main 規則無法由此 connector 確認；歷史 Rules API 403 尚待擁有者釐清。建置出現依賴 audit / bundle / deprecation 警告，未造成 Job fail。
+- 整合決策：功能鏈 #1→#2→#4→#3→#5→#6，#7/#8 已匯入 #9；本輪無 merge、無部署、無刪分支、無修改程式。**G1 NO-GO**。
+- 尚未完成／下一編號：**G1-CI-02** 查完整 E2E 結果與 trace；**G1-GOV-01** 擁有者保護規則、reviews、required checks、逐段合併與 revert PR 策略。
