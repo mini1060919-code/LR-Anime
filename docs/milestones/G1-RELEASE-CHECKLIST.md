@@ -71,3 +71,17 @@
 - 提供 reviewer、正式決策人、操作人，以及綁定實際 merge ref 的批准與檢查；缺任一項維持 NO-GO。
 
 **G1 NO-GO。下一工作 G1-GOV-03：擁有者提交上述證據、確認實際 merge ref 門檻及記名批准。**
+
+
+## 2026-11-20 21:54 Asia/Taipei｜G1-GOV-03｜治理與發布門檻重核
+
+治理輸入為 PR #10 `bb78324e08382f2597a45bbbbe252c27e486b190`，已讀總計畫、固定回報規則、晚間快照與五份治理紀錄。
+
+- [x] 重核候選 SHA、GitHub Actions 與既有七段演練適用性。
+- [ ] 提供生效保護規則、兩項 checks/App、批准及 queue 設定（詳細端點 403）。
+- [ ] 提供 Pages 設定與 github-pages 環境防護（兩端點 404）。
+- [ ] 完成記名審查、整合與獨立發布授權。
+
+擁有者從 [Settings → Rules → Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 及 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 提供兩分支的適用規則與 enforcement、checks/App、批准人數及撤銷過期批准、對話、strict/queue、force push/delete、bypass 與管理員範圍。由 [Settings → General → Pull Requests](https://github.com/mini1060919-code/LR-Anime/settings) 核對 merge 方法。從 [Settings → Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages) 及 [Settings → Environments → github-pages](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供來源、環境規則、允許分支及審查人。附日期、分支、適用範圍、記名決策與授權，無須分享憑證。
+
+**G1 NO-GO。下一工程工作 G1-GOV-04：接收擁有者實際設定證據，核驗發布隔離及記名授權。企劃可並行 B-04。**

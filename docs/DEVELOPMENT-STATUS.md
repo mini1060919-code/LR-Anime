@@ -81,3 +81,14 @@
 - 已建立 [全專案總進度晚間快照](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md)，依 A～E 及 M0～M11 分開記錄企劃、功能、測試、整合與發布狀態；不虛構百分比。
 - [固定九項回報契約](PROJECT-PROGRESS-REPORTING-RULES.md) 為每次交付要求；**所有後續回報結尾必附完整可複製「Codex｜下一階段可執行指令」**，包含 repo、最新 SHA、任務、命令、驗收、風險、權限、文件與交接。
 - 最新工程接續為 **G1-GOV-03**（擁有者規則／required checks／review／發布隔離／授權證據）；企劃並行 **B-04**。不重做 G1-CI-02 既有 CI 結果；G1 維持 **NO-GO**。
+
+
+## 2026-11-20 21:54 Asia/Taipei｜G1-GOV-03｜治理與發布門檻重核
+
+治理輸入為 PR #10 `bb78324e08382f2597a45bbbbe252c27e486b190`，已讀總計畫、固定回報規則、晚間快照與五份治理紀錄。
+
+[Run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) 仍為 completed/success。#11 Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`，實際 merge ref `8a14ae5909425fcec10b980357a39fe2b68fdc55`，父提交為 #9 `a2000b4e4700cd187aa0b1d2b2186364743850dc` 與 #11，tree `645fdb32759ebf36617c9b0de89e2f4c06b2df08` 與 #11 相同。Job 136247490058：npm ci、Vitest 701/701、build 成功。Job 136247489680：E2E 24/24、零失敗/跳過/重試，含兩種 viewport neutral 備援。v4/v5 遷移、v6 重載、未知版本防覆寫及 quota 有合成測試證據。原始日誌和 [Artifact 14624558654](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/artifacts/14624558654) 的本機 ZIP 校驗通過，10 張截圖、無失敗 trace。本輪未重跑測試。
+
+PR #1～#11 仍 Open、未合併；#7～#11 Draft，reviews 皆空。保護詳情 403、Pages 與環境 404，見 [G1](milestones/G1.md)。
+
+**G1 NO-GO。下一工程工作 G1-GOV-04：接收擁有者實際設定證據，核驗發布隔離及記名授權。企劃可並行 B-04。**
