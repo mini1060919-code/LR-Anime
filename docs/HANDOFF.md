@@ -55,3 +55,11 @@
 - 功能鏈 #1 M1 → #2 M2 → #4 M3 → #3 M4 → #5 M5-A → #6 M5-B；#7/#8 為測試修補，已匯入 #9，不得雙重匯入。統一候選與 develop 相比 ahead 13 / behind 0。
 - **下個任務：G1-CI-02** 重新抓取 run 44724242042 最終狀態、24 項 E2E 明細、logs/traces；若 failure，先定位根因再由獨立分支提交測試或程式修復，保留既有斷言及零重試原則。其次 **G1-GOV-01** 核查擁有者保護規則、required reviews、逐段合併與 revert PR 計畫。
 - **始終 NO-GO**：不得合併或直接更動 develop/main；不得部署、刪 PR/分支、觸碰玩家存檔。必要時參見 [G1 放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)。
+
+
+## 2026-11-20 19:34 Asia/Taipei｜G1-CI-02 GitHub CI 與整合前驗收
+
+- [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`；[PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`；[PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) 文件查核基準 `28cc1e452dd3e08e8789004cf7a895e07fdd17ee`。
+- [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) attempt 1，狀態 `completed/success`。Unit/Build job [136247490058](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) 為 `success`，GitHub 原始日誌確認 30 檔、Vitest 701/701 及正式建置成功。Complete Playwright E2E job [136247489680](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 為 `success`。 完整 E2E 原始日誌證實 **24/24 PASS、0 fail、0 skip、0 retry**（30.4 分鐘）；M2 2/2、M3 美術 10/10（1280px、390px neutral 各 1/1）、M3 角色 2/2、M4/M5-A/M5-B 各 2/2、存檔保護 2/2、Smoke 2/2。原始兩 Job 日誌皆記錄同一 PR merge ref。進行中的 log 曾回 404 BlobNotFound，結束後 connector 成功讀取；CLI 下載 redirect 的 Forbidden 以 connector 取回 ZIP，已驗證完整性，內有 10 張截圖。無測試失敗，留存模式未產生失敗 trace，無須修復分支。保存 GitHub 原始日誌、ZIP 及 checksum 於執行工作區 `/workspace/work/g1-ci02/`。
+- 下一工作 **G1-GOV-01**。在新 Codex 任務先指定 `docs/ae-master-plan-v1-governance` 讀 [G1](milestones/G1.md) 與 [正式放行檢查表](milestones/G1-RELEASE-CHECKLIST.md)，重抓 PR #1～#11 Base／Head／SHA／reviews／checks 及 [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042)。將後續 CI 綁到實際 merge ref，核對 head、tree、完整 24 案例、零重試、v4/v5/v6 及未知版本保護。若有可定位失敗，獨立分支做最小修正，完整重跑後送 Draft PR。
+- 擁有者須提供 develop/main 生效規則、兩 job 的 required checks 與 App、批准 review／對話解決、bypass、force push、deletion 及 merge 政策證據。按 G1 演練順序複核逐段 merge tree／回復計畫，取得授權前維持 **NO-GO**，不得合併、部署或操作玩家資料。

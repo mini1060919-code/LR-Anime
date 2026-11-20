@@ -50,3 +50,11 @@
 - PR #9／#11 reviews 均 `[]`；combined commit statuses `[]` 不能用於推定 Ruleset / GitHub Actions checks 的合規狀況。舊紀錄的 Rules API **403** 是前次回報；此輪可用 connector 無 Rules API，擁有者仍需查明是否強制保護 `develop/main`。
 - `develop` 至 G1 統一候選為 13 commits ahead / 0 behind；功能依賴 #1→#2→#4→#3→#5→#6，#7/#8 修補已納入 #9，避免重複匯入。
 - **本次未新跑本機測試、未修正程式、未合併／部署。G1 NO-GO。** 工程下一項 **G1-CI-02**：取得 CI E2E 最終結論及 artifacts，若 FAIL 獨立修復；之後 **G1-GOV-01**：擁有者核對 ruleset、reviews、required checks、逐段整合與安全回復。
+
+
+## 2026-11-20 19:34 Asia/Taipei｜G1-CI-02 GitHub CI 與整合前驗收
+
+- [PR #9](https://github.com/mini1060919-code/LR-Anime/pull/9) `a2000b4e4700cd187aa0b1d2b2186364743850dc`；[PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) `cfa103c659aeb68aa97b448746ac944bbb16fd0d`；[PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) 文件查核基準 `28cc1e452dd3e08e8789004cf7a895e07fdd17ee`。
+- [Actions run 44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) attempt 1，狀態 `completed/success`。Unit/Build job [136247490058](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247490058) 為 `success`，GitHub 原始日誌確認 30 檔、Vitest 701/701 及正式建置成功。Complete Playwright E2E job [136247489680](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042/job/136247489680) 為 `success`。 完整 E2E 原始日誌證實 **24/24 PASS、0 fail、0 skip、0 retry**（30.4 分鐘）；M2 2/2、M3 美術 10/10（1280px、390px neutral 各 1/1）、M3 角色 2/2、M4/M5-A/M5-B 各 2/2、存檔保護 2/2、Smoke 2/2。原始兩 Job 日誌皆記錄同一 PR merge ref。進行中的 log 曾回 404 BlobNotFound，結束後 connector 成功讀取；CLI 下載 redirect 的 Forbidden 以 connector 取回 ZIP，已驗證完整性，內有 10 張截圖。無測試失敗，留存模式未產生失敗 trace，無須修復分支。保存 GitHub 原始日誌、ZIP 及 checksum 於執行工作區 `/workspace/work/g1-ci02/`。
+- `main`、`develop` 同指 `f6faebbb8096967854bacf0708b196ffac2712b9` 且顯示 `protected:true`；分支摘要的 required checks 為 `off`、contexts/checks 皆空。Repository rulesets（含父層）與兩分支 rules 查詢 HTTP 200、可見陣列皆空。詳細 `GET /branches/{main,develop}/protection` 及 `required_status_checks`、`required_pull_request_reviews`、`enforce_admins`、`restrictions` 子端點均 HTTP 403 `Resource not accessible by integration`，回應要求 `administration=read`。Required approvals、conversation resolution、strict、force-push／delete 限制以及 bypass／管理員適用範圍仍未驗證。Repository 允許 merge commit、squash 和 rebase，auto-merge 與合併後自動刪分支為 false。
+- 功能鏈與七段本機回復演練已核對，詳見 [G1](milestones/G1.md)。**G1 NO-GO**，下一工作 **G1-GOV-01**。
