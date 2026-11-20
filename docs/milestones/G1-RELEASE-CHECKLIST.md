@@ -33,3 +33,10 @@
 | 2026-11-20 | 準備放行前查核 | PR #9 `a2000b4e` | 尚未確認（403） | 尚無 review | 自動回歸通過 | **NO-GO** |
 
 詳細工作：參考 [G1](G1.md)、[整合操作書](../integration/MERGE-RUNBOOK.md) 與 [交接](../HANDOFF.md)。
+
+## 2026-11-20｜CI 觸發補充
+- [PR #11](https://github.com/mini1060919-code/LR-Anime/pull/11) 是 GitHub CI 導入分支；workflow run `44724242042` 已開始。
+- 最初查核 `Unit tests and production build` SUCCESS；`Complete Playwright E2E` 仍在執行。
+- [ ] CI 兩個 Job 最終 SUCCESS（不得以進行中當作 PASS）。
+- [ ] 在 `develop/main` 的實際保護規則中核對 required checks、review 及 merge commit policy。
+- [ ] 合併順序、每階段檢查與回復計畫再審；維持 NO-GO。
