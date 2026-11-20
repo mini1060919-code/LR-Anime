@@ -40,3 +40,14 @@
 - [ ] CI 兩個 Job 最終 SUCCESS（不得以進行中當作 PASS）。
 - [ ] 在 `develop/main` 的實際保護規則中核對 required checks、review 及 merge commit policy。
 - [ ] 合併順序、每階段檢查與回復計畫再審；維持 NO-GO。
+
+## 2026-11-20｜G1-GOV-01｜擁有者核准待證清單
+- [x] GitHub Actions run [44724242042](https://github.com/mini1060919-code/LR-Anime/actions/runs/44724242042) completed/success；兩 jobs 成功，既有 G1-CI-02 證據：Vitest 701/701、Playwright 24/24。
+- [x] 最新重查 PR #1～#11 均 Open／未合併；#9/#10/#11 Draft 且 reviews API 均為空。
+- [x] `develop...ci/g1-required-checks` ahead 14、behind 0；不構成整合批准。
+- [ ] 擁有者提供 develop 與 main 的 Rulesets／Branch protection 生效畫面，核實 required checks 精確名稱及 GitHub Actions App、批准人數、對話解決、最新推送審查、up-to-date／merge queue、bypass、force push／delete、管理員適用範圍。
+- [ ] 若使用 merge queue，驗證 workflow `merge_group` 支援；目前 #11 的 CI 需另行查核是否支援。
+- [ ] 確認合併方法為 Merge Commit、auto-merge 設定、main 更新可能觸發 Pages 發布與獨立部署授權。
+- [ ] 指定核准 reviewer、最終 G1 決策人和整合操作人，保存規則證據與正式審查紀錄。
+- [ ] 真正合併前以最新 SHA 分段重驗 #1→#2→#4→#3→#5→#6，再一次性導入 #9/#11 的測試及 CI；逐段存 before/after SHA、merge tree、CI、v4/v5/v6 與未知版安全證據；失敗以獨立 revert PR，勿 reset 或 force push。
+先前詳細規則端點 HTTP 403 `Resource not accessible by integration`，需 `administration:read`；本輪連線未提供規則詳細讀取，不能視作已證實生效。請見 [全專案固定回報規則](../PROJECT-PROGRESS-REPORTING-RULES.md)。**G1 NO-GO；下一工作 G1-GOV-02。**
