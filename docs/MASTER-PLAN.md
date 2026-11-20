@@ -23,6 +23,11 @@ G1 → UX-01 → M5-C → M6-A → M6-B → M6-C → M6-D → M7 → M8 → M9 �
 - **企劃與美術線**：B-03 → B-04 → B-05 → B-06 → C → D；A、E 既有成果需盤點確認交付與驗收。
 - A～E 原始建議製作順序：A → E → B → C → D。可先產出設計，工程落地須依 G1 後的路線。
 
+## 固定全專案進度與 Codex 指令交付規則
+- 每次開發更新**必須**依 [全專案總進度與 Codex 固定回報規則](PROJECT-PROGRESS-REPORTING-RULES.md) 輸出九項章節，最後附完整「Codex｜下一階段可執行指令」。
+- [2026-11-20 全專案進度快照](PROJECT-PROGRESS-SNAPSHOT-2026-11-20.md) 僅供比較；最新 GitHub PR、SHA、CI 和驗收證據優先。
+- 本次 G1 治理已推進至 G1-GOV-03；未取得擁有者證據和記名放行前保持 NO-GO。
+
 ## 治理與讀取順序
 1. 閱讀本頁。
 2. 查閱 [最新狀態](DEVELOPMENT-STATUS.md)、[交接說明](HANDOFF.md)、[變更日誌](CHANGELOG-PLAN.md)。
