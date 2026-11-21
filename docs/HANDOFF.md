@@ -136,3 +136,14 @@
 **G1 NO-GO。下一工程 G1-GOV-08：儲存後驗證 develop 生效規則與 #12 記名整合授權。並行企劃 B-04。**
 
 重查 #11、#12、#13 的最新 Base/Head、實際 merge ref、checks 與擁有者儲存後證據，詳見 [G1](milestones/G1.md) 及 [放行清單](milestones/G1-RELEASE-CHECKLIST.md)。保留測試、歷史、儲存隔離及逐階段回復方案。缺證保持 NO-GO。
+
+
+## 2026-11-21 20:38 Asia/Taipei｜G1-GOV-08｜儲存後驗證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `5148f2f46ac0303da56a3d43cf1187bab65008f0`。Owner 確認重新設定並按 Save changes。本輪只追加治理紀錄。
+
+`GET /repos/mini1060919-code/LR-Anime/branches/develop` HTTP 200，`protected:true`，`required_status_checks.enforcement_level: everyone`，contexts 及 checks 精確列出 `Unit tests and production build` 與 `Complete Playwright E2E`，均綁 App 15368（github-actions）。相比儲存前 off，兩項 Required Checks 已證實生效。
+
+**G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**
+
+先重讀規則與 G1 放行清單。核對 #12 最新 SHA、CI、Owner 儲存後 strict 證據、Pages 隔離和記名授權。只追加治理紀錄並讀回 PR #10。保持 NO-GO，未授權不得合併或部署。

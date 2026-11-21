@@ -130,3 +130,12 @@
 追加五份治理文件並保留歷史。新增 Draft #13 作為完整 CI 證據，沒有修改 workflow、遊戲、存檔或正式分支。
 
 **G1 NO-GO。下一工程 G1-GOV-08：儲存後驗證 develop 生效規則與 #12 記名整合授權。並行企劃 B-04。**
+
+
+## 2026-11-21 20:38 Asia/Taipei｜G1-GOV-08｜儲存後驗證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `5148f2f46ac0303da56a3d43cf1187bab65008f0`。Owner 確認重新設定並按 Save changes。本輪只追加治理紀錄。
+
+確認 develop 兩項 checks 已強制綁定 GitHub Actions App 15368，#12 CI 匹配成功。補錄 REST 403、GraphQL FORBIDDEN 與 Pages 404，strict 保留未驗證。追加五份文件並保留歷史。
+
+**G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**

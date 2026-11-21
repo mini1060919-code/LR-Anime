@@ -145,3 +145,17 @@
 擁有者可核對 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 的目標為 develop，兩項 context 為 `Unit tests and production build`、`Complete Playwright E2E`，來源 GitHub Actions（App 15368），strict 已選，保留單人 0 approvals、PR／對話解決及禁止 bypass／force push／刪除。逐項對照 #13 結果與 #12 引導 checks，儲存後重新開啟規則並留存 branch、兩 checks／App、strict 和執行狀態證據。strict 可能暫阻已落後的堆疊 PR：獲正式授權才接續 #12→#1→#2→#4→#3→#5→#6→一次性 #9/#11。逐段核對 Base/Head/merge ref、取得新 checks，若落後以經批准的不改寫歷史更新分支流程重新觸發。缺檢查、未保存或缺授權即停止。保留 Merge Commit、第一父 Revert PR、原始存檔與備份策略。
 
 **G1 NO-GO。下一工程 G1-GOV-08：儲存後驗證 develop 生效規則與 #12 記名整合授權。並行企劃 B-04。**
+
+
+## 2026-11-21 20:38 Asia/Taipei｜G1-GOV-08｜儲存後驗證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `5148f2f46ac0303da56a3d43cf1187bab65008f0`。Owner 確認重新設定並按 Save changes。本輪只追加治理紀錄。
+
+- [x] develop 兩項 Required Checks 強制層級 everyone，GitHub Actions App 15368。
+- [x] #12 最新候選兩 checks 均匹配並成功。
+- [ ] 儲存後 strict 詳細設定讀回（403）。
+- [ ] #12 記名授權、適用分支及 Pages 隔離。
+
+`GET /branches/develop/protection` 及 `/protection/required_status_checks` 回 403 Resource not accessible by integration（需 administration:read）；GraphQL ref.branchProtectionRule 回 FORBIDDEN。兩者皆無法讀回 strict，故 Require branches to be up to date before merging 維持未獨立驗證。Rules API HTTP 200 空陣列，classic protection 的保存證據見上述分支摘要。Pages 與 environments/github-pages 端點均 404（分別標示 pages:read、actions:read）；停用與發布隔離沿用 Owner 聲明，未獨立驗證。權限限制不代表設定失敗。
+
+**G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**
