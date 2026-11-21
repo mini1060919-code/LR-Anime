@@ -21,3 +21,9 @@ manifest 的 neutral 路徑為 `assets/portraits/chr_asagiri_mio/standard/neutra
 ## A-05 品質
 
 鎖定候選的 `node scripts/verify-portraits.mjs` 通過，28 approved、18 draft。Pillow 解碼比對 28 張四角既有檔，尺寸與 SHA 均符合 manifest，Alpha 最小均 0、最大 246～254。四張全身為 1024×1536，其餘為 512×512。澪六個 draft 槽均缺實檔，透明度、邊緣、裁切及視覺比對待辦。收到原檔後在明暗背景預覽邊緣、確認有效 Alpha 與 48px 頭像可辨識度。
+
+## A-06 素材清冊與權利
+
+`public/assets/portraits/manifest.v1.json` 與 `rights.v1.json` 需成對核對。六個澪草稿皆指向 `rights.chr_asagiri_mio.v001`，現有 rights 無對應記錄。四角的 user-m3-art-v1 不能替代澪的證據。取得原檔後逐件填檔名、版本、實測像素、Alpha、byteLength、SHA-256、來源、授權、允許用途、日期與審查人。合格原檔保留，缺件待 Owner 核對需求後另案製作。原圖及素材未變更。
+
+下一企劃 A-RECOVERY-01，於取得原檔或授權來源後補驗。

@@ -50,3 +50,7 @@ B、A。如需整合程式到 develop/main，必須先滿足 G1 及對應依賴�
 ## 2026-11-21（Asia/Taipei）｜A-05
 
 [A-05 交付](../plans/A-AUDIT.md) 四角基線檢查通過，澪品質待原檔。 前一提交 4984318ab55371f36797045e448f19ec1a1783d2。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-06
+
+[A-06 交付](../plans/A-AUDIT.md) 已記錄六個草稿槽與缺件，澪權利需獨立證據。 前一提交 7159fd145be4e62f034bce634ab55cdc4ff9a5b8。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
