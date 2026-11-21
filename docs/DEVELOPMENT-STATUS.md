@@ -120,3 +120,12 @@ PR #1～#11 全 Open／未合併，#7～#11 Draft，reviews 全空。詳見 [G1]
 #1～#11 全 Open 未合併，#7～#11 Draft。#12 驗證 CI 引導，後續功能仍需逐段在實際候選驗證。
 
 **G1 NO-GO。下一工程 G1-GOV-06：擁有者核對並設定兩項 Required Checks，讀回證據，確認 #12 的實際 merge ref 與記名整合授權。企劃並行 B-04。**
+
+
+## 2026-11-21 13:17 Asia/Taipei｜G1-GOV-06｜Required Checks 與引導候選核驗
+
+工程治理查核基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0c2b0dcb1efb8cd9b1c0f87ca48d81cbfebd3952`。本輪只追加治理文件。素材、授權及玩家資料無變更。
+
+#1～#12 全 Open 未合併，#7～#12 Draft，reviews 空。#11 701/701＋24/24，#12 416/416＋2/2，兩者建置成功，merge ref 未變。本輪未重跑。保護 403、Pages 與環境 404；詳見 [G1](milestones/G1.md)。
+
+**G1 NO-GO。下一工程 G1-GOV-07：收到擁有者的 develop 強制 checks 設定與 #12 記名授權後核證；企劃並行 B-04。**

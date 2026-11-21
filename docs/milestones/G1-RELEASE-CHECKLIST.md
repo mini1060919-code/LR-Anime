@@ -118,3 +118,16 @@
 - [ ] main 的發布操作另行授權，Pages 維持停用。
 
 **G1 NO-GO。下一工程 G1-GOV-06：擁有者核對並設定兩項 Required Checks，讀回證據，確認 #12 的實際 merge ref 與記名整合授權。企劃並行 B-04。**
+
+
+## 2026-11-21 13:17 Asia/Taipei｜G1-GOV-06｜Required Checks 與引導候選核驗
+
+工程治理查核基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0c2b0dcb1efb8cd9b1c0f87ca48d81cbfebd3952`。本輪只追加治理文件。素材、授權及玩家資料無變更。
+
+- [x] #11/#12 實際 merge ref 與既有成功證據吻合。
+- [ ] 核實 develop 生效 rules、兩項 Required Checks/App、單人門檻及管理員／queue。
+- [ ] 核實 Pages 停用、部署防護與 #12 記名授權。
+
+請擁有者從 [Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets)／[Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 提供適用 develop 的 Active 規則、兩個 checks 及 GitHub Actions App 15368、0 approvals、PR/對話、strict、queue、管理員與禁止 bypass/force push/刪除。從 [Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages)／[Environments](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供停用與發布隔離證據。附 #12 最新 SHA、記名決策人／操作人、整合授權與獨立發布授權；勿分享憑證。
+
+**G1 NO-GO。下一工程 G1-GOV-07：收到擁有者的 develop 強制 checks 設定與 #12 記名授權後核證；企劃並行 B-04。**

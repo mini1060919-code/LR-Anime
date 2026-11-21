@@ -110,3 +110,12 @@
 留存單人管理者聲明及 API 權限差異；保存 #11 統一回歸證據與本機合併樹驗證。追加五份治理文件。
 
 **G1 NO-GO。下一工程 G1-GOV-06：擁有者核對並設定兩項 Required Checks，讀回證據，確認 #12 的實際 merge ref 與記名整合授權。企劃並行 B-04。**
+
+
+## 2026-11-21 13:17 Asia/Taipei｜G1-GOV-06｜Required Checks 與引導候選核驗
+
+工程治理查核基準為 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0c2b0dcb1efb8cd9b1c0f87ca48d81cbfebd3952`。本輪只追加治理文件。素材、授權及玩家資料無變更。
+
+核對 #1～#12 與兩組 CI 的實際 merge ref；沿用既有測試和八段試算。詳細保護 403、Pages／環境 404。追加五份治理紀錄，保留歷史。
+
+**G1 NO-GO。下一工程 G1-GOV-07：收到擁有者的 develop 強制 checks 設定與 #12 記名授權後核證；企劃並行 B-04。**
