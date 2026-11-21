@@ -221,3 +221,10 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 develop API 為 protected:true，Required Checks 強制 everyone，Unit tests and production build、Complete Playwright E2E 均綁 github-actions App 15368；#12 同名同 App 兩項皆成功。[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 沿用 416/416、建置、基線 Smoke 2/2 及黎明重載，候選未改，未重跑。[#13 Run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 留存完整 701/701、建置、24/24 與 v4/v5/v6、未知版本拒寫及備份證據。
 
 **G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**
+
+## 2026-11-21｜G1-GOV-15｜Owner 授權最後查核，禁止實際合併
+
+- Owner 在本對話授權 PR #12 的最新版本和安全核對、整合準備文件，**明確禁止合併、部署、修改 main/develop**。本輪將其紀錄入治理分支，不將此視為 merge approval。
+- 重新讀 GitHub：#12 Open Draft，Head `af558e85afc3c32345ca000c423816358cfaba58`、Base `f6faebbb8096967854bacf0708b196ffac2712b9`，差異僅新增 67 行 CI workflow；兩項 Required Checks 既有成功證據不變。#13 完整回歸結果沿用既有成功紀錄。
+- 沿用 Strict／Pages Owner 已提供證據及詳細 API 403／404 限制；其他部署通道與獨立記名合併決策未核。沒有修改程式、沒有新跑測試、沒有合併或部署。
+- **G1 NO-GO**。不要無新證據就反覆開 GOV 編號；工程待 Owner 獨立決策 `G1-OWNER-DECISION-01`，企劃並行 B-04。詳見 [G1](milestones/G1.md)。
