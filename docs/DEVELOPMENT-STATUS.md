@@ -199,3 +199,14 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 整合順序維持 #12→#1→#2→#4→#3→#5→#6→單次 #9/#11，#13 僅留證；逐段記錄 before/after SHA、checks 與回復。P0 無新增測試失敗；P1 記名授權、其餘單人規則及其他部署通道待證；P2 既有依賴、bundle、Actions 警告續追。
 
 **G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**
+
+
+## 2026-11-21 21:30 Asia/Taipei｜G1-GOV-13｜正式整合決策紀錄草案
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `35ac7895a161b08a5ae5cc9ca51491870960d5f8`。本輪只準備 Owner 決策草案並追加文件。
+
+[#12](https://github.com/mini1060919-code/LR-Anime/pull/12) Open Draft、CLEAN、review／留言均空。Base develop `f6faebbb8096967854bacf0708b196ffac2712b9`，Head `af558e85afc3c32345ca000c423816358cfaba58`，實際 merge ref `63212337c730031496f15e0d0b3c7978cc30665b`，tree `805d17777e80e31b06910642b28a1928afe26e3d`，僅新增 G1 validation workflow。develop 為 protected:true，兩項 checks Unit tests and production build、Complete Playwright E2E 均強制 everyone，GitHub Actions App 15368；#12 同名同 App checks 均成功。
+
+已備妥 [Owner 決策與逐段驗收](milestones/G1.md)，#12 與各功能階段仍待正式整合。候選不變，沿用 #12 416/416＋2/2、#13 701/701＋24/24 及建置、存檔證據。
+
+**G1 NO-GO。下一工程 G1-GOV-14：取得 Owner 記名決策與剩餘單人規則／部署隔離證據，再核對同一候選。並行企劃 B-04。**

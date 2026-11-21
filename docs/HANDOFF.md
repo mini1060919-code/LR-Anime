@@ -185,3 +185,12 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 **G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**
 
 依 [G1](milestones/G1.md) 的決策表讀回 Owner 核准與雙方記名。核對 #12 Base/Head/merge ref、checks 與第一父回復。差異即停止。追加五份文件並讀回 Draft PR #10；缺證維持 NO-GO。
+
+
+## 2026-11-21 21:30 Asia/Taipei｜G1-GOV-13｜正式整合決策紀錄草案
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `35ac7895a161b08a5ae5cc9ca51491870960d5f8`。本輪只準備 Owner 決策草案並追加文件。
+
+**G1 NO-GO。下一工程 G1-GOV-14：取得 Owner 記名決策與剩餘單人規則／部署隔離證據，再核對同一候選。並行企劃 B-04。**
+
+先讀 [Owner 決策與逐段驗收](milestones/G1.md)，核對 Owner 新證據、#12 的 Base/Head/merge ref/tree、checks/App 與第一父回復。候選或授權有差異即停止。只記錄，缺證維持 Draft；追加五份文件並讀回 PR #10。
