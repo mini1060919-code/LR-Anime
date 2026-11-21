@@ -30,3 +30,7 @@ D。如需整合程式到 develop/main，必須先滿足 G1 及對應依賴，�
 - 後續每次更新均保留歷次失敗、修復與驗收證據。
 
 [回到里程碑索引](README.md) · [最新開發狀態](../DEVELOPMENT-STATUS.md) · [G1 閘門](G1.md)
+
+## 2026-11-21（Asia/Taipei）｜D-ART
+
+[D-ART 交付](../plans/D-ART.md) 八角造型、交付尺寸、表情及製作驗收規格已入庫，無正式圖片。 前一提交 ddafe7e5e8d02be642f9387b4fc6ba447b548979。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
