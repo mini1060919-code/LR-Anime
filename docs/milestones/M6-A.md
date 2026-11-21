@@ -30,3 +30,27 @@ B、A。如需整合程式到 develop/main，必須先滿足 G1 及對應依賴�
 - 後續每次更新均保留歷次失敗、修復與驗收證據。
 
 [回到里程碑索引](README.md) · [最新開發狀態](../DEVELOPMENT-STATUS.md) · [G1 閘門](G1.md)
+
+## 2026-11-21（Asia/Taipei）｜A-01
+
+[A-01 交付](../plans/A-AUDIT.md) 已核對 legacy 角色 ID 與顧問定位，正式人設原稿待核。 前一提交 ddafe7e5e8d02be642f9387b4fc6ba447b548979。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-02
+
+[A-02 交付](../plans/A-AUDIT.md) 全身原檔未取得。 前一提交 6ddcb30de70f73077f6735485dab5de8ea74a0d8。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-03
+
+[A-03 交付](../plans/A-AUDIT.md) 半身／頭像未取得，已有 manifest 預留。 前一提交 8d8dd9557c35aab2ed883d9835a98e2822f6e1eb。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-04
+
+[A-04 交付](../plans/A-AUDIT.md) 五種要求未驗收，待原檔與表情映射確認。 前一提交 e83d1f9be8bcba1e56efe62255a33268440c0949。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-05
+
+[A-05 交付](../plans/A-AUDIT.md) 四角基線檢查通過，澪品質待原檔。 前一提交 4984318ab55371f36797045e448f19ec1a1783d2。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-06
+
+[A-06 交付](../plans/A-AUDIT.md) 已記錄六個草稿槽與缺件，澪權利需獨立證據。 前一提交 7159fd145be4e62f034bce634ab55cdc4ff9a5b8。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
