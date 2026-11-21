@@ -223,3 +223,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜D-01
 
 [D-01 企劃 v0.1](plans/D-01.md) 已釐清四角、普通居民、顧問澪及 legacy 角色身分。 前一提交 ddafe7e5e8d02be642f9387b4fc6ba447b548979。設計審查、正式程式、遊戲測試與正式整合待辦。G1 NO-GO，工程維持 G1-OWNER-DECISION-01。下一企劃 **D-02**。
+
+## 2026-11-21（Asia/Taipei）｜D-02
+
+[D-02 企劃 v0.1](plans/D-02.md) 已交付八位候選角色與雙語／美術需求。 前一提交 6f9a27525e6b9c3b0709de7688512b02333b81ac。設計審查、正式程式、遊戲測試與正式整合待辦。G1 NO-GO，工程維持 G1-OWNER-DECISION-01。下一企劃 **D-03**。
