@@ -38,3 +38,7 @@ C、B-04。如需整合程式到 develop/main，必須先滿足 G1 及對應依�
 ## 2026-11-21（Asia/Taipei）｜C-02
 
 [C-02 企劃 v0.1](../plans/C-02.md) 已規格化工作、需求、塔可用性及可查證損失。 前一提交 739c31eeaab7ddd2f26a9200de95cbfa21336a10。設計審查、正式程式、遊戲測試與正式整合待辦。G1 NO-GO，工程維持 G1-OWNER-DECISION-01。下一企劃 **C-03**。
+
+## 2026-11-21（Asia/Taipei）｜C-03
+
+[C-03 企劃 v0.1](../plans/C-03.md) 已定義可追溯門檻、證據與優先順序。 前一提交 e16c85bfda121f7968282ed5bbec2674eaafebad。設計審查、正式程式、遊戲測試與正式整合待辦。G1 NO-GO，工程維持 G1-OWNER-DECISION-01。下一企劃 **C-04**。
