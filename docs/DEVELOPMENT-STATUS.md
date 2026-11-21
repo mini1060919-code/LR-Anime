@@ -249,3 +249,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜E-01
 
 [E-01 交付](plans/E-01.md) 已補三模式、操作意圖及 UI 偏好契約。 前一提交 ddafe7e5e8d02be642f9387b4fc6ba447b548979。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-02
+
+[E-02 交付](plans/E-02.md) 已補資訊層級、現行資料對應及缺圖備援。 前一提交 c7b524eb76220a8fe117907a5a7ac96150ecbf89。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
