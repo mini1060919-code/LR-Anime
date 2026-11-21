@@ -13,3 +13,7 @@
 ## A-03 半身與頭像
 
 manifest 的 neutral 路徑為 `assets/portraits/chr_asagiri_mio/standard/neutral_v001.webp`，宣告 1024×1536。頭像 `assets/portraits/chr_asagiri_mio/standard/avatar_v001.png` 宣告 128×128。兩者皆 draft，實檔缺、byteLength 與 SHA 為 null。neutral 裁切層級無法從宣告確認。
+
+## A-04 表情
+
+需求為平靜、微笑、警戒、擔憂、讚許。草稿路徑同 A-03，檔名 `neutral_v001.webp`、`smile_v001.webp`、`focused_v001.webp`、`worried_v001.webp`、`fatigued_v001.webp`，均宣告 1024×1536，實檔與 SHA 皆缺。警戒與 focused 的映射需審查，讚許無對應槽；fatigued 為既有額外槽，保留。

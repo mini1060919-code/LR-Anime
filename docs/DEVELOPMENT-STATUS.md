@@ -257,3 +257,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜A-03
 
 [A-03 交付](plans/A-AUDIT.md) 半身／頭像未取得，已有 manifest 預留。 前一提交 8d8dd9557c35aab2ed883d9835a98e2822f6e1eb。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-04
+
+[A-04 交付](plans/A-AUDIT.md) 五種要求未驗收，待原檔與表情映射確認。 前一提交 e83d1f9be8bcba1e56efe62255a33268440c0949。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
