@@ -5,3 +5,7 @@
 ## A-01 人設與 ID
 
 治理 A 定位澪為新手嚮導及非勞動參謀。候選 `src/characters/catalog.js` 另有 legacy `chr_asagiri_mio`（朝霧澪／Mio Asagiri），撤離站醫護、同理心與堅定。已有存檔居民應保留原 ID；顧問身分 `advisor.mio` 仍為 PR #15 提案。正式顧問人設圖與身分綁定待 Owner 確認。
+
+## A-02 全身
+
+澪的 `pset.chr_asagiri_mio.standard.v001` 無 fullAssetId，可見 Git 樹及附件未取得透明全身原檔。路徑、實測尺寸、Alpha、SHA、來源和授權皆待原檔。
