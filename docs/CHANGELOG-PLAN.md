@@ -202,3 +202,8 @@ Owner 回報其 develop Branch Protection 設定畫面確認 Require status chec
 - GitHub 最新查證：#12 Head `af558e85afc3c32345ca000c423816358cfaba58`、Base `f6faebbb8096967854bacf0708b196ffac2712b9`、merge ref `63212337c730031496f15e0d0b3c7978cc30665b`，相比 develop 只新增 CI workflow；#12／#13 各兩 Job 成功，保留過往 416/416＋Smoke 2/2 及 701/701＋完整 E2E 24/24 紀錄，本輪**未重新執行**。
 - 已有 Strict／Pages Owner 證據與 403／404 權限限制保留為歷史，不將未經獨立驗證的部署隔離標為 PASS。PR #12 仍 Draft 無 reviews；記名實際合併授權未提供。
 - 本輪僅更新五份治理文件，沒有遊戲程式、玩家資料、功能 PR 或正式分支修改；沒有合併與部署。**G1 NO-GO**。下一工作 `G1-OWNER-DECISION-01`（等待獨立合併決策），並行企劃 B-04。
+
+
+## 2026-11-21 21:46 Asia/Taipei｜B-04｜首次夜襲及黎明日報企劃
+
+追加 [B-04 v0.1](plans/B-04.md) 與 B 工作包、總狀態、交接。未執行遊戲測試，未修改程式、存檔、素材或正式分支。基準 c122ad15b6aa0f964fdf99003890c92ce5af19a7，對應 Draft PR #10。G1 NO-GO，工程編號不變。

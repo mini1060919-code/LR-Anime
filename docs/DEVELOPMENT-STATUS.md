@@ -228,3 +228,8 @@ develop API 為 protected:true，Required Checks 強制 everyone，Unit tests an
 - 重新讀 GitHub：#12 Open Draft，Head `af558e85afc3c32345ca000c423816358cfaba58`、Base `f6faebbb8096967854bacf0708b196ffac2712b9`，差異僅新增 67 行 CI workflow；兩項 Required Checks 既有成功證據不變。#13 完整回歸結果沿用既有成功紀錄。
 - 沿用 Strict／Pages Owner 已提供證據及詳細 API 403／404 限制；其他部署通道與獨立記名合併決策未核。沒有修改程式、沒有新跑測試、沒有合併或部署。
 - **G1 NO-GO**。不要無新證據就反覆開 GOV 編號；工程待 Owner 獨立決策 `G1-OWNER-DECISION-01`，企劃並行 B-04。詳見 [G1](milestones/G1.md)。
+
+
+## 2026-11-21 21:46 Asia/Taipei｜B-04｜首次夜襲及黎明日報企劃
+
+[B-04 v0.1](plans/B-04.md) 已交付雙語對話、情境觸發、日報一次性結算界線及待執行驗收。工程尚未實作；G1 維持 NO-GO。

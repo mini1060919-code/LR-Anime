@@ -213,3 +213,8 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 - Strict／Pages 以已歸檔 Owner 畫面及文字證據為基礎，詳細 API 403／404 不反覆浪費查詢；其他保護及部署隔離待可驗證證據。
 - **下一工程 G1-OWNER-DECISION-01**：僅於 Owner 另行提供明確執行合併授權或新證據後啟動；否則保持 NO-GO、PR Draft、不得修改 main/develop。並行 **B-04** 可往下做。
 - 依 [永久交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md) 和 [固定報告規則](PROJECT-PROGRESS-REPORTING-RULES.md) 重讀 PR、SHA、CI，變更則重新驗證。不要反覆把「準備授權」誤讀成「合併授權」。
+
+
+## 2026-11-21 21:46 Asia/Taipei｜B-04｜首次夜襲及黎明日報企劃
+
+[B-04 v0.1](plans/B-04.md) 可供雙語與事件契約審查。企劃下一 B-05，沿用提示與結算分離、同一黎明快照及無副作用重播。工程仍為 G1-OWNER-DECISION-01，等 Owner 新決策或治理證據後再核證。
