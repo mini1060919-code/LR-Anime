@@ -254,3 +254,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜E-06
 
 [E-06 交付](plans/E-06.md) 已交付驗收矩陣與隔離程式，Chromium 1000px／390px 均通過原型測試。 前一提交 2f5e9df23cf351aa21286c458a9f31ad20c9ebd6。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-22（Asia/Taipei）｜UX-01-DESIGN-REVIEW
+
+[UX-01-DESIGN-REVIEW 交付](plans/UX-01-DESIGN-REVIEW.md) 差異表及前置審查完成；隔離 Chromium 兩組通過，短視窗模式列捲動待修。 前一提交 fcf134320d842e1112f49f92aa9488cb4d1232b9。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
