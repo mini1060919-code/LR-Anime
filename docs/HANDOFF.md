@@ -205,3 +205,11 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 **G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**
 
 依 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 核對新證據；候選未變沿用 CI。任何差異重新向 Owner 確認。準備授權不得延伸至合併。追加五份文件並讀回 Draft PR #10。
+
+## 2026-11-21｜G1-GOV-15｜下次新對話接續基準
+
+- Owner 已明確允許最後查核和整合準備，**沒有授權合併任何 PR、部署或修改 main/develop**；此決策已追加至 G1 和放行清單。
+- PR #12：Open Draft，Head `af558e85afc3c32345ca000c423816358cfaba58`，Base `f6faebbb8096967854bacf0708b196ffac2712b9`，merge ref `63212337c730031496f15e0d0b3c7978cc30665b`，僅新增 CI workflow；Run 44869606630 兩 Job 成功。PR #13 完整回歸 Run 44882092433 兩 Job 成功。當前查核沒有新遊戲測試。
+- Strict／Pages 以已歸檔 Owner 畫面及文字證據為基礎，詳細 API 403／404 不反覆浪費查詢；其他保護及部署隔離待可驗證證據。
+- **下一工程 G1-OWNER-DECISION-01**：僅於 Owner 另行提供明確執行合併授權或新證據後啟動；否則保持 NO-GO、PR Draft、不得修改 main/develop。並行 **B-04** 可往下做。
+- 依 [永久交接模板](STAGE-GITHUB-HANDOFF-TEMPLATE.md) 和 [固定報告規則](PROJECT-PROGRESS-REPORTING-RULES.md) 重讀 PR、SHA、CI，變更則重新驗證。不要反覆把「準備授權」誤讀成「合併授權」。
