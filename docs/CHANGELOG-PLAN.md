@@ -159,3 +159,12 @@ Owner 回報其 develop Branch Protection 設定畫面確認 Require status chec
 核對 API 強制 checks 與 #12／#13 CI，未重跑。五份文件皆追加，保留歷史。
 
 **G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**
+
+
+## 2026-11-21 21:05 Asia/Taipei｜G1-GOV-11｜Owner 治理證據驗收
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `6f85ec19927b75c751dcbcd3524d5a705723aad4`。本輪只追加文件。
+
+補錄 Owner 項目及 Pages Disabled／None 文字證據，API 403／404 延續為已知查詢限制。#12 CI 未變，記名授權獨立待辦。
+
+**G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**

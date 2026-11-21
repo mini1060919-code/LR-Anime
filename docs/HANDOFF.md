@@ -165,3 +165,14 @@
 **G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**
 
 strict 採 Owner 畫面文字確認，兩個 checks 由 API 驗證，原圖未歸檔。先讀 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md)。取得缺項後再核對 #12、#13 候選與 CI，追加五份文件並讀回 PR #10，G1 維持 NO-GO。
+
+
+## 2026-11-21 21:05 Asia/Taipei｜G1-GOV-11｜Owner 治理證據驗收
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `6f85ec19927b75c751dcbcd3524d5a705723aad4`。本輪只追加文件。
+
+Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status checks to pass，Required Checks 為 Unit tests and production build、Complete Playwright E2E，來源 GitHub Actions。Owner 提供的 Pages 畫面狀態為 Disabled／None，依此記錄 GitHub Pages 無啟用的正式發布來源。本輪可取得的是畫面內容文字，未取得原圖，無圖片歸檔或獨立視覺驗證。
+
+**G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
+
+先讀 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md)，只核對新證據與 #12 實際候選。候選未變沿用 CI。追加五份治理文件並讀回 Draft PR #10。

@@ -175,3 +175,14 @@ GitHub API 直接證據：GET /branches/develop 回 200，required checks enforc
 [#12](https://github.com/mini1060919-code/LR-Anime/pull/12) 與 [#13](https://github.com/mini1060919-code/LR-Anime/pull/13) 均為 Open Draft，Base develop `f6faebbb8096967854bacf0708b196ffac2712b9`。#12 Head `af558e85afc3c32345ca000c423816358cfaba58`、merge ref `63212337c730031496f15e0d0b3c7978cc30665b`、tree `805d17777e80e31b06910642b28a1928afe26e3d`；[run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 成功，沿用 416/416、Smoke 2/2、建置。#13 Head `cfa103c659aeb68aa97b448746ac944bbb16fd0d`、merge ref `ab81f06e0ce6212caee82f96a5db68b472ad8ed3`、tree `645fdb32759ebf36617c9b0de89e2f4c06b2df08`；[run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 成功，沿用 701/701、完整 E2E 24/24、建置與 v4/v5/v6、未知版本拒寫及備份保護。兩候選未變，本輪未重跑。
 
 **G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**
+
+
+## 2026-11-21 21:05 Asia/Taipei｜G1-GOV-11｜Owner 治理證據驗收
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `6f85ec19927b75c751dcbcd3524d5a705723aad4`。本輪只追加文件。
+
+Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status checks to pass，Required Checks 為 Unit tests and production build、Complete Playwright E2E，來源 GitHub Actions。Owner 提供的 Pages 畫面狀態為 Disabled／None，依此記錄 GitHub Pages 無啟用的正式發布來源。本輪可取得的是畫面內容文字，未取得原圖，無圖片歸檔或獨立視覺驗證。
+
+[#12](https://github.com/mini1060919-code/LR-Anime/pull/12) Open Draft，Base develop `f6faebbb8096967854bacf0708b196ffac2712b9`，Head `af558e85afc3c32345ca000c423816358cfaba58`，merge ref `63212337c730031496f15e0d0b3c7978cc30665b` 與 tree `805d17777e80e31b06910642b28a1928afe26e3d` 未變。兩 checks 成功，reviews/comments 皆空。[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 沿用 416/416、建置、Smoke 2/2。#13 merge ref `ab81f06e0ce6212caee82f96a5db68b472ad8ed3`、tree `645fdb32759ebf36617c9b0de89e2f4c06b2df08` 未變，[Run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 沿用 701/701、建置、完整 24/24、v4/v5/v6、未知版本拒寫及備份證據。本輪未重跑，無新增失敗。
+
+**G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
