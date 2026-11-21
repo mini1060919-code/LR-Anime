@@ -9,3 +9,7 @@
 ## A-02 全身
 
 澪的 `pset.chr_asagiri_mio.standard.v001` 無 fullAssetId，可見 Git 樹及附件未取得透明全身原檔。路徑、實測尺寸、Alpha、SHA、來源和授權皆待原檔。
+
+## A-03 半身與頭像
+
+manifest 的 neutral 路徑為 `assets/portraits/chr_asagiri_mio/standard/neutral_v001.webp`，宣告 1024×1536。頭像 `assets/portraits/chr_asagiri_mio/standard/avatar_v001.png` 宣告 128×128。兩者皆 draft，實檔缺、byteLength 與 SHA 為 null。neutral 裁切層級無法從宣告確認。
