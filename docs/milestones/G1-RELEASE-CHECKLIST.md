@@ -99,3 +99,22 @@
 擁有者待提供：在 [Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 與 [Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 分別提供 develop/main 的生效範圍、enforcement、兩 checks/App 及其餘審查、隊列與權限設定；在 [General](https://github.com/mini1060919-code/LR-Anime/settings) 核對 merge 政策；於 [Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages) 和 [Environments](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供來源、允許分支、部署審查與環境防護。GET `/pages` 與 `/environments/github-pages` 均 HTTP 404，端點標示 pages:read／actions:read，原因無法從 404 判定。main push 會觸發有 build/E2E 前置的 Pages workflow，文件 #10 同樣需獨立發布授權。本輪沒有收到擁有者設定證據、記名 reviewer、整合決策人／操作人或正式授權。可交付截圖或具權限的 API 回應，勿分享憑證。
 
 **G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**
+
+
+## 2026-11-21 13:14 Asia/Taipei｜G1-GOV-05｜單人治理與 develop CI 引導
+
+工程治理。入庫基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `27d0ccca532b9d680922e2da4bae75a431d6477c`；候選開於 [Draft PR #12](https://github.com/mini1060919-code/LR-Anime/pull/12) `ci/g1-develop-bootstrap`，Base `f6faebbb8096967854bacf0708b196ffac2712b9`、Head `af558e85afc3c32345ca000c423816358cfaba58`。只新增 `.github/workflows/g1-validation.yml`，逐字沿用 #11。無遊戲、存檔或素材變更。
+
+[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) completed/success；兩個 checks 由 github-actions（App 15368）產生。[Unit/Build job 136740938540](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630/job/136740938540) npm ci、416/416（22 檔）、正式建置通過。[E2E job 136740938366](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630/job/136740938366) 現行 develop 完整 Smoke 2/2（約 2.6 分鐘），單 worker、零失敗、零跳過、零重試，含自然黎明 autosave 與重載。兩份日誌均確認 checkout `63212337c730031496f15e0d0b3c7978cc30665b`，父提交為 develop baseline 與 #12 Head，tree `805d17777e80e31b06910642b28a1928afe26e3d` 與 #12 Head 一致。成功無失敗 trace，upload 無檔，artifacts 0。原始日誌與八段試算存於 `/workspace/work/gov05/`。
+
+擁有者設定步驟：
+1. 待 #12 兩項 checks 完成後，在 [Settings → Rules → Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets) 開啟適用 develop 的生效規則；若使用 classic protection，至 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 編輯 develop。核對 Active、目標只涵蓋預期分支，先檢查是否有其他重疊規則。
+2. 開啟 Require status checks to pass，選 `Unit tests and production build` 與 `Complete Playwright E2E`，兩者來源均選 GitHub Actions（`github-actions` App 15368），避免同名檢查由其他 App 滿足。若清單找不到，確認 #12 的 run 已完成、App 來源正確，再重查；不以其他名稱取代。
+3. 保留 Require a pull request 與 Require conversation resolution；單人不強制批准（Ruleset 0，classic 關閉 Require approvals）。保留禁止 bypass／force push／刪除及管理員適用限制。核對 strict/up-to-date；如有 merge queue，現有 workflow 缺 merge_group，須先在獨立 PR 驗證支援再啟用。使用 Merge Commit，定案前維持 NO-GO。
+4. 儲存後保留 develop 規則、兩個 checks/App 與 #12 checks 頁的截圖或具權限 API 證據。核對 #12 實際 merge ref 能滿足門檻，再就 #12 取得記名整合批准。Pages 保持停用，main 不在本次設定或整合範圍。
+
+- [ ] 擁有者證實 required checks 強制性及單人規則。
+- [ ] #12 與逐段功能候選取得正式整合授權。
+- [ ] main 的發布操作另行授權，Pages 維持停用。
+
+**G1 NO-GO。下一工程 G1-GOV-06：擁有者核對並設定兩項 Required Checks，讀回證據，確認 #12 的實際 merge ref 與記名整合授權。企劃並行 B-04。**

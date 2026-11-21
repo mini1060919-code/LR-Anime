@@ -107,3 +107,14 @@
 **G1 NO-GO。下一工程 G1-GOV-05 在收到擁有者實際設定或授權後啟動，完成逐項證據驗證。並行企劃 B-04。**
 
 收到擁有者證據後，從本治理分支重讀總計畫、固定回報規則、快照、G1 與放行清單，再查 PR #1～#11、run 44724242042 和 merge ref。按 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 核對規則、Pages 與記名授權。候選未變則沿用 CI 701/701、24/24、build 與既有七段演練；有變更才重驗。完成後追加同五份文件、commit＋push，重新以 GitHub 讀回文件及 PR #10 Head。缺證維持 NO-GO，不合併、不部署。
+
+
+## 2026-11-21 13:14 Asia/Taipei｜G1-GOV-05｜單人治理與 develop CI 引導
+
+工程治理。入庫基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `27d0ccca532b9d680922e2da4bae75a431d6477c`；候選開於 [Draft PR #12](https://github.com/mini1060919-code/LR-Anime/pull/12) `ci/g1-develop-bootstrap`，Base `f6faebbb8096967854bacf0708b196ffac2712b9`、Head `af558e85afc3c32345ca000c423816358cfaba58`。只新增 `.github/workflows/g1-validation.yml`，逐字沿用 #11。無遊戲、存檔或素材變更。
+
+[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) completed/success；兩個 checks 由 github-actions（App 15368）產生。[Unit/Build job 136740938540](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630/job/136740938540) npm ci、416/416（22 檔）、正式建置通過。[E2E job 136740938366](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630/job/136740938366) 現行 develop 完整 Smoke 2/2（約 2.6 分鐘），單 worker、零失敗、零跳過、零重試，含自然黎明 autosave 與重載。兩份日誌均確認 checkout `63212337c730031496f15e0d0b3c7978cc30665b`，父提交為 develop baseline 與 #12 Head，tree `805d17777e80e31b06910642b28a1928afe26e3d` 與 #12 Head 一致。成功無失敗 trace，upload 無檔，artifacts 0。原始日誌與八段試算存於 `/workspace/work/gov05/`。
+
+**G1 NO-GO。下一工程 G1-GOV-06：擁有者核對並設定兩項 Required Checks，讀回證據，確認 #12 的實際 merge ref 與記名整合授權。企劃並行 B-04。**
+
+先重讀總計畫、固定回報規則、G1 與放行清單，重查 #1～#12 和兩個 Actions runs。取得 develop 有效規則、兩 checks/App、單人批准政策和 #12 授權。功能逐段流程與回復見 G1。追加五文件並以 GitHub 讀回 commit、PR 和檔案。缺證保持 NO-GO，不合併、不部署。
