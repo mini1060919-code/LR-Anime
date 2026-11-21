@@ -261,3 +261,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜E-04
 
 [E-04 交付](plans/E-04.md) 已鎖定真實效率／技能來源及產出限制。 前一提交 ad516d57a7f34ba003654b216f7df3be4fcd18f1。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-05
+
+[E-05 交付](plans/E-05.md) 已補選取、唯讀導航、派工及失效處理契約。 前一提交 61dd37b8c7ae1fd7768fe7c5219a6024a7be16ed。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
