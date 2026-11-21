@@ -186,3 +186,16 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 [#12](https://github.com/mini1060919-code/LR-Anime/pull/12) Open Draft，Base develop `f6faebbb8096967854bacf0708b196ffac2712b9`，Head `af558e85afc3c32345ca000c423816358cfaba58`，merge ref `63212337c730031496f15e0d0b3c7978cc30665b` 與 tree `805d17777e80e31b06910642b28a1928afe26e3d` 未變。兩 checks 成功，reviews/comments 皆空。[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 沿用 416/416、建置、Smoke 2/2。#13 merge ref `ab81f06e0ce6212caee82f96a5db68b472ad8ed3`、tree `645fdb32759ebf36617c9b0de89e2f4c06b2df08` 未變，[Run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 沿用 701/701、建置、完整 24/24、v4/v5/v6、未知版本拒寫及備份證據。本輪未重跑，無新增失敗。
 
 **G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
+
+
+## 2026-11-21 21:16 Asia/Taipei｜G1-GOV-12｜正式整合決策前核對
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `84698ed407284df1f2e08b239b6017ef61deacf1`。本輪只追加治理文件。
+
+#1～#13 全 Open 未合併，#7～#13 Draft，reviews 皆空。
+
+[#12 run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 成功，沿用 416/416、正式建置、基線 Smoke 2/2 和黎明存檔重載。[#13 run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 成功，沿用 701/701、建置、完整 Playwright 24/24、v4/v5/v6、未知版拒寫及備份證據。候選未變，未重跑。
+
+整合順序維持 #12→#1→#2→#4→#3→#5→#6→單次 #9/#11，#13 僅留證；逐段記錄 before/after SHA、checks 與回復。P0 無新增測試失敗；P1 記名授權、其餘單人規則及其他部署通道待證；P2 既有依賴、bundle、Actions 警告續追。
+
+**G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**

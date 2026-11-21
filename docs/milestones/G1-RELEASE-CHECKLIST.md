@@ -197,3 +197,16 @@ Pages 與 github-pages 環境端點 HTTP 404，分別標示 pages:read、actions
 API 直接證據：develop 分支摘要 HTTP 200，兩項 checks 強制範圍 everyone、App 15368；#12 check-runs 亦確認 github-actions App 15368。詳細 required_status_checks 回 403（administration:read），strict 維持 Owner 畫面證據。Pages／github-pages 環境回 404（pages:read／actions:read），可見部署清單空；屬既有查詢限制。main 的 deploy.yml 仍有 push main 及 workflow_dispatch 路徑，其他內外部部署通道待確認。其餘單人保護欄位缺新證據。
 
 **G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
+
+
+## 2026-11-21 21:16 Asia/Taipei｜G1-GOV-12｜正式整合決策前核對
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `84698ed407284df1f2e08b239b6017ef61deacf1`。本輪只追加治理文件。
+
+- [x] #12 最新候選、checks/App 與第一父回復樹核對。
+- [ ] 單人保護其餘欄位及其他部署通道。
+- [ ] Owner 記名決策與 #12 同一候選的執行授權。
+
+參見 [Owner 整合決策表](G1.md#12owner-整合決策表)。候選與授權證據有差異即停止。
+
+**G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**

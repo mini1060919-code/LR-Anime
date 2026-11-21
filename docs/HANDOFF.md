@@ -176,3 +176,12 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 **G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
 
 先讀 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md)，只核對新證據與 #12 實際候選。候選未變沿用 CI。追加五份治理文件並讀回 Draft PR #10。
+
+
+## 2026-11-21 21:16 Asia/Taipei｜G1-GOV-12｜正式整合決策前核對
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `84698ed407284df1f2e08b239b6017ef61deacf1`。本輪只追加治理文件。
+
+**G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**
+
+依 [G1](milestones/G1.md) 的決策表讀回 Owner 核准與雙方記名。核對 #12 Base/Head/merge ref、checks 與第一父回復。差異即停止。追加五份文件並讀回 Draft PR #10；缺證維持 NO-GO。

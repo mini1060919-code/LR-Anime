@@ -168,3 +168,12 @@ Owner 回報其 develop Branch Protection 設定畫面確認 Require status chec
 補錄 Owner 項目及 Pages Disabled／None 文字證據，API 403／404 延續為已知查詢限制。#12 CI 未變，記名授權獨立待辦。
 
 **G1 NO-GO。下一工程 G1-GOV-12：核證 #12 最新 SHA 的記名授權（授權人、操作人、日期、允許範圍）與剩餘治理缺項。企劃並行 B-04。**
+
+
+## 2026-11-21 21:16 Asia/Taipei｜G1-GOV-12｜正式整合決策前核對
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `84698ed407284df1f2e08b239b6017ef61deacf1`。本輪只追加治理文件。
+
+加入 #12 Owner 整合決策表、#1～#13 即時快照及第一父回復樹驗證。沿用原 CI 及已歸檔 Owner 證據，未重查已知 403／404。
+
+**G1 NO-GO。下一工程 G1-GOV-13：收到 Owner 的 #12 決策及剩餘治理證據後，核對同一候選並記錄。並行企劃 B-04。**
