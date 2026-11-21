@@ -131,3 +131,17 @@
 請擁有者從 [Rulesets](https://github.com/mini1060919-code/LR-Anime/rulesets)／[Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 提供適用 develop 的 Active 規則、兩個 checks 及 GitHub Actions App 15368、0 approvals、PR/對話、strict、queue、管理員與禁止 bypass/force push/刪除。從 [Pages](https://github.com/mini1060919-code/LR-Anime/settings/pages)／[Environments](https://github.com/mini1060919-code/LR-Anime/settings/environments) 提供停用與發布隔離證據。附 #12 最新 SHA、記名決策人／操作人、整合授權與獨立發布授權；勿分享憑證。
 
 **G1 NO-GO。下一工程 G1-GOV-07：收到擁有者的 develop 強制 checks 設定與 #12 記名授權後核證；企劃並行 B-04。**
+
+
+## 2026-11-21 16:14 Asia/Taipei｜G1-GOV-07｜Required Checks 儲存前驗證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `a8cc1b3d8d955d9421a7721754fd48645717b515`。擁有者回報已選取兩項 GitHub Actions checks 與 Require branches to be up to date before merging，是否儲存未確認。develop 分支摘要顯示 protected:true、required checks off、contexts/checks 空；`GET /branches/develop/protection` 回 HTTP 403（administration:read），有效規則端點可見清單空。實際生效仍待讀回。
+
+[#13 run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) completed/success。兩原始日誌確認 checkout 實際 PR merge ref ab81f06e0ce6212caee82f96a5db68b472ad8ed3；兩 checks 來源 github-actions（App 15368）。[Unit/Build 136779384642](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/job/136779384642) npm ci、Vitest 701/701、正式建置通過。[E2E 136779384464](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/job/136779384464) 完整 Playwright 24/24（21.7 分），單 worker、零 fail/skip/retry，含 M3 1280px／390px neutral 備援、M4/M5、v4/v5/v6 存檔及 Smoke；未知版本拒寫由同版單元測試涵蓋。保留失敗 trace 模式，本次無失敗。[Artifact 14698773290](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/artifacts/14698773290) 已上傳。原始兩 job 日誌保留於 /workspace/work/gov07/。CI 通過後分支摘要仍見 required checks off，Owner 儲存讀回與記名授權待辦。
+
+- [ ] 擁有者儲存後讀回 develop 規則、兩 checks/App、strict。
+- [ ] 確認 #12 名義授權及 Pages 隔離，未取得授權前維持 Draft。
+
+擁有者可核對 [Settings → Branches](https://github.com/mini1060919-code/LR-Anime/settings/branches) 的目標為 develop，兩項 context 為 `Unit tests and production build`、`Complete Playwright E2E`，來源 GitHub Actions（App 15368），strict 已選，保留單人 0 approvals、PR／對話解決及禁止 bypass／force push／刪除。逐項對照 #13 結果與 #12 引導 checks，儲存後重新開啟規則並留存 branch、兩 checks／App、strict 和執行狀態證據。strict 可能暫阻已落後的堆疊 PR：獲正式授權才接續 #12→#1→#2→#4→#3→#5→#6→一次性 #9/#11。逐段核對 Base/Head/merge ref、取得新 checks，若落後以經批准的不改寫歷史更新分支流程重新觸發。缺檢查、未保存或缺授權即停止。保留 Merge Commit、第一父 Revert PR、原始存檔與備份策略。
+
+**G1 NO-GO。下一工程 G1-GOV-08：儲存後驗證 develop 生效規則與 #12 記名整合授權。並行企劃 B-04。**

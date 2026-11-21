@@ -119,3 +119,14 @@
 核對 #1～#12 與兩組 CI 的實際 merge ref；沿用既有測試和八段試算。詳細保護 403、Pages／環境 404。追加五份治理紀錄，保留歷史。
 
 **G1 NO-GO。下一工程 G1-GOV-07：收到擁有者的 develop 強制 checks 設定與 #12 記名授權後核證；企劃並行 B-04。**
+
+
+## 2026-11-21 16:14 Asia/Taipei｜G1-GOV-07｜Required Checks 儲存前驗證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `a8cc1b3d8d955d9421a7721754fd48645717b515`。擁有者回報已選取兩項 GitHub Actions checks 與 Require branches to be up to date before merging，是否儲存未確認。develop 分支摘要顯示 protected:true、required checks off、contexts/checks 空；`GET /branches/develop/protection` 回 HTTP 403（administration:read），有效規則端點可見清單空。實際生效仍待讀回。
+
+[#13 run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) completed/success。兩原始日誌確認 checkout 實際 PR merge ref ab81f06e0ce6212caee82f96a5db68b472ad8ed3；兩 checks 來源 github-actions（App 15368）。[Unit/Build 136779384642](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/job/136779384642) npm ci、Vitest 701/701、正式建置通過。[E2E 136779384464](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/job/136779384464) 完整 Playwright 24/24（21.7 分），單 worker、零 fail/skip/retry，含 M3 1280px／390px neutral 備援、M4/M5、v4/v5/v6 存檔及 Smoke；未知版本拒寫由同版單元測試涵蓋。保留失敗 trace 模式，本次無失敗。[Artifact 14698773290](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433/artifacts/14698773290) 已上傳。原始兩 job 日誌保留於 /workspace/work/gov07/。CI 通過後分支摘要仍見 required checks off，Owner 儲存讀回與記名授權待辦。
+
+追加五份治理文件並保留歷史。新增 Draft #13 作為完整 CI 證據，沒有修改 workflow、遊戲、存檔或正式分支。
+
+**G1 NO-GO。下一工程 G1-GOV-08：儲存後驗證 develop 生效規則與 #12 記名整合授權。並行企劃 B-04。**
