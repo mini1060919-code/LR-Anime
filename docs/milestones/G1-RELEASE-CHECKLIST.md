@@ -238,3 +238,15 @@ API 直接證據：develop 分支摘要 HTTP 200，兩項 checks 強制範圍 ev
 - [ ] 授權後立即重核實際候選和放行門檻。
 
 **G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**
+
+## 2026-11-21｜G1-GOV-15｜授權邊界與整合決策表
+
+- [x] Owner 明確授權 PR #12 **最後查核及整合準備**（本對話，2026-11-21 Asia/Taipei）。
+- [x] PR #12 Open Draft、Base `f6faebbb8096967854bacf0708b196ffac2712b9`、Head `af558e85afc3c32345ca000c423816358cfaba58`、merge ref `63212337c730031496f15e0d0b3c7978cc30665b`、僅增 CI workflow；既有回復證據可追溯。
+- [x] #12 Run 44869606630 兩 Job SUCCESS；#13 Run 44882092433 兩 Job SUCCESS；本次不重跑。
+- [ ] Owner 獨立記名授權實際合併 PR #12 至 develop（授權人、操作者、日期時間、Head/Base/merge ref/tree、方法和操作範圍）。
+- [ ] 操作前重新確認當下 Required Checks、Strict、其餘單人保護及所有相關部署通道隔離。
+- [ ] 真正的 Merge Commit、develop before/after SHA 和合併後重新驗收。此項**未執行**。
+- [ ] 後續 #1→#2→#4→#3→#5→#6→一次性統一候選逐段獨立授權／驗收。沒有任何自動延伸授權。
+
+**NO-GO；查核完成≠合併許可。下一工作 G1-OWNER-DECISION-01，等待新證據才啟動下一治理任務；並行 B-04。**
