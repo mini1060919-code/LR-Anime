@@ -235,3 +235,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜A-04
 
 [A-04 交付](plans/A-AUDIT.md) 五種要求未驗收，待原檔與表情映射確認。 前一提交 e83d1f9be8bcba1e56efe62255a33268440c0949。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜A-05
+
+[A-05 交付](plans/A-AUDIT.md) 四角基線檢查通過，澪品質待原檔。 前一提交 4984318ab55371f36797045e448f19ec1a1783d2。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。

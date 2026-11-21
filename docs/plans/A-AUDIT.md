@@ -17,3 +17,7 @@ manifest 的 neutral 路徑為 `assets/portraits/chr_asagiri_mio/standard/neutra
 ## A-04 表情
 
 需求為平靜、微笑、警戒、擔憂、讚許。草稿路徑同 A-03，檔名 `neutral_v001.webp`、`smile_v001.webp`、`focused_v001.webp`、`worried_v001.webp`、`fatigued_v001.webp`，均宣告 1024×1536，實檔與 SHA 皆缺。警戒與 focused 的映射需審查，讚許無對應槽；fatigued 為既有額外槽，保留。
+
+## A-05 品質
+
+鎖定候選的 `node scripts/verify-portraits.mjs` 通過，28 approved、18 draft。Pillow 解碼比對 28 張四角既有檔，尺寸與 SHA 均符合 manifest，Alpha 最小均 0、最大 246～254。四張全身為 1024×1536，其餘為 512×512。澪六個 draft 槽均缺實檔，透明度、邊緣、裁切及視覺比對待辦。收到原檔後在明暗背景預覽邊緣、確認有效 Alpha 與 48px 頭像可辨識度。
