@@ -186,3 +186,12 @@ Owner 回報其 develop Branch Protection 設定畫面確認 Require status chec
 追加未授權的 Owner 決策草案及八段驗收條件，重核 #12 候選、分支保護及回復樹，沿用既有 CI。本輪未合併、部署或操作玩家存檔。
 
 **G1 NO-GO。下一工程 G1-GOV-14：取得 Owner 記名決策與剩餘單人規則／部署隔離證據，再核對同一候選。並行企劃 B-04。**
+
+
+## 2026-11-21 21:38 Asia/Taipei｜G1-GOV-14｜整合前準備授權與核驗
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `e86b58fd62ec067120a38fafa041eb2e23a08735`。本輪只追加文件。
+
+歸檔 Owner 的查核與整合準備授權，重核 #12 候選、兩項 checks、Pages 已知證據及第一父回復樹。無合併、部署或玩家存檔操作。
+
+**G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**

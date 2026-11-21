@@ -223,3 +223,18 @@ API 直接證據：develop 分支摘要 HTTP 200，兩項 checks 強制範圍 ev
 見 [Owner 正式整合決策紀錄草案](G1.md#owner-正式整合決策紀錄草案) 與 [待完成的整合階段與驗收](G1.md#待完成的整合階段與驗收)。
 
 **G1 NO-GO。下一工程 G1-GOV-14：取得 Owner 記名決策與剩餘單人規則／部署隔離證據，再核對同一候選。並行企劃 B-04。**
+
+
+## 2026-11-21 21:38 Asia/Taipei｜G1-GOV-14｜整合前準備授權與核驗
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `e86b58fd62ec067120a38fafa041eb2e23a08735`。本輪只追加文件。
+
+**Owner 決策紀錄：核准查核及整合準備，未授權執行合併。** 授權來源為本階段對話中的 Repository Owner 聲明，日期 2026-11-21（Asia/Taipei）。GitHub repository 帳號為 mini1060919-code；本輪操作者 Codex 僅可核對 #12 候選／保護／隔離、驗證回復、準備放行紀錄、提交治理分支及交接。授權綁定 #12 Head `af558e85afc3c32345ca000c423816358cfaba58`。未收到獨立的記名合併決策；#12 保持 Draft。
+
+- [x] #12 Base/Head/merge ref/tree、雙 checks/App 與第一父回復樹。
+- [x] 已歸檔 Strict 與 Pages Disabled／None 的 Owner 文字證據。
+- [ ] 其餘單人保護與其他部署通道隔離。
+- [ ] Owner 對同一候選的獨立記名合併授權，含授權人、執行人、日期／時區及範圍。
+- [ ] 授權後立即重核實際候選和放行門檻。
+
+**G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**

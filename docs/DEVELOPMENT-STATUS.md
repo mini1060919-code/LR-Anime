@@ -210,3 +210,14 @@ Owner 提供的畫面內容確認 develop 已勾選 Strict 與 Require status ch
 已備妥 [Owner 決策與逐段驗收](milestones/G1.md)，#12 與各功能階段仍待正式整合。候選不變，沿用 #12 416/416＋2/2、#13 701/701＋24/24 及建置、存檔證據。
 
 **G1 NO-GO。下一工程 G1-GOV-14：取得 Owner 記名決策與剩餘單人規則／部署隔離證據，再核對同一候選。並行企劃 B-04。**
+
+
+## 2026-11-21 21:38 Asia/Taipei｜G1-GOV-14｜整合前準備授權與核驗
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `e86b58fd62ec067120a38fafa041eb2e23a08735`。本輪只追加文件。
+
+**Owner 決策紀錄：核准查核及整合準備，未授權執行合併。** 授權來源為本階段對話中的 Repository Owner 聲明，日期 2026-11-21（Asia/Taipei）。GitHub repository 帳號為 mini1060919-code；本輪操作者 Codex 僅可核對 #12 候選／保護／隔離、驗證回復、準備放行紀錄、提交治理分支及交接。授權綁定 #12 Head `af558e85afc3c32345ca000c423816358cfaba58`。未收到獨立的記名合併決策；#12 保持 Draft。
+
+develop API 為 protected:true，Required Checks 強制 everyone，Unit tests and production build、Complete Playwright E2E 均綁 github-actions App 15368；#12 同名同 App 兩項皆成功。[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 沿用 416/416、建置、基線 Smoke 2/2 及黎明重載，候選未改，未重跑。[#13 Run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 留存完整 701/701、建置、24/24 與 v4/v5/v6、未知版本拒寫及備份證據。
+
+**G1 NO-GO。下一工程 G1-GOV-15：補齊保護及部署隔離證據，取得綁定 #12 Base、Head、merge ref、tree 與 Merge Commit 方法的獨立記名執行決策。並行企劃 B-04。**
