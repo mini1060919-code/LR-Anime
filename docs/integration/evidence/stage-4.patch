@@ -1,0 +1,1293 @@
+diff --git a/docs/M4-CHANGED-FILES.md b/docs/M4-CHANGED-FILES.md
+new file mode 100644
+index 0000000..da9e092
+--- /dev/null
++++ b/docs/M4-CHANGED-FILES.md
+@@ -0,0 +1,36 @@
++# M4 修改檔案
++
++相對 M3 `14ddcdd`；不包含回歸測試重新產生的舊 M3 截圖，舊圖在交付前回復原文。沒有修改圖片素材、地圖／攝影機、建築定義或相依套件。
++
++- `docs/M4-CHANGED-FILES.md`
++- `docs/M4-IMPLEMENTATION.md`
++- `docs/M4-PR.md`
++- `docs/M4-SAVE-COMPATIBILITY.md`
++- `docs/M4-TEST-RESULTS.md`
++- `docs/screenshots/m4-dossier-1000.png`
++- `docs/screenshots/m4-dossier-390.png`
++- `docs/screenshots/m4-skills-1000.png`
++- `docs/screenshots/m4-skills-390.png`
++- `e2e/m4-progression.spec.js`
++- `src/characters/state.js`
++- `src/main.js`
++- `src/persistence.js`
++- `src/progression/assignments.js`
++- `src/progression/rules.js`
++- `src/progression/schema.js`
++- `src/progression/work.js`
++- `src/sim/economy.js`
++- `src/sim/extraction.js`
++- `src/sim/modifiers.js`
++- `src/sim/research.js`
++- `src/sim/survivors.js`
++- `src/ui/anime-theme.css`
++- `src/ui/characterpanel.js`
++- `src/ui/i18n/zh-TW.js`
++- `src/ui/inspector.js`
++- `src/ui/progressionpanel.js`
++- `src/zombies/combat.js`
++- `tests/characters.test.js`
++- `tests/i18n.test.js`
++- `tests/progression.test.js`
++- `tests/save-protection.test.js`
+diff --git a/docs/M4-IMPLEMENTATION.md b/docs/M4-IMPLEMENTATION.md
+new file mode 100644
+index 0000000..bd167dd
+--- /dev/null
++++ b/docs/M4-IMPLEMENTATION.md
+@@ -0,0 +1,48 @@
++# M4 居民能力與成長：實作規格
++
++## 基準與分支
++
++2026-11-17 檢查遠端最新分支：M1 `feature/save-protection-v5`=`642c8d2`；M2 `feature/m2-zh-tw-anime-ui`=`e89c3a7`；M3 `feature/m3-anime-art-integration`=`14ddcdd`。M1→M2 為 22 檔前端／語系整合；M2→M3 為 80 檔人物、v6、素材與測試。M4 直接由 M3 建立 `feature/m4-survivor-progression`，PR base 為 M3，不合併、不部署。
++
++沿用 M3 runId、數字居民 ID、UID、高水位、職業／個性 ID、外觀 ID、generator 與全部美術。沒有修改 Three.js 地圖、攝影機、建築定義或圖片。戰鬥模組僅插入有限能力倍率與實際命中結算，沒有改射擊目標選擇或視覺系統。自動工作分配維持原本排序，不加入 M5 AI。
++
++## 能力與實際工作
++
++`src/progression/rules.js` 管理成長規則；`work.js` 處理參與者、有限倍率與一次性結算；`assignments.js` 提供核心派工命令；`schema.js` 管理附加資料與驗證。UI 僅呼叫驗證命令。
++
++| 能力 | 經驗來源（只計實際完成量） | 能力效果上限 |
++| --- | --- | --- |
++| agriculture 農業 | 農場、菜園、溫室、牧場實際入庫食物：1 XP/單位；植林站完成一棵樹：1 XP | 相應食物產量 +10% |
++| engineering 工程 | 冶煉／蒸餾實際入庫產物、有效發電輸出、研究點：1 XP/單位 | 加工、發電及研究產出 +10% |
++| medicine 醫療 | 已套用診所照護倍率、實際避免的飢餓／口渴增量：1 XP/10 點 | 原診所減耗倍率再乘最低 0.97；0.85→0.8245 |
++| scavenging 探索採集 | 真正交付的伐木／拾荒／採礦資源，獵人／漁屋食物：1 XP/單位 | 相應產量 +10% |
++| defense 防禦 | 砲塔、駐軍及 HQ 民兵真正扣除的殭屍 HP：1 XP/10 HP | 原傷害 +10%，不改射程、射速或目標 |
++| logistics 後勤 | 有燃料且有人工作的車庫支援已交付採集量：1 XP/4 單位；廣播站支援成功抵達的新居民：1 XP/人 | 車庫支援採集額外 +5%，只取一座有效車庫 |
++
++生產加成為 `1 + 0.02 × 有效參與者平均等級`，最多 1.1；後勤倍率取其一半增幅，最多 1.05。採集者與後勤合計最多 `1.1×1.05=1.155`，不按居民／車庫數量無限疊加。原有科技、天氣、建築升級、資源容量與既有光環規則保留。資源已滿、無原料／燃料、無節點、停工、零 dt、無命中目標，不憑時間給經驗。發電只計可儲存或供負載使用的量，滿倉且無負載不給經驗；不為自動發電的無工作建築建立虛構參與者。
++
++原診所只有飢渴減耗，沒有傷病；本次依此計照護工作，不新增疾病、士氣或疲勞。原維修沒有指定居民，本次不給無法歸屬的維修經驗。後勤車庫缺油時原有光環的歷史規則不改，但不提供 M4 額外搬運加成或經驗。多診所／車庫／廣播站採最低建築 ID 的有效支援者，避免同一成果重複分配。
++
++## 等級與職業個性
++
++`abilityRanks` 仍為 0–5。經驗以整數 milli-XP 保存，1000=1 XP；累計門檻為 0、10、30、60、100、150 XP。最高 150 XP／5 級，不無限累加。UI 顯示到下一級的區間進度；已有高等級的舊檔，經驗預設為該等級最低門檻，不降級或重新抽取身分。
++
++完成量按實際參與者平均分攤，套用獨立學習係數：相應職業 +10%，個性按規則表 +2%（堅定）或相應領域 +3%，總增幅最多 +15%。職業對應：農務員→農業、機械技師／研究員→工程、醫護→醫療、斥候→採集、守衛→防禦、後勤→後勤；通才沒有專項加速。個性只影響相應學習效率，不改飢渴、士氣或 AI。規則表列出所有既有個性，可擴充而不在核心 tick 散落角色姓名判斷。四名具名人物的職業不變，也沒有改職業操作。
++
++不足一個 milli-XP 的餘數保存在 `experienceRemainders`，範圍 [0,1)，以 12 位小數保留。相同有效工作量、人物規則與事件序列可重現；不使用牆鐘、隨機數或浮動 UI 刷新給經驗。原遊戲仍以 dt 積分，升級跨界後的產出會受下一個 tick 的新等級影響，不宣稱不同巨大時間步下所有經濟數值逐位相同。
++
++每份完成收據綁定目前 state、原 UID、建築與參與者；發出後立即同步結算，使用後作廢。偽造、複製、重複、跨 state 或讀檔後重播均不接受；沒有待處理經驗佇列跨存檔重播。保存單調遞增的 sequence，避免重設結算高水位。這是內部完成工作 API，不是讓 UI／外部輸入任意授予經驗的公共命令。
++
++駐軍最多四人、HQ 民兵最多六人，依存活居民 ID 選定實際槍手；無參與者、死亡者及超出槍數者不分經驗。過量傷害只按實際失去的 HP 計算。名冊同步仍刪除死亡者的 active profile，保留唯一原型保留表與居民高水位。
++
++## 派工與 UI
++
++- 面板保留全身圖、頭像、五表情、姓名、職業、個性、背景與現有工作；新增六個技能／經驗進度與繁中／英文介面。
++- `assignResident` 以居民與建築 ID 驗證存活、建築存在、hp、啟用狀態及工作容量，檢查成功才移除舊職位並寫入新職位；失敗保留原工作。所有職業均可參與既有工作，專長只影響學習效率。缺電可預先派工，但無實際生產便無產出經驗。
++- 指派使目的建築進入原有手動模式；解除工作使原建築保持手動，避免立刻自動派回。可按「恢復建築自動派工」，也保留原勞動面板與自動分配。
++- UI 沒有直接寫 workers／buildingId；只有核心命令修改。開啟面板沿用原暫停行為，不在面板中自動長經驗。可切換「有上限的能力加成」，停用時仍記實際工作經驗，但資源與戰鬥回到原數值。資源預估與建築檢視已納入倍率。
++- 存檔仍是既有黎明檢查點；派工與經驗在下一次黎明保存。手動槽複製最近檢查點，不新增即時戰鬥存檔。
++
++## 驗收與後續
++
++測試、畫面與實際結果見 [M4 測試報告](M4-TEST-RESULTS.md)；存檔與回復見 [相容性報告](M4-SAVE-COMPATIBILITY.md)；修改檔案見 [清單](M4-CHANGED-FILES.md)。數值是本階段有限的最小效果集，長局成長速度仍需玩家驗收；未宣稱已完成所有平衡調整。
+diff --git a/docs/M4-PR.md b/docs/M4-PR.md
+new file mode 100644
+index 0000000..5145da2
+--- /dev/null
++++ b/docs/M4-PR.md
+@@ -0,0 +1,26 @@
++## M4：居民能力、可驗證成長與核心派工
++
++Base：`feature/m3-anime-art-integration`（`14ddcdd`）。依賴 M1 #1、M2 #2 與 M3；本 PR 不合併、不正式部署。
++
++M3 已保存六種技能等級但沒有工作效果。本次讓實際入庫、生產、研究、照護、搬運與命中傷害產生可重現經驗，按明確門檻升級；閒置、滿倉、缺料、無目標及未參與者不獲經驗。一次性同步收據與保存的 sequence 防止重播，經驗最高 150 XP、等級最高 5。
++
++一般工作／防禦能力加成最多 +10%，後勤支援最多 +5%，診所額外減耗最多 3%；職業與個性只加速相應學習，合計最多 +15%。關閉能力效果時仍記工作經驗，經濟與戰鬥回到原值。未新增傷病、士氣、疲勞或 M5 AI；沒有改原自動派工排序與 Three.js 地圖／攝影機。
++
++角色面板保留 M3 原圖與五表情，新增中英文六技能／經驗、效果開關及指定居民派工。UI 只呼叫核心驗證命令，檢查存活、建築狀態、容量，失敗保留舊職位；可回復原建築自動派工。桌面立繪隨面板保留在側邊，手機維持單欄。
++
++v6 架構不改版，附加 `progression-v1` 必要功能與成長欄位。v4/v5/舊 v6 安全補齊資料並永久保存來源，保留既有高等級、UID、外觀與高水位。M4 新檔驗證 XP／等級及雙向工作名冊；未知、損壞或遷移失敗不覆寫。舊 M3 遇新必要功能會阻止丟失成長資料的存回。沿用三槽、JSON 與備份輪替。
++
++### 驗證
++
++單元測試 **596/596（28 檔）**，正式建置成功。M4 桌面／手機瀏覽器 **2/2** 通過（5.7 分鐘），最後桌面排版複驗 **1/1** 通過（3.2 分鐘），M1–M3 原有回歸 **10/10** 通過（25.0 分鐘）。共 12 個不同瀏覽器案例全部通過。
++
++- [實作、公式與工作來源](https://github.com/mini1060919-code/LR-Anime/blob/feature/m4-survivor-progression/docs/M4-IMPLEMENTATION.md)
++- [存檔相容與回復](https://github.com/mini1060919-code/LR-Anime/blob/feature/m4-survivor-progression/docs/M4-SAVE-COMPATIBILITY.md)
++- [測試與截圖](https://github.com/mini1060919-code/LR-Anime/blob/feature/m4-survivor-progression/docs/M4-TEST-RESULTS.md)
++- [修改檔案](https://github.com/mini1060919-code/LR-Anime/blob/feature/m4-survivor-progression/docs/M4-CHANGED-FILES.md)
++
++### 風險與回復
++
++這是有限的首版成長數值，仍需長局平衡驗收；不宣稱所有職業成長速度已最佳化。經驗增加存檔體積，保留 2 MiB 上限與單分頁 localStorage 模型；永久備份滿額仍須玩家管理，不自動刪除。仍是黎明檢查點，不是隨時保存戰鬥。
++
++回復程式可回到 M3 `14ddcdd`，先保留完整 M4 v6 匯出與升級前永久備份；舊程式不認得 progression-v1 時會阻止覆寫。v5 相容副本會失去角色身分、技能、經驗與高水位，不能當完整 M4 備份。未變更圖片授權或加入素材。
+diff --git a/docs/M4-SAVE-COMPATIBILITY.md b/docs/M4-SAVE-COMPATIBILITY.md
+new file mode 100644
+index 0000000..3fe95d9
+--- /dev/null
++++ b/docs/M4-SAVE-COMPATIBILITY.md
+@@ -0,0 +1,43 @@
++# M4 v6 附加成長資料與回復
++
++保留 M3 v6 封裝、角色 ID/runId/UID、人物 generator、肖像 ID 與 core；不建立 v7，也不把圖片、人物 AI 或新生存狀態塞進存檔。
++
++## 附加資料
++
++```text
++requiredFeatures: ['characters-v1', 'progression-v1']
++characters.progression: {schemaVersion:1, effectsEnabled:boolean, sequence:安全整數}
++characters.records[id].abilityRanks: 原本六個 0–5 等級
++characters.records[id].experience: 六個整數 milli-XP，0–150000
++characters.records[id].experienceRemainders: 六個 [0,1) 有限小數
++```
++
++經驗與等級必須符合門檻，最高級餘數必須為 0。部分遺失、未知欄位／規則版本、負數、非整數經驗、等級矛盾、無效 sequence 都拒絕。`progression-v1` 必須和成長欄位一起存在，不能靠移掉必要功能標記讓程式忽略新資料。
++
++| 來源 | 行為 |
++| --- | --- |
++| 有效 v4/v5 | 沿用安全遷移，建立原 M3 身分與零等級／零經驗成長資料；原始文字永久備份 |
++| 未標記成長的 M3 v6 | 先驗證舊契約，保留 run/UID/姓名/職業/個性/肖像/generator/高水位，補經驗及餘數；已有等級的經驗從該級最低門檻起算 |
++| 已有 progression-v1 的 v6 | 完整驗證，無損保存；重複遷移結果不變，不能把缺失欄位當新角色補零 |
++| 未知版本／必要功能／損壞或遷移失敗 | 不寫入原始 key，仍可匯出原文；沿用 M1 明確復原與永久封存操作 |
++| 舊版空缺居民名冊 | 沿用 M3 保守拒絕，避免 legacy loader 的四人預設造成復活 |
++| 原生 v6 空名冊 | 正確保留空名冊、空 active records 與 ID 高水位 |
++
++新標記檔案驗證 workers 為合法名冊、容量不超過 jobs，且與每名居民 buildingId 雙向一致。舊檔若 workers 欄位缺省，可由既有居民參照補齊；明確矛盾的工作資料會拒絕遷移並保留原文，不靜默修掉後自動覆寫。角色死亡後 active record 移除，sequence、原型保留表及 nextSurvivorId 保持單調，不從活人最大 ID 推回高水位。
++
++原 M3 只支援 characters-v1，遇到 progression-v1 會視為未知必要功能，因而保護檔案，避免舊程式載入再儲存時丟失成長資料。
++
++## 備份與配額
++
++v4、v5 以及沒有 progression-v1 的舊 v6 原文均永久保存；JSON 匯入來源也保留原始文字。正常 M4 v6 仍沿用三份輪替備份，使用者釘選不自動移除。三個手動槽與 JSON 保存完整成長欄位、分數餘數、效果開關、工作與高水位。
++
++成長資料增加單檔大小；原有 200 次黎明有限配額測試由 16 KiB 改為 24 KiB，以容納四份含六技能／餘數的檔案，仍驗證 200 次不累積備份。原有配額失敗與真實瀏覽器 quota 測試保留。空間不足時保留既有 active save，顯示錯誤，不自動刪除永久備份；永久檔累積與 2 MiB 單檔上限維持。
++
++## 回復
++
++1. 先匯出完整 M4 v6 JSON，保留所有永久備份；不要清除 localStorage。
++2. 程式可回到 M3 基準 `14ddcdd`，或撤回本次 M4 commit。舊 M3 不認得成長功能標記，會阻止覆寫。
++3. 要回到可玩的舊程式，使用原有升級前永久 v6 備份，或明確匯出 v5 相容副本後再匯入。v5 副本不含角色身分、技能、經驗、分數餘數與高水位，不能當成完整 M4 備份。
++4. 重回 M4 時可匯入完整 M4 v6；相同 UID 與經驗保持，不能用降版副本還原 M4 人物歷史。
++
++沿用單分頁 localStorage 模型，沒有加入跨分頁交易；不要同時用兩個分頁操作同一存檔。未改成即時戰鬥儲存，仍由黎明檢查點決定可回復的進度。
+diff --git a/docs/M4-TEST-RESULTS.md b/docs/M4-TEST-RESULTS.md
+new file mode 100644
+index 0000000..5eac4eb
+--- /dev/null
++++ b/docs/M4-TEST-RESULTS.md
+@@ -0,0 +1,40 @@
++# M4 自動測試與畫面
++
++環境：Node v24.22.1／npm 11.9.0；未增加相依套件。基準 M3 `14ddcdd`。
++
++| 檢查 | 結果 |
++| --- | --- |
++| `npm test` | 28 個檔案、596 項通過（原有 530 + M4 66） |
++| `npm run build` | 成功；原 32 PNG 檢查通過，既有 >500 KiB bundle 警告仍在 |
++| M4 瀏覽器兩尺寸 | 2/2 通過，5.7 分鐘 |
++| 桌面排版修正後複驗 | 1/1 通過，3.2 分鐘；僅 >520px 的 CSS 調整，手機不受影響 |
++| M1–M3 十項瀏覽器回歸 | 10/10 通過，25.0 分鐘 |
++| `git diff --check` | 通過 |
++
++新增單元測試覆蓋六種能力、門檻、職業與個性表、只限參與者、餘數與重載、一次性收據／偽造／跨 state／重播、資源上限、缺料／停工／空轉、發電、研究、診所、採集、後勤、植林完成、廣播招募、實際傷害與過量傷害、HQ 六名槍手、手動／自動派工、全版本遷移、三槽及 JSON、工作名冊矛盾、死亡與高水位。
++
++停用能力加成後以最高技能驗證經濟、採集、科技、診所倍率、飢渴及戰鬥與原值一致。經驗仍來自實際工作，不以畫面開啟、待命或經過時間直接授予。
++
++M4 瀏覽器案例使用 1000×900 與 390×900 CSS viewport，透過正式 JSON 匯入 UI 建立接近升級門檻的檢查點；經正式派工 UI 指派，再運行真正的農場生產跨過等級門檻，沒有直接呼叫授予 XP API。檢查繁中六技能、圖像、目前工作、效果開關、黎明保存與 reload，恢復自動派工、解除工作，並在桌面驗證英文技能標籤。自然完整日夜循環由原 smoke 另行驗證，不以測試快轉冒充自然流程。
++
++## 執行
++
++```sh
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs e2e/m4-progression.spec.js
++# 最後桌面排版修改後另重跑桌面一項
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs e2e/m4-progression.spec.js --grep 'at 1000px'
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs --grep-invert 'Traditional Chinese skills, validated assignment and dawn persistence'
++```
++
++使用環境外設定指定系統 Chromium／SwiftShader、workers=1、deviceScaleFactor=0.5；不改 repo 預設 Playwright 設定。圖片檔實際像素為 CSS viewport 的一半。本機 preview 不是正式部署。
++
++初跑原 M3 的「最高技能也沒有能力效果」測試已按 M4 需求改為顯式關閉效果；成長配額測試維持有限空間、調為 24 KiB。語系的遷移 fixture 原本把居民指向零職缺 HQ，已改為合法待命名冊，唯讀適配測試仍保留任意工作名稱的顯示檢查。為補強工作名冊驗證而中止的一次回歸不計通過；最終結果以表格為準。
++
++## 畫面
++
++- [桌面人物立繪與目前工作](screenshots/m4-dossier-1000.png)／[桌面六技能與經驗](screenshots/m4-skills-1000.png)
++- [手機人物立繪](screenshots/m4-dossier-390.png)／[手機六技能與派工](screenshots/m4-skills-390.png)
++
++最終覆蓋 12 個不同的瀏覽器案例：M4 2 項 + 原有 10 項，均通過；另有最後桌面 CSS 修改後的 1 項重複複驗，不算第 13 個不同案例。M4 手機樣式不受桌面專用 CSS 影響；最後核心程式與存檔驗證和單元測試通過時一致。
+diff --git a/docs/screenshots/m4-dossier-1000.png b/docs/screenshots/m4-dossier-1000.png
+new file mode 100644
+index 0000000..ddb6682
+Binary files /dev/null and b/docs/screenshots/m4-dossier-1000.png differ
+diff --git a/docs/screenshots/m4-dossier-390.png b/docs/screenshots/m4-dossier-390.png
+new file mode 100644
+index 0000000..2d1c3d2
+Binary files /dev/null and b/docs/screenshots/m4-dossier-390.png differ
+diff --git a/docs/screenshots/m4-skills-1000.png b/docs/screenshots/m4-skills-1000.png
+new file mode 100644
+index 0000000..595196b
+Binary files /dev/null and b/docs/screenshots/m4-skills-1000.png differ
+diff --git a/docs/screenshots/m4-skills-390.png b/docs/screenshots/m4-skills-390.png
+new file mode 100644
+index 0000000..cf0577e
+Binary files /dev/null and b/docs/screenshots/m4-skills-390.png differ
+diff --git a/e2e/m4-progression.spec.js b/e2e/m4-progression.spec.js
+new file mode 100644
+index 0000000..0e8156f
+--- /dev/null
++++ b/e2e/m4-progression.spec.js
+@@ -0,0 +1,53 @@
++import {test,expect} from '@playwright/test';
++const BASE='/city-builder-survival/';
++for(const width of [1000,390])test(`Traditional Chinese skills, validated assignment and dawn persistence at ${width}px`,async({page})=>{
++ test.setTimeout(process.env.E2E_SLOW_WEBGL?600000:240000);
++ await page.setViewportSize({width,height:900});
++ const errors=[];page.on('pageerror',e=>errors.push(e.message));
++ await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
++ // Install a known v6 dawn fixture through the supported JSON UI. No test awards XP.
++ const save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++ save.core.buildings.push({id:2,defId:'farm',x:20,z:20,hp:180,workers:[],autoAssign:false,extracted:0,efficiency:1,enabled:true,repairing:false,priority:1,level:1});
++ const farmer=Object.keys(save.characters.records).find(id=>save.characters.records[id].professionId==='medic') ?? '1';
++ save.characters.records[farmer].abilityRanks.agriculture=0;save.characters.records[farmer].experience.agriculture=9500;
++ await page.getByRole('button',{name:'存檔',exact:true}).click();page.once('dialog',d=>d.accept());
++ await page.getByLabel('匯入存檔 JSON',{exact:true}).setInputFiles({name:'m4.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(save))});
++ await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
++ await expect(page.locator('.skill-row')).toHaveCount(6);await expect(page.locator('.skill-row strong')).toHaveText(['農業','工程','醫療能力','探索採集','防禦','後勤']);
++ await expect(page.locator('.character-portrait')).toBeVisible();await expect(page.locator('.character-avatar')).toHaveCount(4);
++ await page.getByLabel('工作建築',{exact:true}).selectOption('2');await page.getByRole('button',{name:'指派居民',exact:true}).click();
++ await expect(page.locator('.character-assignment')).toContainText('農場');
++ expect(await page.evaluate(id=>{const s=window.__game.state;return {id:s.survivors.find(r=>r.id===Number(id)).buildingId,workers:s.buildings.find(b=>b.id===2).workers,auto:s.buildings.find(b=>b.id===2).autoAssign};},farmer)).toEqual({id:2,workers:[Number(farmer)],auto:false});
++ await page.getByLabel('啟用有上限的能力加成',{exact:true}).uncheck();
++ expect(await page.evaluate(()=>window.__game.state.characters.progression.effectsEnabled)).toBe(false);
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();
++ // Run actual production; no fabricated receipt/XP injection after initial fixture.
++ await page.keyboard.press('3');
++ await expect.poll(()=>page.evaluate(id=>window.__game.state.characters.records[id].abilityRanks.agriculture,farmer),{timeout:120000}).toBeGreaterThanOrEqual(1);
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
++ const xp=await page.evaluate(id=>window.__game.state.characters.records[id].experience.agriculture,farmer);expect(xp).toBeGreaterThanOrEqual(10000);
++ await expect(page.locator('[data-skill="agriculture"]')).toContainText('等級 1');
++ await page.locator('.character-portrait').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m4-dossier-${width}.png`});
++ await page.locator('.character-growth').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m4-skills-${width}.png`});
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();
++ // Cross the existing dawn path; original smoke separately verifies a natural cycle.
++ await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
++ await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
++ const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++ expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
++ expect(dawn.core.survivors.find(s=>String(s.id)===farmer).buildingId).toBe(2);
++ await page.reload();await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
++ await expect(page.locator('[data-skill="agriculture"]')).toContainText('等級 1');
++ expect(await page.evaluate(id=>window.__game.state.characters.records[id].uid,farmer)).toBe(save.characters.records[farmer].uid);
++ await page.getByRole('button',{name:'恢復建築自動派工',exact:true}).click();expect(await page.evaluate(()=>window.__game.state.buildings.find(b=>b.id===2).autoAssign)).toBe(true);
++ await page.getByLabel('工作建築',{exact:true}).selectOption('');await page.getByRole('button',{name:'指派居民',exact:true}).click();await expect(page.locator('.character-assignment')).toHaveText('待命中');
++ if(width===1000){
++  await page.getByRole('button',{name:'關閉檔案',exact:true}).click();page.once('dialog',d=>d.accept());await page.getByLabel('語言',{exact:true}).selectOption('en');
++  await page.getByRole('button',{name:'Start game',exact:true}).click();await expect(page.locator('.hud-day')).toHaveText('Day 2',{timeout:30000});
++  await page.getByRole('button',{name:'Characters',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
++  await expect(page.locator('.skill-row strong')).toHaveText(['Agriculture','Engineering','Medicine skill','Scavenging','Defense','Logistics']);
++ }
++ expect(errors).toEqual([]);
++});
+diff --git a/src/characters/state.js b/src/characters/state.js
+index ed9da39..870927a 100644
+--- a/src/characters/state.js
++++ b/src/characters/state.js
+@@ -1,5 +1,6 @@
+-// Identity and presentation records only. Never changes jobs, resources or AI.
++// Identity and growth records; work effects live in independent progression modules.
+ import { ARCHETYPES, SKILLS, PROFESSIONS, PERSONALITIES } from './catalog.js';
++import { upgradeProgression,validateProgression } from '../progression/schema.js';
+ import { sha256 } from './hash.js';
+ const rosterCache = new WeakMap();
+ const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+@@ -43,13 +44,15 @@ export function reconcileCharacters(state) {
+     if (!Object.hasOwn(records,String(survivor.id))) records[survivor.id]=generateRecord(state.runId,survivor.id,state.characters.usedUniqueArchetypeIds,state.characters.generatorVersion);
+   }
+   rosterCache.set(state,{array:state.survivors,count:state.survivors.length,next:state.nextSurvivorId});
++  upgradeProgression(state.characters);
+   return state.characters;
+ }
+ export function validateCharacters(run, characters, survivors) {
+   exactKeys(run,['id','nextSurvivorId'],'run');
+   check(validRunId(run.id),'Invalid run identity.');
+   check(Number.isSafeInteger(run.nextSurvivorId) && run.nextSurvivorId>Math.max(0,...survivors.map(s=>s.id)) && run.nextSurvivorId<=Number.MAX_SAFE_INTEGER,'Invalid survivor high-water mark.');
+-  exactKeys(characters,['schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
++  const growth=Object.hasOwn(characters,'progression');
++  exactKeys(characters,[...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
+   check(characters.schemaVersion===1 && [1,2].includes(characters.generatorVersion),'Unsupported character schema/generator.');
+   check(typeof characters.contentPackId==='string' && /^[a-z0-9-]{1,64}$/.test(characters.contentPackId) && Number.isSafeInteger(characters.contentPackVersion) && characters.contentPackVersion>0,'Invalid character content pack.');
+   check(Array.isArray(characters.usedUniqueArchetypeIds) && characters.usedUniqueArchetypeIds.length<=128 && new Set(characters.usedUniqueArchetypeIds).size===characters.usedUniqueArchetypeIds.length && characters.usedUniqueArchetypeIds.every(id=>typeof id==='string' && /^chr_[a-z0-9_]{1,64}$/.test(id)), 'Invalid reserved archetypes.');
+@@ -58,7 +61,7 @@ export function validateCharacters(run, characters, survivors) {
+   const usedLive=new Set();
+   for (const id of ids) {
+     const record=characters.records[id];
+-    exactKeys(record,['uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
++    exactKeys(record,[...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
+     check(record.uid===`${run.id}:${id}`,'Character UID mismatch.');
+     check(typeof record.archetypeId==='string' && /^chr_[a-z0-9_]{1,64}$/.test(record.archetypeId) && Number.isSafeInteger(record.archetypeRevision) && record.archetypeRevision>0,'Invalid character archetype.');
+     exactKeys(record.nameSnapshot,['zh-TW','en'],'name snapshot');
+@@ -74,5 +77,6 @@ export function validateCharacters(run, characters, survivors) {
+       usedLive.add(record.archetypeId);
+     }
+   }
++  if(growth)validateProgression(characters,exactKeys,check);
+   return characters;
+ }
+diff --git a/src/main.js b/src/main.js
+index 5cd58a8..b9954bd 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -1,3 +1,5 @@
++import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
++import {setAbilityEffects} from './progression/work.js';
+ // Entry point: hands boot() (bootstrap.js: URL params, engine, asset load)
+ // the startGame below, which wires together world, simulation, zombies,
+ // buildings and UI. Owns the main loop, the UI wiring and the endless defeat
+@@ -287,6 +289,9 @@ function startGame({ engine, screens, assets, params }) {
+   let pausedBeforeSaves = false;
+   let pausedBeforeCharacters = false;
+   createCharacterPanel(uiRoot, {
++    onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
++    onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
++    onEffects:enabled=>setAbilityEffects(state,enabled),
+     getState: () => state,
+     onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
+     onClose: () => { paused = pausedBeforeCharacters; },
+diff --git a/src/persistence.js b/src/persistence.js
+index 811976a..e7197c6 100644
+--- a/src/persistence.js
++++ b/src/persistence.js
+@@ -1,3 +1,4 @@
++import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
+ // Validated v6 dawn checkpoints, character identity and safe v4/v5 migration.
+ // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
+ // from the save data, saveGame serializes them back. The endless mode has no
+@@ -129,7 +130,8 @@ function validateEnvelope(data) {
+   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
+   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
+     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
+-  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length===1 && data.requiredFeatures[0]==='characters-v1', 'Unsupported required save feature.');
++  assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures[0]==='characters-v1' && (data.requiredFeatures.length===1 || (data.requiredFeatures.length===2 && data.requiredFeatures[1]===GROWTH_FEATURE)), 'Unsupported required save feature.');
++  assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
+   validateSave(data.core);
+   assert(Object.keys(data.core).every(key=>CORE_FIELDS.includes(key)), 'Unknown core fields; original protected.');
+   assert(Array.isArray(data.core.survivors), 'Missing v6 survivor roster.');
+@@ -138,13 +140,28 @@ function validateEnvelope(data) {
+   assert(data.core.survivors.every(s=>Object.keys(s).every(key=>residentFields.includes(key))) &&
+     data.core.buildings.every(b=>Object.keys(b).every(key=>buildingFields.includes(key))) &&
+     (data.core.changedTiles ?? []).every(tile=>Object.keys(tile).every(key=>['x','z','toType'].includes(key))), 'Unknown legacy entity fields; original protected.');
++  if(data.requiredFeatures.includes(GROWTH_FEATURE)){
++    for(const b of data.core.buildings){
++      const assigned=data.core.survivors.filter(s=>s.buildingId!=null&&s.buildingId===b.id).map(s=>s.id).sort((a,b)=>a-b);
++      assert(Array.isArray(b.workers) && b.workers.length<=(BUILDING_DEFS[b.defId].jobs ?? 0) && b.workers.length===assigned.length && [...b.workers].sort((a,b)=>a-b).every((id,i)=>id===assigned[i]),'Inconsistent work roster; original protected.');
++    }
++  }
+   validateCharacters(data.run,data.characters,data.core.survivors);
+   return data;
+ }
+ 
++function fillLegacyWorkDefaults(core){
++  for(const b of core.buildings)if(b.workers===undefined)b.workers=core.survivors.filter(s=>b.id!==undefined&&s.buildingId===b.id).map(s=>s.id);
++  return core;
++}
++
+ /** Pure, deterministic migration. No storage writes, no consumption of game RNG. */
+ export function migrateSave(data) {
+-  if (data?.version === 6) return structuredClone(validateEnvelope(data));
++  if (data?.version === 6) {
++    const copy=structuredClone(validateEnvelope(data));
++    if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
++    return validateEnvelope(copy);
++  }
+   let core=data;
+   if (data?.version === 5) {
+     exactKeys(data,['format','version','checkpoint','savedAt','payload'],'v5 envelope');
+@@ -157,8 +174,8 @@ export function migrateSave(data) {
+   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
+   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
+   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1'],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+-    core:structuredClone(core),characters:structuredClone(restored.state.characters)};
++    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
++    core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
+   return validateEnvelope(envelope);
+ }
+ 
+@@ -251,7 +268,7 @@ function backup(key, raw, reason) {
+   assert(result.ok, result.error);
+   const entries = result.entries;
+   let pinned = true;
+-  try { decodeSave(raw); pinned = JSON.parse(raw).version !== SAVE_VERSION; }
++  try { decodeSave(raw); pinned = !currentSaveFormat(JSON.parse(raw)); }
+   catch { /* A recovery original is never automatically rotated. */ }
+   const duplicate = entries.find(entry => entry.key === key && entry.raw === raw &&
+     (entry.pinned || !pinned));
+@@ -288,6 +305,8 @@ function trimBackups(keep) {
+   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
+ }
+ 
++const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(GROWTH_FEATURE);
++
+ const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
+ 
+ function writeSave(key, raw, reason, recoverProtected = false, migrationSource = null) {
+@@ -299,7 +318,7 @@ function writeSave(key, raw, reason, recoverProtected = false, migrationSource =
+     // A reload of an unchanged v6 checkpoint must not consume storage. Legacy saves
+     // still go through migration and an exact, permanently retained original backup.
+     if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
+-      JSON.parse(previous.raw).version === SAVE_VERSION &&
++      currentSaveFormat(JSON.parse(previous.raw)) &&
+       checkpointContent(previous.data) === checkpointContent(JSON.parse(raw))) return { ok: true };
+     if (migrationSource !== null) backup(key, migrationSource, 'JSON migration source');
+     const archived = !previous.empty ? backup(key, previous.raw, reason) : null;
+@@ -344,7 +363,7 @@ export function loadSlot(slot) {
+ export function importSave(raw, { recoverProtected = false } = {}) {
+   try {
+     const candidate=decodeSave(raw);
+-    const legacy=JSON.parse(raw).version!==SAVE_VERSION;
++    const legacy=!currentSaveFormat(JSON.parse(raw));
+     return writeSave(SAVE_KEY, JSON.stringify(candidate), 'JSON import', recoverProtected, legacy ? raw : null);
+   }
+   catch (error) { return fail(error); }
+@@ -550,17 +569,18 @@ function restoreCore(data, legacyPopulationFallback = true) {
+ }
+ 
+ 
+-/** Capture a complete dawn checkpoint. Character ranks are stored, never applied. */
++/** Capture a complete dawn checkpoint. Character growth and work assignments are captured atomically. */
+ export function createCheckpoint(state, seed, changedTiles) {
+   reconcileCharacters(state);
+   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1'],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
++    requiredFeatures:['characters-v1',GROWTH_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
+   return validateEnvelope(data);
+ }
+ 
+ export function restoreSave(data) {
+   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
++  if(!data.requiredFeatures?.includes(GROWTH_FEATURE))data=migrateSave(data);
+   validateEnvelope(data);
+   const restored=restoreCore(data.core,false);
+   restored.state.runId=data.run.id;
+diff --git a/src/progression/assignments.js b/src/progression/assignments.js
+new file mode 100644
+index 0000000..67937e2
+--- /dev/null
++++ b/src/progression/assignments.js
+@@ -0,0 +1,24 @@
++// Player commands validate the current core roster; UI never edits workers.
++import {assignJobs} from '../sim/survivors.js';
++export function assignResident(state,residentId,buildingId,DEFS){
++ const s=state.survivors.find(s=>s.id===residentId);if(!s)return {ok:false,error:'Resident is no longer alive.'};
++ const old=state.buildings.find(b=>b.id===s.buildingId);
++ if(buildingId!==null){
++  const b=state.buildings.find(b=>b.id===buildingId),def=b&&DEFS[b.defId];
++  if(!def || !(def.jobs>0) || b.hp<=0 || b.enabled===false)return {ok:false,error:'Building is unavailable.'};
++  const other=new Set(b.workers.filter(id=>id!==s.id));
++  if(other.size>=def.jobs)return {ok:false,error:'Building has no free job slots.'};
++  // All checks before mutation: failure preserves the previous assignment.
++  for(const source of state.buildings)source.workers=source.workers.filter(id=>id!==s.id);
++  b.workers.push(s.id);b.autoAssign=false;s.buildingId=b.id;
++ }else{
++  for(const source of state.buildings)source.workers=source.workers.filter(id=>id!==s.id);
++  s.buildingId=null;if(old)old.autoAssign=false;
++ }
++ return {ok:true};
++}
++export function restoreAutomaticAssignment(state,buildingId,DEFS){
++ const b=state.buildings.find(b=>b.id===buildingId);
++ if(!b || b.hp<=0 || b.enabled===false || !(DEFS[b.defId]?.jobs>0))return {ok:false,error:'Building is unavailable.'};
++ b.autoAssign=true;assignJobs(state,DEFS);return {ok:true};
++}
+diff --git a/src/progression/rules.js b/src/progression/rules.js
+new file mode 100644
+index 0000000..112626f
+--- /dev/null
++++ b/src/progression/rules.js
+@@ -0,0 +1,18 @@
++// M4 v1 rules. Integer milli-XP, finite ranks, no new needs/AI or random rolls.
++export const THRESHOLDS = Object.freeze([0,10000,30000,60000,100000,150000]);
++export const PROFESSION_SKILL = Object.freeze({farmer:'agriculture',mechanic:'engineering',medic:'medicine',scout:'scavenging',guard:'defense',logistician:'logistics',researcher:'engineering'});
++export const TRAIT_SKILLS = Object.freeze({steadfast:['*'],empathetic:['medicine'],pragmatic:['engineering','logistics'],curious:['scavenging','engineering'],reserved:['defense'],optimistic:['agriculture'],patient:['agriculture','medicine'],cautious:['defense','scavenging']});
++export function learningMultiplier(record,skill){
++ let bonus=PROFESSION_SKILL[record.professionId]===skill?0.1:0;
++ for(const trait of record.personalityIds ?? [])if(TRAIT_SKILLS[trait]?.some(s=>s==='*'||s===skill))bonus+=trait==='steadfast'?0.02:0.03;
++ return 1+Math.min(0.15,bonus);
++}
++export function rankForExperience(xp){let rank=0;while(rank<5 && xp>=THRESHOLDS[rank+1])rank++;return rank;}
++export function buildingSkill(defId,def){
++ if(['farm','garden','greenhouse','ranch','forester'].includes(defId))return 'agriculture';
++ if(def?.extracts || ['hunt','fish'].includes(defId))return 'scavenging';
++ if(defId==='clinic')return 'medicine';
++ if(['garage','radio'].includes(defId))return 'logistics';
++ if(def?.isTower)return 'defense';
++ return 'engineering';
++}
+diff --git a/src/progression/schema.js b/src/progression/schema.js
+new file mode 100644
+index 0000000..943efd6
+--- /dev/null
++++ b/src/progression/schema.js
+@@ -0,0 +1,25 @@
++import {SKILLS} from '../characters/catalog.js';
++import {THRESHOLDS,rankForExperience} from './rules.js';
++export const GROWTH_FEATURE='progression-v1';
++export function emptyExperience(ranks){return Object.fromEntries(SKILLS.map(s=>[s,THRESHOLDS[ranks[s]]]));}
++export function upgradeProgression(characters){
++ if(!characters.progression)characters.progression={schemaVersion:1,effectsEnabled:true,sequence:0};
++ for(const record of Object.values(characters.records)){
++  record.experience ??= emptyExperience(record.abilityRanks);
++  record.experienceRemainders ??= Object.fromEntries(SKILLS.map(s=>[s,0]));
++ }
++ return characters;
++}
++export function validateProgression(characters,exactKeys,check){
++ const p=characters.progression;
++ exactKeys(p,['schemaVersion','effectsEnabled','sequence'],'progression');
++ check(p.schemaVersion===1 && typeof p.effectsEnabled==='boolean' && Number.isSafeInteger(p.sequence) && p.sequence>=0,'Invalid progression metadata.');
++ for(const r of Object.values(characters.records)){
++  exactKeys(r.experience,SKILLS,'experience');exactKeys(r.experienceRemainders,SKILLS,'experience remainders');
++  for(const skill of SKILLS){
++   const xp=r.experience[skill],carry=r.experienceRemainders[skill];
++   check(Number.isSafeInteger(xp)&&xp>=0&&xp<=THRESHOLDS[5]&&rankForExperience(xp)===r.abilityRanks[skill],'Invalid experience/rank.');
++   check(typeof carry==='number'&&Number.isFinite(carry)&&carry>=0&&carry<1&&(xp<THRESHOLDS[5]||carry===0),'Invalid experience remainder.');
++  }
++ }
++}
+diff --git a/src/progression/work.js b/src/progression/work.js
+new file mode 100644
+index 0000000..e9f52fb
+--- /dev/null
++++ b/src/progression/work.js
+@@ -0,0 +1,58 @@
++// Synchronous completion receipts. No polling rewards, wall clock, UI or RNG.
++import {learningMultiplier,rankForExperience,THRESHOLDS} from './rules.js';
++import {BUILDING_DEFS} from '../buildings/definitions.js';
++import {SKILLS} from '../characters/catalog.js';
++const issued=new WeakMap();
++const rosters=new WeakMap();
++const careProofs=new WeakMap();
++export function registerCare(mods,building,baseHunger,baseThirst){careProofs.set(mods,{buildingId:building.id,baseHunger,baseThirst});}
++export function careProof(mods){return mods&&careProofs.get(mods);}
++export function participants(state,building,{militia=false,limit=Infinity}={}){
++ if(!state.characters?.progression || !state.buildings.includes(building) || building.hp<=0 || building.enabled===false)return [];
++ const previous=rosters.get(state);
++ let roster=previous;
++ if(!roster || roster.array!==state.survivors || roster.count!==state.survivors.length){roster={array:state.survivors,count:state.survivors.length,byId:new Map(state.survivors.map(s=>[s.id,s]))};rosters.set(state,roster);}
++ const candidates=militia?state.survivors.filter(s=>s.buildingId===null):[...new Set(building.workers ?? [])].map(id=>roster.byId.get(id)).filter(s=>s?.buildingId===building.id);
++ const capacity=militia?limit:Math.min(limit,BUILDING_DEFS[building.defId]?.jobs ?? candidates.length);
++ return candidates.filter(s=>state.characters.records[s.id]?.uid===`${state.runId}:${s.id}`).sort((a,b)=>a.id-b.id).slice(0,capacity);
++}
++export function abilityMultiplier(state,building,skill,options){
++ if(state?.characters?.progression?.effectsEnabled!==true)return 1;
++ const members=participants(state,building,options);if(!members.length)return 1;
++ const mean=members.reduce((sum,s)=>sum+state.characters.records[s.id].abilityRanks[skill],0)/members.length;
++ return 1+Math.min(0.1,Math.max(0,mean)*0.02);
++}
++export function supportingBuilding(state,defId){
++ return state.buildings.filter(b=>b.defId===defId&&participants(state,b).length>0).sort((a,b)=>a.id-b.id)[0] ?? null;
++}
++export function supportingGarage(state){
++ return (state.resources.fuel ?? 0)>0?supportingBuilding(state,'garage'):null;
++}
++export function logisticsMultiplier(state){const b=supportingGarage(state);return b?1+(abilityMultiplier(state,b,'logistics')-1)/2:1;}
++export function createWorkReceipt(state,building,skill,units,options){
++ const p=state.characters?.progression;
++ if(!p || !SKILLS.includes(skill) || !Number.isFinite(units) || units<=0 || p.sequence>=Number.MAX_SAFE_INTEGER)return null;
++ const members=participants(state,building,options);if(!members.length)return null;
++ const receipt=Object.freeze({sequence:p.sequence+1,skill,units});
++ issued.set(receipt,{state,building,options,members:members.map(s=>({id:s.id,uid:state.characters.records[s.id].uid}))});
++ return receipt;
++}
++export function settleWork(state,receipt){
++ const proof=receipt&&issued.get(receipt);if(!proof || proof.state!==state)return false;
++ issued.delete(receipt); // one use, including invalidated or stale receipts
++ const p=state.characters.progression;if(receipt.sequence!==p.sequence+1)return false;
++ p.sequence=receipt.sequence;
++ const eligible=new Set(participants(state,proof.building,proof.options).map(s=>s.id));
++ for(const member of proof.members){
++  const r=state.characters.records[member.id];if(!eligible.has(member.id)||r?.uid!==member.uid)continue;
++  const skill=receipt.skill;if(r.experience[skill]>=THRESHOLDS[5])continue;
++  const raw=receipt.units*1000/proof.members.length*learningMultiplier(r,skill)+r.experienceRemainders[skill];
++  const whole=Math.floor(raw+1e-9);
++  r.experience[skill]=Math.min(THRESHOLDS[5],r.experience[skill]+whole);
++  r.experienceRemainders[skill]=r.experience[skill]===THRESHOLDS[5]?0:Math.max(0,Math.min(0.999999999999,Math.round((raw-whole)*1e12)/1e12));
++  r.abilityRanks[skill]=rankForExperience(r.experience[skill]);
++ }
++ return true;
++}
++export function completeWork(state,building,skill,units,options){return settleWork(state,createWorkReceipt(state,building,skill,units,options));}
++export function setAbilityEffects(state,enabled){if(typeof enabled!=='boolean'||!state.characters?.progression)return false;state.characters.progression.effectsEnabled=enabled;return true;}
+diff --git a/src/sim/economy.js b/src/sim/economy.js
+index 5e2018d..14454a2 100644
+--- a/src/sim/economy.js
++++ b/src/sim/economy.js
+@@ -1,3 +1,5 @@
++import {abilityMultiplier,completeWork,logisticsMultiplier} from '../progression/work.js';
++import {buildingSkill} from '../progression/rules.js';
+ // Economy tick: resource production, fuel consumption, energy storage grid,
+ // build costs. Pure logic, no I/O.
+ 
+@@ -79,7 +81,7 @@ function energyOutput(state, building, def, mods) {
+   let mod = 1;
+   if (def.energyDayOnly) mod = mods.solarProd;
+   else if (building.defId === 'wind') mod = mods.windProd;
+-  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level);
++  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level) * abilityMultiplier(state,building,'engineering');
+ }
+ 
+ // Effective storage caps: the base caps plus every building's capBonus
+@@ -111,6 +113,7 @@ function productionMod(building, def, resource, mods) {
+ // mods carries optional production modifiers ({ farmProd, rainProd,
+ // solarProd, windProd }); it may be undefined, every modifier defaults to 1.
+ export function tickEconomy(state, dt, DEFS, mods) {
++  if(!(dt>0) || !Number.isFinite(dt))return;
+   const m = { ...DEFAULT_MODS, ...(mods ?? {}) };
+   const caps = effectiveCaps(state, DEFS);
+ 
+@@ -142,10 +145,16 @@ export function tickEconomy(state, dt, DEFS, mods) {
+     if (running.get(b)) produced += energyOutput(state, b, def, m);
+     if (def.requiresEnergy && b.enabled !== false) consumers += def.requiresEnergy;
+   }
++  const energyBefore=state.resources.energy ?? 0;
+   const stored =
+     (state.resources.energy ?? 0) + ((produced - consumers) * dt) / CONFIG.dayLength;
+   state.resources.energy = Math.min(caps.energy ?? Infinity, Math.max(0, stored));
+ 
++  const delivered=Math.min(produced*dt/CONFIG.dayLength,Math.max(0,(caps.energy ?? Infinity)-energyBefore)+consumers*dt/CONFIG.dayLength);
++  if(produced>0 && delivered>0)for(const b of state.buildings){
++    const def=DEFS[b.defId];if(running.get(b)&&def?.jobs>0)completeWork(state,b,'engineering',delivered*energyOutput(state,b,def,m)/produced);
++  }
++
+   // 3. Power state: requiresEnergy buildings run while there is charge left;
+   // switched-off buildings stay unpowered whatever the grid charge.
+   for (const b of state.buildings) {
+@@ -167,9 +176,12 @@ export function tickEconomy(state, dt, DEFS, mods) {
+     for (const [resource, perDay] of Object.entries(def.produces)) {
+       if (resource === 'energy') continue;
+       const cap = caps[resource] ?? Infinity;
++      const before=state.resources[resource] ?? 0;
++      const skill=buildingSkill(b.defId,def);
+       const gain =
+-        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * dt) / CONFIG.dayLength;
+-      state.resources[resource] = Math.min(cap, (state.resources[resource] ?? 0) + gain);
++        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,skill) * dt) / CONFIG.dayLength;
++      state.resources[resource] = Math.min(cap, before + gain);
++      if(def.jobs>0)completeWork(state,b,skill,Math.max(0,state.resources[resource]-before));
+     }
+   }
+ }
+@@ -208,7 +220,7 @@ function balanceProdMod(building, def, resource, mods) {
+ // site efficiency and building level folded in). Returns {} when the
+ // building produces nothing (switched off, unstaffed, unpowered or no
+ // `produces`). mods may be undefined.
+-export function buildingDailyOutput(b, def, mods) {
++export function buildingDailyOutput(b, def, mods, state) {
+   const m = { ...DEFAULT_MODS, ...(mods ?? {}) };
+   const output = {};
+   if (!def || b.enabled === false || b.powered === false) return output;
+@@ -216,7 +228,7 @@ export function buildingDailyOutput(b, def, mods) {
+   if (ratio <= 0) return output;
+   const levelMul = levelMultiplier(b.level);
+   for (const [resource, perDay] of Object.entries(def.produces ?? {})) {
+-    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul;
++    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,buildingSkill(b.defId,def));
+   }
+   return output;
+ }
+@@ -254,7 +266,7 @@ export function computeResourceBalance(state, DEFS, mods, grid) {
+     if (b.powered === false) continue;
+     const ratio = staffingRatio(b, def);
+     if (ratio <= 0) continue;
+-    for (const [resource, rate] of Object.entries(buildingDailyOutput(b, def, m))) {
++    for (const [resource, rate] of Object.entries(buildingDailyOutput(b, def, m, state))) {
+       add(resource, 'produced', b.defId, def.name, rate);
+     }
+     for (const [resource, perDay] of Object.entries(def.consumes ?? {})) {
+@@ -265,7 +277,7 @@ export function computeResourceBalance(state, DEFS, mods, grid) {
+       const resource = EXTRACT_RESOURCES[def.extracts];
+       const depleted = grid && countNodesInRange(grid, b, def.extracts) === 0;
+       if (resource && !depleted) {
+-        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level);
++        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
+         add(resource, 'produced', b.defId, def.name, rate);
+       }
+     }
+diff --git a/src/sim/extraction.js b/src/sim/extraction.js
+index f2cbfe3..6148a71 100644
+--- a/src/sim/extraction.js
++++ b/src/sim/extraction.js
+@@ -1,3 +1,4 @@
++import {abilityMultiplier,completeWork,logisticsMultiplier,supportingGarage} from '../progression/work.js';
+ // Node extraction: depletable resource tiles (forest/ruins/ore) drained by
+ // extractors, and renewable planting by foresters. Pure logic, no I/O.
+ 
+@@ -105,12 +106,15 @@ function tickExtractor(state, grid, b, def, ratio, dt, mods, result, caps) {
+   const yieldDef = TILE_YIELDS[def.extracts];
+   if (!yieldDef) return;
+   if (countNodesInRange(grid, b, def.extracts) === 0) return; // no nodes: idle
+-  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level);
++  const perDay = def.extractRate * ratio * (mods?.extractProd ?? 1) * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state);
+   const gained = (perDay * dt) / DAY_LENGTH;
+   const cap = caps?.[yieldDef.resource] ?? Infinity;
+   const before = state.resources[yieldDef.resource] ?? 0;
+   const after = Math.min(cap, before + gained);
+   state.resources[yieldDef.resource] = after;
++  const actual=Math.max(0,after-before);
++  completeWork(state,b,'scavenging',actual);
++  const garage=supportingGarage(state);if(garage)completeWork(state,garage,'logistics',actual/4);
+   b.extracted = (b.extracted ?? 0) + (after - before);
+   while (b.extracted >= yieldDef.amount) {
+     const node = nearestNode(grid, b, def.extracts);
+@@ -136,6 +140,7 @@ function tickForester(state, grid, b, ratio, dt, result) {
+   tile.cell.type = 'forest';
+   tile.cell.walkable = true; // planted forest stays walkable like mapgen forest
+   result.planted.push({ x: tile.x, z: tile.z });
++  if(dt>0)completeWork(state,b,'agriculture',1);
+   b.extracted = 0;
+ }
+ 
+@@ -144,6 +149,7 @@ function tickForester(state, grid, b, ratio, dt, result) {
+ // { depleted: [{ x, z, fromType }], planted: [{ x, z }] }.
+ export function tickExtraction(state, grid, dt, DEFS, mods) {
+   const result = { depleted: [], planted: [] };
++  if(!(dt>0) || !Number.isFinite(dt))return result;
+   // Effective caps (storage bonuses included): the same ceiling the HUD
+   // shows, so extraction never stalls below the displayed capacity.
+   const caps = effectiveCaps(state, DEFS);
+diff --git a/src/sim/modifiers.js b/src/sim/modifiers.js
+index 8592868..4545e53 100644
+--- a/src/sim/modifiers.js
++++ b/src/sim/modifiers.js
+@@ -1,3 +1,4 @@
++import {abilityMultiplier,supportingBuilding,registerCare} from '../progression/work.js';
+ // Gameplay modifiers: the current weather and every researched tech folded
+ // into a single multiplier set. Pure logic, no I/O.
+ 
+@@ -64,8 +65,11 @@ export function getModifiers(state, grid) {
+     (b) => b.defId === 'clinic' && b.enabled !== false && (b.workers?.length ?? 0) > 0
+   );
+   if (clinicActive) {
+-    mods.hungerRate *= 0.85;
+-    mods.thirstRate *= 0.85;
++    const clinic=supportingBuilding(state,'clinic');
++    const skill=clinic?1-(abilityMultiplier(state,clinic,'medicine')-1)*0.3:1;
++    if(clinic)registerCare(mods,clinic,mods.hungerRate,mods.thirstRate);
++    mods.hungerRate *= 0.85*skill;
++    mods.thirstRate *= 0.85*skill;
+   }
+   let ranchCount = 0;
+   let roadCount = 0;
+diff --git a/src/sim/research.js b/src/sim/research.js
+index 75d8d12..2cf7e62 100644
+--- a/src/sim/research.js
++++ b/src/sim/research.js
+@@ -1,3 +1,4 @@
++import {abilityMultiplier,completeWork} from '../progression/work.js';
+ // Tech tree: research point generation, spending and unlock checks.
+ // Pure logic, no I/O.
+ 
+@@ -68,13 +69,16 @@ export const TECHS = {
+ // researchRate * (workers / jobs) * dt / dayLength points. Power is not
+ // required. Returns the updated total.
+ export function tickResearch(state, dt, DEFS) {
++  if(!(dt>0) || !Number.isFinite(dt))return state.researchPoints ?? 0;
+   let gain = 0;
+   for (const b of state.buildings) {
+     const def = DEFS[b.defId];
+     if (!def || !(def.researchRate > 0)) continue;
+     const ratio = def.jobs ? Math.min(b.workers.length, def.jobs) / def.jobs : 1;
+     if (ratio <= 0) continue;
+-    gain += (def.researchRate * ratio * dt) / DAY_LENGTH;
++    const actual=(def.researchRate * ratio * dt) / DAY_LENGTH * abilityMultiplier(state,b,'engineering');
++    gain += actual;
++    completeWork(state,b,'engineering',actual);
+   }
+   if (gain > 0) {
+     state.researchPoints = (state.researchPoints ?? 0) + gain;
+diff --git a/src/sim/survivors.js b/src/sim/survivors.js
+index 4a509fd..acfd7a6 100644
+--- a/src/sim/survivors.js
++++ b/src/sim/survivors.js
+@@ -1,3 +1,4 @@
++import {completeWork,supportingBuilding,careProof} from '../progression/work.js';
+ // Survivor lifecycle: hunger, thirst, eating, drinking, death, jobs,
+ // recruitment. Pure logic.
+ 
+@@ -17,6 +18,8 @@ const RECRUIT_MIN_WATER = 20; // water stock required to attract a survivor
+ // seconds. mods (optional) scales the hunger/thirst rates via
+ // mods.hungerRate / mods.thirstRate.
+ export function tickSurvivors(state, dt, mods) {
++  if(!(dt>0) || !Number.isFinite(dt))return;
++  const patients=state.survivors.length;
+   const hungerGain = (100 * dt * (mods?.hungerRate ?? 1)) / (STARVATION_DAYS * DAY_LENGTH);
+   const thirstGain = (100 * dt * (mods?.thirstRate ?? 1)) / (DEHYDRATION_DAYS * DAY_LENGTH);
+   const starved = [];
+@@ -35,6 +38,12 @@ export function tickSurvivors(state, dt, mods) {
+     if (s.hunger >= 100) starved.push(s);
+     else if (s.thirst >= 100) dehydrated.push(s);
+   }
++  const clinic=supportingBuilding(state,'clinic');
++  const care=careProof(mods);
++  if(clinic && care?.buildingId===clinic.id){
++    const avoided=(Math.max(0,care.baseHunger-mods.hungerRate)*100*dt/(STARVATION_DAYS*DAY_LENGTH)+Math.max(0,care.baseThirst-mods.thirstRate)*100*dt/DAY_LENGTH)*patients;
++    completeWork(state,clinic,'medicine',avoided/10);
++  }
+   bury(state, starved, (s) => `Survivor #${s.id} starved to death.`);
+   bury(state, dehydrated, (s) => `Survivor #${s.id} died of thirst.`);
+ }
+@@ -223,6 +232,9 @@ export function tryRecruit(state, DEFS, count = 1) {
+     pushEvent(state, 'recruit', `A new survivor has joined the colony. (#${s.id})`);
+     recruited.push(s);
+   }
++  if(recruited.length){
++    const radio=supportingBuilding(state,'radio');if(radio)completeWork(state,radio,'logistics',recruited.length);
++  }
+   return recruited;
+ }
+ 
+diff --git a/src/ui/anime-theme.css b/src/ui/anime-theme.css
+index 1a5274f..5249177 100644
+--- a/src/ui/anime-theme.css
++++ b/src/ui/anime-theme.css
+@@ -146,3 +146,15 @@
+   .portrait-frame .character-portrait { height: 360px; max-height: 65vh; }
+   .character-expression-frame { width: 130px; }
+ }
++
++.character-growth { margin-top: 16px; display: grid; gap: 12px; }
++.skill-grid { display: grid; gap: 8px; }
++.skill-row { display: grid; gap: 3px; font-size: 12px; }
++.skill-row progress { width: 100%; accent-color: #7ec9cf; }
++.resident-assignment { display: grid; gap: 8px; }
++.resident-assignment label { display: grid; gap: 5px; }
++.resident-assignment select { max-width: 100%; min-width: 0; padding: 7px; color: #e7f5f5; background: #172b40; }
++.character-growth small { color: #a9c7d5; }
++@media (min-width: 521px) {
++  .character-detail > .portrait-frame { align-self: start; position: sticky; top: 12px; }
++}
+diff --git a/src/ui/characterpanel.js b/src/ui/characterpanel.js
+index d653a3b..e856862 100644
+--- a/src/ui/characterpanel.js
++++ b/src/ui/characterpanel.js
+@@ -1,4 +1,5 @@
+-// Read-only presentation adapter. Saves contain identity snapshots and asset IDs, never image bytes.
++import {createProgressionControls} from './progressionpanel.js';
++// Presentation adapter with validated command callbacks. Saves contain identity snapshots and asset IDs, never image bytes.
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+ import { ARCHETYPES } from '../characters/catalog.js';
+ import { createPortraitManager } from '../characters/portraits.js';
+@@ -43,8 +44,8 @@ function el(tag, className, text) {
+   return node;
+ }
+ 
+-/** Snapshot the paused roster. Only callbacks control pause; this panel never mutates state. */
+-export function createCharacterPanel(root, { getState, onOpen, onClose, portraitManager = createPortraitManager() }) {
++/** Snapshot the paused roster. Assignment/effect changes go through injected core commands. */
++export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, portraitManager = createPortraitManager() }) {
+   const launch = el('button', 'character-launch', 'Characters');
+   launch.type = 'button';
+   const dialog = el('dialog', 'character-dialog');
+@@ -57,7 +58,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
+   roster.setAttribute('aria-label', t('Survivors'));
+   const detail = el('section', 'character-detail');
+   detail.setAttribute('aria-live', 'polite');
+-  dialog.append(el('p', 'dossier-eyebrow', 'Survivor records · skill effects disabled'),
++  dialog.append(el('p', 'dossier-eyebrow', 'Survivor records · skills and growth'),
+     el('h2', 'dossier-title', 'Operator dossier'), close, roster, detail,
+     el('p', 'character-note', 'Portraits are presentation only. They do not change survivor statistics or saved data.'));
+   (root.querySelector('.interface-tools') ?? root).append(launch);
+@@ -128,13 +129,14 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
+       row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
+       info.append(row);
+     }
++    info.append(createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh:()=>{renderPage(survivor.id);}}));
+     detail.append(frame, info);
+   }
+   const pagination=el('div','character-pagination');
+   const previous=el('button','','Previous residents');previous.type='button';
+   const next=el('button','','Next residents');next.type='button';
+   const pageLabel=el('span');pagination.append(previous,pageLabel,next);dialog.insertBefore(pagination,detail);
+-  function renderPage() {
++  function renderPage(selectedId) {
+     const state=getState();roster.replaceChildren();
+     const pages=Math.max(1,Math.ceil(state.survivors.length/PAGE_SIZE));
+     pageIndex=Math.min(pageIndex,pages-1);
+@@ -153,7 +155,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, portrait
+     }
+     previous.disabled=pageIndex===0;next.disabled=pageIndex>=pages-1;
+     pageLabel.textContent=t('Page {page} / {total}',{page:pageIndex+1,total:pages});
+-    if(members.length)select(members[0],state);
++    if(members.length)select(members.find(s=>s.id===selectedId) ?? members[0],state);
+     else {selectionToken++;detail.replaceChildren(el('p','','No survivors in the settlement.'));}
+   }
+   previous.addEventListener('click',()=>{pageIndex--;renderPage();});
+diff --git a/src/ui/i18n/zh-TW.js b/src/ui/i18n/zh-TW.js
+index 1ef1f66..4d43bc2 100644
+--- a/src/ui/i18n/zh-TW.js
++++ b/src/ui/i18n/zh-TW.js
+@@ -221,3 +221,15 @@ Object.assign(messages, {
+   'Steadfast':'堅定','Empathetic':'體貼','Pragmatic':'務實','Curious':'好奇','Reserved':'內斂','Optimistic':'樂觀','Patient':'耐心','Cautious':'謹慎',
+   'Expressions':'表情', 'Expression portrait':'表情肖像', 'Calm':'平靜', 'Happy':'開心', 'Alert':'警戒', 'Tired':'疲憊', 'Injured':'受傷', 'Portrait unavailable.':'肖像暫時無法顯示。',
+ });
++
++Object.assign(messages,{
++  "Survivor records · skills and growth":"倖存者檔案・能力與成長",
++  "Skills and experience":"技能與經驗", "Agriculture":"農業", "Engineering":"工程", "Medicine skill":"醫療能力", "Scavenging":"探索採集", "Defense":"防禦", "Logistics":"後勤",
++  "Level {rank} · MAX":"等級 {rank}・已達上限", "Level {rank} · XP {current}/{needed}":"等級 {rank}・經驗 {current}/{needed}",
++  "Workplace":"工作建築", "Unassigned":"待命", "Assign resident":"指派居民", "Restore building auto-assignment":"恢復建築自動派工",
++  "Enable bounded ability bonuses":"啟用有上限的能力加成",
++  "Experience comes only from completed work. Jobs remain open to every profession.":"經驗僅來自實際完成的工作；所有職業皆可參與各類工作。",
++  "Resident is no longer alive.":"該居民已不在存活名冊中。", "Building is unavailable.":"此建築目前無法工作。", "Building has no free job slots.":"此建築已無工作空位。"
++});
++
++Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%, clinic care +3%.":"技能加成上限：工作與防禦 +10%、搬運 +5%、診所照護 +3%。"});
+diff --git a/src/ui/inspector.js b/src/ui/inspector.js
+index 105b429..12805cf 100644
+--- a/src/ui/inspector.js
++++ b/src/ui/inspector.js
+@@ -326,7 +326,7 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+     if (dyn.minusBtn) dyn.minusBtn.disabled = off || b.workers.length === 0;
+     if (dyn.autoBadge) dyn.autoBadge.style.display = b.autoAssign ? '' : 'none';
+     if (dyn.produceRows) {
+-      const output = buildingDailyOutput(b, def, getModifiers(state, grid));
++      const output = buildingDailyOutput(b, def, getModifiers(state, grid), state);
+       for (const row of dyn.produceRows) {
+         const rate = output[row.resource] ?? 0;
+         row.valueEl.textContent =
+diff --git a/src/ui/progressionpanel.js b/src/ui/progressionpanel.js
+new file mode 100644
+index 0000000..9f9e8ac
+--- /dev/null
++++ b/src/ui/progressionpanel.js
+@@ -0,0 +1,40 @@
++// DOM adapter only. Validated commands are injected by the application.
++import {SKILLS} from '../characters/catalog.js';
++import {THRESHOLDS} from '../progression/rules.js';
++import {BUILDING_DEFS} from '../buildings/definitions.js';
++import {t} from './i18n/index.js';
++function node(tag,text,className=''){const n=document.createElement(tag);n.className=className;if(text!==undefined)n.textContent=t(text);return n;}
++const LABELS={agriculture:'Agriculture',engineering:'Engineering',medicine:'Medicine skill',scavenging:'Scavenging',defense:'Defense',logistics:'Logistics'};
++export function createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh}={}){
++ const root=node('section',undefined,'character-growth');const record=state.characters?.records?.[survivor.id];if(!record?.experience)return root;
++ root.setAttribute('aria-label',t('Skills and experience'));
++ const skills=node('div',undefined,'skill-grid');
++ for(const skill of SKILLS){
++  const rank=record.abilityRanks[skill],xp=record.experience[skill],low=THRESHOLDS[rank],next=THRESHOLDS[Math.min(5,rank+1)];
++  const row=node('label',undefined,'skill-row');row.dataset.skill=skill;
++  row.append(node('strong',LABELS[skill]));
++  row.append(node('span',rank===5?t('Level {rank} · MAX',{rank}):t('Level {rank} · XP {current}/{needed}',{rank,current:((xp-low)/1000).toFixed(2),needed:(next-low)/1000})));
++  const meter=node('progress');meter.max=rank===5?1:next-low;meter.value=rank===5?1:xp-low;meter.setAttribute('aria-label',t(LABELS[skill]));row.append(meter);skills.append(row);
++ }
++ root.append(skills);
++ if(onAssign){
++  const form=node('form',undefined,'resident-assignment');
++  const label=node('label','Workplace');const select=node('select');select.setAttribute('aria-label',t('Workplace'));
++  const idle=node('option','Unassigned');idle.value='';select.append(idle);
++  for(const b of state.buildings){const def=BUILDING_DEFS[b.defId];if(!(def?.jobs>0))continue;
++   const option=node('option',`${t(def.name)} #${b.id} (${b.workers.length}/${def.jobs})`);option.value=String(b.id);option.disabled=b.hp<=0||b.enabled===false||(b.workers.length>=def.jobs&&survivor.buildingId!==b.id);select.append(option);
++  }
++  select.value=survivor.buildingId===null?'':String(survivor.buildingId);label.append(select);
++  const apply=node('button','Assign resident');apply.type='submit';const status=node('p',undefined,'assignment-status');status.setAttribute('role','status');
++  form.append(label,apply,status);form.addEventListener('submit',event=>{event.preventDefault();
++   const result=onAssign(survivor.id,select.value===''?null:Number(select.value));
++   if(result.ok)onRefresh();else status.textContent=t(result.error);
++  });
++  if(survivor.buildingId!==null&&onAutomatic){const automatic=node('button','Restore building auto-assignment');automatic.type='button';automatic.addEventListener('click',()=>{const result=onAutomatic(survivor.buildingId);if(result.ok)onRefresh();else status.textContent=t(result.error);});form.append(automatic);}
++  root.append(form);
++ }
++ if(onEffects){const label=node('label','Enable bounded ability bonuses');const input=node('input');input.type='checkbox';input.checked=state.characters.progression.effectsEnabled;input.setAttribute('aria-label',t('Enable bounded ability bonuses'));input.addEventListener('change',()=>{onEffects(input.checked);onRefresh();});label.prepend(input);root.append(label);}
++ root.append(node('small','Skill bonus limits: work and defense +10%, hauling +5%, clinic care +3%.'));
++ root.append(node('small','Experience comes only from completed work. Jobs remain open to every profession.'));
++ return root;
++}
+diff --git a/src/zombies/combat.js b/src/zombies/combat.js
+index 6f979f0..b8342f9 100644
+--- a/src/zombies/combat.js
++++ b/src/zombies/combat.js
+@@ -1,3 +1,4 @@
++import {abilityMultiplier,completeWork} from '../progression/work.js';
+ // Combat module: tower auto-fire, building garrisons and HQ militia (tracer +
+ // hit flash effects) and building destruction handling. three.js objects are
+ // created only inside the factory — no DOM access, no side effects at import.
+@@ -157,7 +158,9 @@ export function createCombat({ scene, state, grid, visuals, onShot, onDestroyed
+         if (target) {
+           spawnShotEffect(towerMuzzle(b), new THREE.Vector3(target.wx, ZOMBIE_HIT_Y, target.wz));
+           // Il danno scala col livello della torre (potenziamento).
+-          zombieManager.damageZombie(target, def.damage * damageMul * levelMultiplier(b.level));
++          const hp=target.hp;
++          zombieManager.damageZombie(target, def.damage * damageMul * levelMultiplier(b.level) * abilityMultiplier(state,b,'defense'));
++          completeWork(state,b,'defense',Math.max(0,Math.min(hp,hp-target.hp))/10);
+           onShot?.(target);
+           cooldown = 1 / def.fireRate;
+         } else {
+@@ -197,7 +200,10 @@ export function createCombat({ scene, state, grid, visuals, onShot, onDestroyed
+             new THREE.Vector3(target.wx, ZOMBIE_HIT_Y, target.wz),
+             GARRISON_TRACER_COLOR
+           );
+-          zombieManager.damageZombie(target, GARRISON_DAMAGE * guns * damageMul);
++          const hp=target.hp;
++          const fighters={militia:b.defId==='hq',limit:guns};
++          zombieManager.damageZombie(target, GARRISON_DAMAGE * guns * damageMul * abilityMultiplier(state,b,'defense',fighters));
++          completeWork(state,b,'defense',Math.max(0,Math.min(hp,hp-target.hp))/10,fighters);
+           onShot?.(target);
+           cooldown = GARRISON_FIRE_INTERVAL;
+         } else {
+diff --git a/tests/characters.test.js b/tests/characters.test.js
+index dcb19cd..95c4754 100644
+--- a/tests/characters.test.js
++++ b/tests/characters.test.js
+@@ -67,9 +67,10 @@ describe('stable identity and roster lifecycle',()=>{
+   const random=vi.spyOn(Math,'random');const state=game();initializeCharacters(state,RUN);reconcileCharacters(state);
+   expect(random).not.toHaveBeenCalled();random.mockRestore();
+  });
+- it('leaves jobs, economy, survival and recruitment equivalent with ranks even at five',()=>{
++ it('leaves jobs, economy, survival and recruitment equivalent when ability effects are disabled, even at rank five',()=>{
+   const original=game(),decorated=structuredClone(original);initializeCharacters(decorated,RUN);
+-  for(const record of Object.values(decorated.characters.records))for(const skill of SKILLS)record.abilityRanks[skill]=5;
++  decorated.characters.progression.effectsEnabled=false;
++  for(const record of Object.values(decorated.characters.records))for(const skill of SKILLS){record.abilityRanks[skill]=5;record.experience[skill]=150000;}
+   for(let i=0;i<100;i++)for(const state of [original,decorated]){
+    assignJobs(state,BUILDING_DEFS);tickEconomy(state,0.1,BUILDING_DEFS);tickSurvivors(state,0.1);
+   }
+diff --git a/tests/i18n.test.js b/tests/i18n.test.js
+index 967fb8f..073f340 100644
+--- a/tests/i18n.test.js
++++ b/tests/i18n.test.js
+@@ -91,6 +91,9 @@ describe('read-only character presentation and save compatibility', () => {
+   });
+   it('preserves v4/v5 payloads and restored state across locales', () => {
+     const { state } = world();
++    // HQ has zero job slots: migration uses a valid idle roster; the view-only
++    // fixture above intentionally exercises display of an arbitrary workplace.
++    state.survivors[0].buildingId=null;
+     const v4 = createSaveData(state, 42, []);
+     const original = structuredClone(v4);
+     const migrated = migrateSave(v4);
+diff --git a/tests/progression.test.js b/tests/progression.test.js
+new file mode 100644
+index 0000000..5710a8c
+--- /dev/null
++++ b/tests/progression.test.js
+@@ -0,0 +1,199 @@
++import {describe,it,expect,vi,afterEach} from 'vitest';
++import * as THREE from 'three';
++import {createGameState,addBuilding,addSurvivor} from '../src/sim/state.js';
++import {BUILDING_DEFS as DEFS} from '../src/buildings/definitions.js';
++import {initializeCharacters,reconcileCharacters} from '../src/characters/state.js';
++import {SKILLS,ARCHETYPES} from '../src/characters/catalog.js';
++import {THRESHOLDS,learningMultiplier,rankForExperience,PROFESSION_SKILL,TRAIT_SKILLS} from '../src/progression/rules.js';
++import {completeWork,createWorkReceipt,settleWork,abilityMultiplier,setAbilityEffects} from '../src/progression/work.js';
++import {assignResident,restoreAutomaticAssignment} from '../src/progression/assignments.js';
++import {tickEconomy,computeResourceBalance} from '../src/sim/economy.js';
++import {tickExtraction} from '../src/sim/extraction.js';
++import {tickResearch} from '../src/sim/research.js';
++import {getModifiers} from '../src/sim/modifiers.js';
++import {tickSurvivors,assignJobs,killBuildingWorkers,tryRecruit} from '../src/sim/survivors.js';
++import {createCombat,buildingCenterWorld} from '../src/zombies/combat.js';
++import {createGrid} from '../src/world/grid.js';
++import {createCheckpoint,restoreSave,migrateSave,decodeSave,saveGame,SAVE_KEY,importSave,exportSave,listBackups,saveSlot,loadSlot,SLOT_KEYS} from '../src/persistence.js';
++const RUN='run_12345678-1234-4234-8234-123456789abc';
++function game(count=4){const state=createGameState();addBuilding(state,'hq',DEFS.hq,30,30);for(let i=0;i<count;i++)addSurvivor(state);initializeCharacters(state,RUN);return state;}
++function building(state,id,x=20,z=20){return addBuilding(state,id,DEFS[id],x,z);}
++function put(state,s,b){expect(assignResident(state,s.id,b.id,DEFS).ok).toBe(true);}
++const xp=(state,s,skill)=>state.characters.records[s.id].experience[skill];
++function maxRank(state,skill){for(const r of Object.values(state.characters.records)){r.abilityRanks[skill]=5;r.experience[skill]=THRESHOLDS[5];r.experienceRemainders[skill]=0;}}
++function store(){const values=new Map();vi.stubGlobal('localStorage',{get length(){return values.size;},key:i=>[...values.keys()][i]??null,getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)});return values;}
++afterEach(()=>vi.unstubAllGlobals());
++describe('deterministic growth and receipts',()=>{
++ it.each(SKILLS)('awards only actual %s participants and preserves unrelated skills',skill=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);completeWork(state,b,skill,10);
++  expect(xp(state,state.survivors[0],skill)).toBeGreaterThanOrEqual(10000);expect(state.characters.records[1].abilityRanks[skill]).toBe(1);
++  for(const other of SKILLS.filter(s=>s!==skill))expect(xp(state,state.survivors[0],other)).toBe(0);
++  expect(Object.values(state.characters.records[2].experience)).toEqual(SKILLS.map(()=>0));
++ });
++ it('caps rank, experience and multiplier, preserving named professions',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);
++  const r=state.characters.records[1],profession=r.professionId;completeWork(state,b,'agriculture',1e6);
++  expect(r.experience.agriculture).toBe(150000);expect(r.abilityRanks.agriculture).toBe(5);expect(r.experienceRemainders.agriculture).toBe(0);
++  expect(abilityMultiplier(state,b,'agriculture')).toBe(1.1);expect(r.professionId).toBe(profession);
++  for(const r of Object.values(state.characters.records))expect(r.professionId).toBe(ARCHETYPES.find(a=>a.id===r.archetypeId).profession);
++ });
++ it('uses exact thresholds and bounded profession/personality learning rules',()=>{
++  expect(THRESHOLDS.map(rankForExperience)).toEqual([0,1,2,3,4,5]);expect(rankForExperience(9999)).toBe(0);
++  expect(learningMultiplier({professionId:'farmer',personalityIds:['optimistic','patient']},'agriculture')).toBe(1.15);
++  expect(learningMultiplier({professionId:'farmer',personalityIds:['optimistic','patient']},'defense')).toBe(1);
++ });
++ it.each(Object.entries(PROFESSION_SKILL))('keeps profession %s learning bonus restricted to %s',(profession,skill)=>{
++  expect(learningMultiplier({professionId:profession,personalityIds:[]},skill)).toBe(1.1);
++  expect(learningMultiplier({professionId:profession,personalityIds:[]},SKILLS.find(s=>s!==skill))).toBe(1);
++ });
++ it.each(Object.entries(TRAIT_SKILLS))('applies personality %s through the independent learning rule table',(trait,skills)=>{
++  const skill=skills[0]==='*'?'agriculture':skills[0];
++  expect(learningMultiplier({professionId:'generalist',personalityIds:[trait]},skill)).toBeCloseTo(trait==='steadfast'?1.02:1.03);
++ });
++ it('settles a receipt once, rejects forged/replayed receipts and restored-state replay',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);const receipt=createWorkReceipt(state,b,'agriculture',1);
++  expect(settleWork(state,receipt)).toBe(true);const before=xp(state,state.survivors[0],'agriculture');
++  expect(settleWork(state,receipt)).toBe(false);expect(settleWork(state,{...receipt})).toBe(false);expect(xp(state,state.survivors[0],'agriculture')).toBe(before);
++  const pending=createWorkReceipt(state,b,'agriculture',1),restored=restoreSave(createCheckpoint(state,42,[])).state;
++  expect(settleWork(restored,pending)).toBe(false);expect(restored.characters.progression.sequence).toBe(state.characters.progression.sequence);
++ });
++ it.each([0,-1,NaN,Infinity])('rejects invalid work amount %s',units=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);expect(completeWork(state,b,'agriculture',units)).toBe(false);expect(state.characters.progression.sequence).toBe(0);
++ });
++ it('does not credit workers who died or changed jobs between issue and settlement',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);const receipt=createWorkReceipt(state,b,'agriculture',10);
++  assignResident(state,1,null,DEFS);settleWork(state,receipt);expect(state.characters.records[1].experience.agriculture).toBe(0);
++  put(state,state.survivors[0],b);const next=createWorkReceipt(state,b,'agriculture',10);killBuildingWorkers(state,b);reconcileCharacters(state);settleWork(state,next);
++  expect(state.characters.records[1]).toBeUndefined();
++ });
++ it('retains fractional XP through save/reload and reproduces equivalent completed work',()=>{
++  const a=game(),b=game(),ba=building(a,'farm'),bb=building(b,'farm');put(a,a.survivors[0],ba);put(b,b.survivors[0],bb);
++  completeWork(a,ba,'agriculture',1);
++  for(let i=0;i<100;i++)completeWork(b,bb,'agriculture',0.01);
++  expect(b.characters.records[1].experience).toEqual(a.characters.records[1].experience);
++  completeWork(b,bb,'agriculture',0.00001);const saved=createCheckpoint(b,42,[]);expect(restoreSave(saved).state.characters.records[1]).toEqual(b.characters.records[1]);
++ });
++});
++describe('outcome hooks and bounded economic/defense effects',()=>{
++ it('credits only food that fits the cap; no idle, stalled, disabled or zero-dt XP',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);state.resources.food=state.caps.food-1;
++  tickEconomy(state,90,DEFS);expect(state.resources.food).toBe(state.caps.food);expect(xp(state,state.survivors[0],'agriculture')).toBeGreaterThan(0);
++  const before=structuredClone(state.characters);tickEconomy(state,90,DEFS);tickEconomy(state,0,DEFS);b.enabled=false;state.resources.food=0;tickEconomy(state,90,DEFS);expect(state.characters).toEqual(before);
++ });
++ it('caps agriculture output at +10% and gives exactly baseline output with effects disabled',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);maxRank(state,'agriculture');state.resources.food=0;tickEconomy(state,90,DEFS);expect(state.resources.food).toBeCloseTo(4.4);
++  setAbilityEffects(state,false);state.resources.food=0;tickEconomy(state,90,DEFS);expect(state.resources.food).toBe(4);
++ });
++ it('projects the same bounded food output in the resource HUD',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);maxRank(state,'agriculture');
++  expect(computeResourceBalance(state,DEFS).food.produced.find(p=>p.label==='Farm').rate).toBeCloseTo(4.4);
++ });
++ it('keeps full economy, extraction, research, modifiers and needs equivalent when effects are off',()=>{
++  const state=game();for(const [i,id] of ['farm','lumber','lab','clinic'].entries())put(state,state.survivors[i],building(state,id,10+i*4,20));
++  const baseline=structuredClone(state);delete baseline.characters;delete baseline.runId;
++  for(const skill of SKILLS)maxRank(state,skill);setAbilityEffects(state,false);
++  const grid=createGrid(64);grid.cells[19][14].type='forest';const otherGrid=structuredClone(grid);
++  for(let i=0;i<50;i++)for(const [s,g] of [[state,grid],[baseline,otherGrid]]){const mods=getModifiers(s,g);tickEconomy(s,.1,DEFS,mods);tickResearch(s,.1,DEFS);tickSurvivors(s,.1,mods);tickExtraction(s,g,.1,DEFS,mods);}
++  expect(state.resources).toEqual(baseline.resources);expect(state.researchPoints).toBe(baseline.researchPoints);expect(state.survivors).toEqual(baseline.survivors);expect(grid).toEqual(otherGrid);expect(getModifiers(state,grid)).toEqual(getModifiers(baseline,otherGrid));
++ });
++ it('credits powered, fueled generation only when energy is actually used or stored',()=>{
++  const state=game(),b=building(state,'generator');put(state,state.survivors[0],b);state.resources.energy=state.caps.energy;
++  tickEconomy(state,1,DEFS);expect(xp(state,state.survivors[0],'engineering')).toBe(0);
++  state.resources.energy=0;state.resources.wood=0;tickEconomy(state,1,DEFS);expect(xp(state,state.survivors[0],'engineering')).toBe(0);
++  state.resources.wood=10;tickEconomy(state,1,DEFS);expect(xp(state,state.survivors[0],'engineering')).toBeGreaterThan(0);
++ });
++ it('credits actual lab research and clinic care without introducing health/fatigue',()=>{
++  const state=game(),lab=building(state,'lab'),clinic=building(state,'clinic',24,20);put(state,state.survivors[0],lab);put(state,state.survivors[1],clinic);
++  tickResearch(state,1,DEFS);expect(xp(state,state.survivors[0],'engineering')).toBeGreaterThan(0);
++  tickSurvivors(state,1,{hungerRate:1,thirstRate:1});expect(xp(state,state.survivors[1],'medicine')).toBe(0);
++  const mods=getModifiers(state);tickSurvivors(state,1,mods);expect(xp(state,state.survivors[1],'medicine')).toBeGreaterThan(0);
++  const base=mods.hungerRate;maxRank(state,'medicine');expect(getModifiers(state).hungerRate/base).toBeCloseTo(.97);
++  setAbilityEffects(state,false);expect(getModifiers(state).hungerRate).toBe(.85);
++ });
++ it('credits extraction and hauling only for delivered resource, never depleted/capped nodes',()=>{
++  const state=game(),b=building(state,'lumber'),garage=building(state,'garage',24,20);put(state,state.survivors[0],b);put(state,state.survivors[1],garage);
++  const grid=createGrid(64);grid.cells[19][20].type='forest';state.resources.wood=0;maxRank(state,'scavenging');maxRank(state,'logistics');
++  tickExtraction(state,grid,1,DEFS);expect(state.resources.wood).toBeCloseTo(10*.5*1.1*1.05/90); // <=15.5% combined M4 bonus
++  // Start below max for XP inspection.
++  for(const [s,skill] of [[state.survivors[0],'scavenging'],[state.survivors[1],'logistics']]){state.characters.records[s.id].experience[skill]=0;state.characters.records[s.id].abilityRanks[skill]=0;}
++  tickExtraction(state,grid,1,DEFS);expect(xp(state,state.survivors[0],'scavenging')).toBeGreaterThan(0);expect(xp(state,state.survivors[1],'logistics')).toBeGreaterThan(0);
++  const before=structuredClone(state.characters);state.resources.wood=state.caps.wood;tickExtraction(state,grid,1,DEFS);grid.cells[19][20].type='grass';state.resources.wood=0;tickExtraction(state,grid,1,DEFS);expect(state.characters).toEqual(before);
++ });
++ it('awards radio logistics only after a recruit actually arrives',()=>{
++  const state=game(1),radio=building(state,'radio');put(state,state.survivors[0],radio);state.resources.food=0;
++  tryRecruit(state,DEFS,1);expect(xp(state,state.survivors[0],'logistics')).toBe(0);
++  state.resources.food=100;tryRecruit(state,DEFS,1);expect(xp(state,state.survivors[0],'logistics')).toBeGreaterThan(0);
++ });
++ it('awards tree completion, not idle forester waiting',()=>{
++  const state=game(),b=building(state,'forester');put(state,state.survivors[0],b);const grid=createGrid(64);state.resources.water=0;
++  tickExtraction(state,grid,30,DEFS);expect(xp(state,state.survivors[0],'agriculture')).toBe(0);
++  state.resources.water=10;tickExtraction(state,grid,20,DEFS);expect(xp(state,state.survivors[0],'agriculture')).toBeGreaterThan(0);
++ });
++ function shot(enabled,level=5,targetHp=100){const state=game(),b=building(state,'tower');put(state,state.survivors[0],b);maxRank(state,'defense');setAbilityEffects(state,enabled);
++  const center=buildingCenterWorld(b);const target={wx:center.x,wz:center.z,hp:targetHp,state:'walking'};const manager={zombies:[target],damageZombie:(z,damage)=>{z.hp=Math.max(0,z.hp-damage);}};
++  const combat=createCombat({scene:new THREE.Scene(),state,grid:createGrid(64),visuals:{meshes:new Map(),setDamaged:()=>{},remove:()=>{}}});combat.update(.1,manager);return {state,b,target,combat,manager};}
++ it('credits only the six actual HQ militia fighters, and only on a hit',()=>{
++  const state=game(7),hq=state.buildings[0];const center=buildingCenterWorld(hq);const manager={zombies:[{wx:center.x,wz:center.z,hp:100,state:'walking'}],damageZombie:(z,n)=>{z.hp=Math.max(0,z.hp-n);}};
++  const combat=createCombat({scene:new THREE.Scene(),state,grid:createGrid(64),visuals:{meshes:new Map(),setDamaged:()=>{},remove:()=>{}}});combat.update(.1,manager);
++  for(const s of state.survivors.slice(0,6))expect(xp(state,s,'defense')).toBeGreaterThan(0);expect(xp(state,state.survivors[6],'defense')).toBe(0);
++ });
++ it('limits tower bonus to 10%, preserves baseline combat when disabled, and gives no idle aim XP',()=>{
++  const base=shot(false),boost=shot(true);expect(100-base.target.hp).toBeGreaterThan(0);expect(100-boost.target.hp).toBeCloseTo((100-base.target.hp)*1.1);
++  const r=boost.state.characters.records[1];r.experience.defense=0;r.abilityRanks.defense=0;
++  boost.manager.zombies=[];boost.combat.update(2,boost.manager);expect(r.experience.defense).toBe(0);
++  boost.manager.zombies=[{wx:boost.target.wx,wz:boost.target.wz,hp:1,state:'walking'}];boost.combat.update(2,boost.manager);expect(r.experience.defense).toBeGreaterThan(0);expect(r.experience.defense).toBeLessThanOrEqual(115); // actual 1 HP /10, not overkill
++ });
++});
++describe('validated player assignment and original automation',()=>{
++ it('moves a specific living resident atomically, releasing old references',()=>{
++  const state=game(),a=building(state,'farm'),b=building(state,'lab',24,20);put(state,state.survivors[0],a);put(state,state.survivors[0],b);
++  expect(a.workers).toEqual([]);expect(b.workers).toEqual([1]);expect(state.survivors[0].buildingId).toBe(b.id);expect(b.autoAssign).toBe(false);
++ });
++ it.each(['full','disabled','destroyed','missing','dead'])('rejects %s assignment without losing previous work',kind=>{
++  const state=game(),a=building(state,'farm'),b=building(state,'clinic',24,20);put(state,state.survivors[0],a);
++  let id=1,target=b.id;if(kind==='full')put(state,state.survivors[1],b);if(kind==='disabled')b.enabled=false;if(kind==='destroyed')b.hp=0;if(kind==='missing')target=999;if(kind==='dead')id=999;
++  const before=structuredClone(state);expect(assignResident(state,id,target,DEFS).ok).toBe(false);expect(state).toEqual(before);
++ });
++ it('keeps auto-assignment available and manual assignments stable across automation',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[2],b);assignJobs(state,DEFS);expect(b.workers).toEqual([3]);
++  expect(restoreAutomaticAssignment(state,b.id,DEFS).ok).toBe(true);expect(b.workers).toHaveLength(2);expect(b.workers).toContain(3);
++  expect(assignResident(state,3,null,DEFS).ok).toBe(true);expect(state.survivors[2].buildingId).toBeNull();
++ });
++});
++describe('v4/v5/v6 add-on migration and protection',()=>{
++ function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;}return data;}
++ it('preserves v6 run, UID, art, names, ranks and safe defaults without version redesign',()=>{
++  const old=oldV6();old.characters.records[1].abilityRanks.agriculture=3;const copy=structuredClone(old);const data=migrateSave(old);
++  expect(old).toEqual(copy);expect(data.version).toBe(6);expect(data.run).toEqual(old.run);const r=data.characters.records[1];expect(r.uid).toBe(old.characters.records[1].uid);expect(r.portraitSetId).toBe(old.characters.records[1].portraitSetId);expect(r.experience.agriculture).toBe(60000);expect(r.abilityRanks.agriculture).toBe(3);expect(migrateSave(data)).toEqual(data);
++  expect(decodeSave(JSON.stringify({...data,characters:data.characters}))).toEqual(data);
++ });
++ it('migrates v4/v5 to identical growth defaults and preserves exact old v6 source on import',()=>{
++  const old=oldV6(),core=old.core,v5={format:'last-refuge',version:5,checkpoint:'dawn',savedAt:old.savedAt,payload:core};expect(migrateSave(core).characters).toEqual(migrateSave(v5).characters);
++  store();const raw=' '+JSON.stringify(old);expect(importSave(raw).ok).toBe(true);expect(listBackups().entries.some(b=>b.raw===raw&&b.pinned)).toBe(true);
++ });
++ it('stores growth, remainder, work, effects switch and allocator in all three slots and JSON',()=>{
++  store();const state=game(),b=building(state,'farm');put(state,state.survivors[0],b);completeWork(state,b,'agriculture',20.00001);setAbilityEffects(state,false);expect(saveGame(state,42,[]).ok).toBe(true);
++  const original=JSON.parse(exportSave().raw);for(const slot of SLOT_KEYS){expect(saveSlot(slot).ok).toBe(true);expect(loadSlot(slot).ok).toBe(true);expect(JSON.parse(exportSave().raw).characters).toEqual(original.characters);}
++  const restored=restoreSave(decodeSave(exportSave().raw)).state;expect(restored.characters).toEqual(state.characters);expect(restored.survivors[0].buildingId).toBe(b.id);expect(restored.buildings.find(x=>x.id===b.id).workers).toEqual([1]);
++ });
++ it.each([
++  d=>{d.characters.records[1].experience.agriculture=-1;},d=>{d.characters.records[1].experience.agriculture=150001;},d=>{d.characters.records[1].experienceRemainders.agriculture=1;},d=>{delete d.characters.records[1].experience;},d=>{d.characters.progression.sequence=-1;},d=>{d.characters.progression.schemaVersion=2;},d=>{d.requiredFeatures.push('future');},d=>{d.version=99;},d=>{d.characters.records[1].abilityRanks.agriculture=5;}
++ ])('protects corrupt/unknown progression and keeps raw export',change=>{
++  const values=store(),data=createCheckpoint(game(),42,[]);change(data);const raw=JSON.stringify(data);values.set(SAVE_KEY,raw);expect(saveGame(game(),42,[]).ok).toBe(false);expect(importSave(raw).ok).toBe(false);expect(exportSave().raw).toBe(raw);
++ });
++ it.each([[],[1,1],[999],'bad'])('rejects inconsistent persisted worker lists %j without overwriting',workers=>{
++  const values=store(),state=game(),b=building(state,'farm');put(state,state.survivors[0],b);
++  const data=createCheckpoint(state,42,[]);data.core.buildings.find(x=>x.id===b.id).workers=workers;const raw=JSON.stringify(data);values.set(SAVE_KEY,raw);
++  expect(importSave(raw).ok).toBe(false);expect(saveGame(state,42,[]).ok).toBe(false);expect(exportSave().raw).toBe(raw);
++ });
++ it('keeps a native empty v6 roster empty after adding growth data',()=>{
++  const state=game(),b=building(state,'farm');for(const s of state.survivors.slice(0,2))put(state,s,b);
++  killBuildingWorkers(state,b);const other=building(state,'farm',24,20);for(const s of [...state.survivors])put(state,s,other);killBuildingWorkers(state,other);reconcileCharacters(state);
++  const restored=restoreSave(createCheckpoint(state,42,[])).state;expect(restored.survivors).toEqual([]);expect(restored.characters.records).toEqual({});expect(restored.nextSurvivorId).toBe(5);
++ });
++ it('keeps dead residents dead and high-water IDs non-reusable after growth reload',()=>{
++  const state=game(),b=building(state,'farm');put(state,state.survivors[3],b);completeWork(state,b,'agriculture',10);const deadUid=state.characters.records[4].uid;killBuildingWorkers(state,b);reconcileCharacters(state);
++  const restored=restoreSave(createCheckpoint(state,42,[])).state;expect(restored.characters.records[4]).toBeUndefined();expect(restored.nextSurvivorId).toBe(5);
++  addSurvivor(restored);reconcileCharacters(restored);expect(restored.characters.records[5].uid).not.toBe(deadUid);expect(restored.characters.records[5].experience.agriculture).toBe(0);
++ });
++});
+diff --git a/tests/save-protection.test.js b/tests/save-protection.test.js
+index 6708747..141a52c 100644
+--- a/tests/save-protection.test.js
++++ b/tests/save-protection.test.js
+@@ -237,7 +237,7 @@ function oldArchive(id, raw = rawLegacy()) {
+ 
+ describe('bounded rotation and permanent retention', () => {
+   it('runs 200 dawns within a finite quota and retains exactly the three latest checkpoints', () => {
+-    quota(16 * 1024);
++    quota(24 * 1024); // M4 stores six XP totals and fractional remainders per resident.
+     for (let day = 1; day <= 200; day++) expect(advance(day).ok).toBe(true);
+     expect(readSave().core.day).toBe(200);
+     expect(rolling()).toHaveLength(ROLLING_BACKUP_LIMIT);

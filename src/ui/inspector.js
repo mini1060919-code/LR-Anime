@@ -4,8 +4,9 @@
 // the grid's occupiedBy id. No DOM access at import time: every element is
 // built inside createInspector().
 
+import { t } from './i18n/index.js';
 import { findBuilding, isUpgradeable, upgradeBuilding, upgradeCost, MAX_LEVEL, pushEvent } from '../sim/state.js';
-import { assignWorker, unassignWorker, setBuildingEnabled, idleCount } from '../sim/survivors.js';
+import { assignWorker, unassignWorker, setBuildingEnabled, availableWorkerCount, idleCount } from '../sim/survivors.js';
 import { countNodesInRange, TILE_YIELDS } from '../sim/extraction.js';
 import { effectiveCaps, buildingDailyOutput, canAfford } from '../sim/economy.js';
 import { repairCost, startRepair } from '../sim/repair.js';
@@ -54,7 +55,7 @@ const PROXIMITY_ROW_FALLBACK = { label: 'Site yield', rich: 'Full', poor: 'Reduc
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -104,7 +105,7 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
   function select(b) {
     selectedId = b.id;
     dyn = {};
-    rootEl.textContent = '';
+    rootEl.textContent = t('');
     const def = defs[b.defId] ?? {};
 
     const head = h('div', 'inspector-head');
@@ -112,7 +113,7 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
     head.appendChild(dyn.titleEl);
     const closeBtn = h('button', 'inspector-close', '✖');
     closeBtn.type = 'button';
-    closeBtn.title = 'Close';
+    closeBtn.title = t('Close');
     closeBtn.addEventListener('click', deselect);
     head.appendChild(closeBtn);
     rootEl.appendChild(head);
@@ -193,7 +194,7 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
       const wrap = h('div', 'inspector-workers');
       dyn.minusBtn = h('button', 'inspector-worker-btn', '−');
       dyn.minusBtn.type = 'button';
-      dyn.minusBtn.title = 'Remove a worker';
+      dyn.minusBtn.title = t('Remove a worker');
       dyn.minusBtn.addEventListener('click', () => {
         const cur = findBuilding(state, selectedId);
         if (cur && unassignWorker(state, cur.id)) update();
@@ -201,20 +202,20 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
       dyn.workersText = h('span', 'inspector-workers-text');
       dyn.plusBtn = h('button', 'inspector-worker-btn', '+');
       dyn.plusBtn.type = 'button';
-      dyn.plusBtn.title = 'Assign a worker';
+      dyn.plusBtn.title = t('Assign a worker');
       dyn.plusBtn.addEventListener('click', () => {
         const cur = findBuilding(state, selectedId);
         if (cur && assignWorker(state, cur.id, defs)) update();
       });
       dyn.autoBadge = h('span', 'inspector-auto', 'auto');
-      dyn.autoBadge.title = 'Automatic worker assignment is active';
+      dyn.autoBadge.title = t('Automatic worker assignment is active');
       wrap.append(dyn.minusBtn, dyn.workersText, dyn.plusBtn, dyn.autoBadge);
       rootEl.appendChild(wrap);
     }
 
     const demolishBtn = h('button', 'inspector-demolish', '🔨 Demolish');
     demolishBtn.type = 'button';
-    demolishBtn.title = 'Demolish this building (partial refund)';
+    demolishBtn.title = t('Demolish this building (partial refund)');
     demolishBtn.addEventListener('click', () => {
       const cur = findBuilding(state, selectedId);
       if (!cur) {
@@ -276,22 +277,22 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
       // Badge livello: ★2/★3 accanto al nome per gli edifici potenziati.
       const level = b.level ?? 1;
       dyn.titleEl.textContent =
-        isUpgradeable(def) && level > 1 ? `${def.name ?? b.defId} ★${level}` : def.name ?? b.defId;
+        t(isUpgradeable(def) && level > 1 ? `${t(def.name ?? b.defId)} ★${level}` : def.name ?? b.defId);
     }
     if (dyn.hpFill) {
       const ratio = b.maxHp > 0 ? Math.max(0, b.hp) / b.maxHp : 0;
       dyn.hpFill.style.width = `${ratio * 100}%`;
       dyn.hpFill.classList.toggle('inspector-hp-fill--low', ratio < 0.5);
     }
-    if (dyn.hpText) dyn.hpText.textContent = `${Math.max(0, Math.ceil(b.hp))}/${b.maxHp}`;
+    if (dyn.hpText) dyn.hpText.textContent = t(`${Math.max(0, Math.ceil(b.hp))}/${b.maxHp}`);
     if (dyn.repairBtn) {
       const cost = repairCost(b, def);
-      dyn.repairBtn.textContent = b.repairing
+      dyn.repairBtn.textContent = t(b.repairing
         ? '🔧 Repairing…'
         : b.hp < b.maxHp
           ? `🔧 Repair (${formatCost(cost)})`
-          : '🔧 Repair';
-      dyn.repairBtn.title = 'Repairs hp over time: cost is proportional to the damage';
+          : '🔧 Repair');
+      dyn.repairBtn.title = t('Repairs hp over time: cost is proportional to the damage');
       dyn.repairBtn.disabled = b.repairing || b.hp >= b.maxHp;
       dyn.repairBtn.setAttribute(
         'aria-disabled',
@@ -299,66 +300,66 @@ export function createInspector(root, { state, grid, input, placement, visuals, 
       );
     }
     if (dyn.toggleBtn) {
-      dyn.toggleBtn.textContent = off ? '⏻ Switch on' : '⏻ Switch off';
-      dyn.toggleBtn.title = off
+      dyn.toggleBtn.textContent = t(off ? '⏻ Switch on' : '⏻ Switch off');
+      dyn.toggleBtn.title = t(off
         ? 'Switch this building back on'
-        : 'Switch this building off: no production or consumption, workers are freed';
+        : 'Switch this building off: no production or consumption, workers are freed');
       dyn.toggleBtn.classList.toggle('inspector-toggle--off', off);
     }
     if (dyn.upgradeBtn) {
       const level = b.level ?? 1;
       const maxed = level >= MAX_LEVEL;
       const cost = upgradeCost(b, def);
-      dyn.upgradeBtn.textContent = maxed
+      dyn.upgradeBtn.textContent = t(maxed
         ? '⬆ Max level'
-        : `⬆ Upgrade (${formatCost(cost)})`;
-      dyn.upgradeBtn.title = maxed
+        : `⬆ Upgrade (${formatCost(cost)})`);
+      dyn.upgradeBtn.title = t(maxed
         ? `This building is at max level (★${MAX_LEVEL})`
-        : `Upgrade the building to ★${level + 1}: +50% production/extraction/damage and more hp`;
+        : `Upgrade the building to ★${level + 1}: +50% production/extraction/damage and more hp`);
       dyn.upgradeBtn.disabled = maxed;
       dyn.upgradeBtn.setAttribute('aria-disabled', String(!maxed && !canAfford(state, { cost })));
     }
-    if (dyn.workersText) dyn.workersText.textContent = `👷 ${b.workers.length}/${def.jobs}`;
+    if (dyn.workersText) dyn.workersText.textContent = t(`👷 ${b.workers.length}/${def.jobs}`);
     if (dyn.plusBtn) {
-      dyn.plusBtn.disabled = off || idleCount(state) === 0 || b.workers.length >= def.jobs;
+      dyn.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
     }
     if (dyn.minusBtn) dyn.minusBtn.disabled = off || b.workers.length === 0;
     if (dyn.autoBadge) dyn.autoBadge.style.display = b.autoAssign ? '' : 'none';
     if (dyn.produceRows) {
-      const output = buildingDailyOutput(b, def, getModifiers(state, grid));
+      const output = buildingDailyOutput(b, def, getModifiers(state, grid), state);
       for (const row of dyn.produceRows) {
         const rate = output[row.resource] ?? 0;
         row.valueEl.textContent =
-          Math.abs(rate - row.base) < 0.05
+          t(Math.abs(rate - row.base) < 0.05
             ? `${icon(row.resource)} ${fmtRate(rate)}/day${row.suffix}`
-            : `${icon(row.resource)} ${fmtRate(rate)}/day (base ${row.base})${row.suffix}`;
+            : `${icon(row.resource)} ${fmtRate(rate)}/day (base ${row.base})${row.suffix}`);
       }
     }
     if (dyn.nodesValue) {
-      dyn.nodesValue.textContent = String(countNodesInRange(grid, b, def.extracts));
+      dyn.nodesValue.textContent = t(String(countNodesInRange(grid, b, def.extracts)));
     }
     if (dyn.effValue) {
       const eff = b.efficiency ?? 1;
       const word = eff >= 1 ? dyn.proxRow.rich : dyn.proxRow.poor;
-      dyn.effValue.textContent = `${word} ×${eff.toFixed(1)}`;
+      dyn.effValue.textContent = t(`${word} ×${eff.toFixed(1)}`);
     }
     if (dyn.capValue) {
       // Effective caps (base + every capBonus on the map), one readout per
       // resource this building boosts: '⚡ 150' for a battery.
       const caps = effectiveCaps(state, defs);
-      dyn.capValue.textContent = Object.keys(def.capBonus ?? {})
+      dyn.capValue.textContent = t(Object.keys(def.capBonus ?? {})
         .map((resource) => `${icon(resource)} ${Math.floor(caps[resource] ?? 0)}`)
-        .join(' · ');
+        .join(' · '));
     }
     if (dyn.garrisonValue) {
       const guns = garrisonGuns(b, def, idleCount(state));
       const dps = (GARRISON_DAMAGE * guns) / GARRISON_FIRE_INTERVAL;
       dyn.garrisonValue.textContent =
-        guns > 0
+        t(guns > 0
           ? `${guns} ${guns === 1 ? 'rifle' : 'rifles'} · ${fmtRate(dps)} DPS`
           : b.defId === 'hq'
             ? 'no idle survivors on guard'
-            : 'defenseless without staff';
+            : 'defenseless without staff');
     }
   }
 

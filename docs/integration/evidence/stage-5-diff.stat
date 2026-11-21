@@ -1,0 +1,28 @@
+docs/M5A-CHANGED-FILES.md           |  31 ++++++++
+ docs/M5A-IMPLEMENTATION.md          |  86 +++++++++++++++++++++
+ docs/M5A-PR.md                      |  26 +++++++
+ docs/M5A-SAVE-COMPATIBILITY.md      |  38 ++++++++++
+ docs/M5A-TEST-RESULTS.md            |  45 +++++++++++
+ docs/screenshots/m5a-needs-1000.png | Bin 0 -> 103696 bytes
+ docs/screenshots/m5a-needs-390.png  | Bin 0 -> 33573 bytes
+ e2e/m2-interface.spec.js            |   2 +-
+ e2e/m3-characters.spec.js           |   6 +-
+ e2e/m4-progression.spec.js          |   2 +-
+ e2e/m5a-survival-needs.spec.js      |  43 +++++++++++
+ src/characters/state.js             |   8 +-
+ src/main.js                         |   4 +
+ src/needs/rules.js                  |  38 ++++++++++
+ src/needs/schema.js                 |  14 ++++
+ src/needs/simulation.js             |  20 +++++
+ src/persistence.js                  |  20 +++--
+ src/progression/work.js             |   9 ++-
+ src/sim/economy.js                  |  10 +--
+ src/sim/extraction.js               |   6 +-
+ src/sim/research.js                 |   4 +-
+ src/ui/anime-theme.css              |   6 ++
+ src/ui/characterpanel.js            |   4 +-
+ src/ui/i18n/zh-TW.js                |   4 +
+ src/ui/needspanel.js                |  19 +++++
+ tests/progression.test.js           |   2 +-
+ tests/survival-needs.test.js        | 144 ++++++++++++++++++++++++++++++++++++
+ 27 files changed, 567 insertions(+), 24 deletions(-)

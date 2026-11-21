@@ -1,3 +1,7 @@
+import {setResidentControl} from './autonomy/control.js';
+import {tickNeeds,setNeedsEffects} from './needs/simulation.js';
+import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
+import {setAbilityEffects} from './progression/work.js';
 // Entry point: hands boot() (bootstrap.js: URL params, engine, asset load)
 // the startGame below, which wires together world, simulation, zombies,
 // buildings and UI. Owns the main loop, the UI wiring and the endless defeat
@@ -10,6 +14,9 @@
 // Later additions: building repair (tickRepairs), the on/off switch, worker
 // priorities and building upgrade levels.
 
+import { reconcileCharacters } from './characters/state.js';
+import { t } from './ui/i18n/index.js';
+import { createCharacterPanel } from './ui/characterpanel.js';
 import * as THREE from 'three';
 import { createIsoCamera } from './core/camera.js';
 import { createInput } from './core/input.js';
@@ -47,6 +54,7 @@ import { createBuildingVisuals } from './buildings/visuals.js';
 import { createOverlay } from './world/overlay.js';
 import { createFx } from './core/fx.js';
 import { createAudio } from './core/audio.js';
+import { createSavePanel } from './ui/savepanel.js';
 import { createHud } from './ui/hud.js';
 import { createBuildMenu } from './ui/buildmenu.js';
 import { createInspector } from './ui/inspector.js';
@@ -58,6 +66,7 @@ import {
   writeRecord,
   clearSave,
   readSave,
+  inspectSave,
   restoreSave,
   saveGame,
 } from './persistence.js';
@@ -87,6 +96,8 @@ function startGame({ engine, screens, assets, params }) {
   let grid = null;
   let state = null;
   let changedTiles = []; // [{ x, z, toType }] — extraction/planting since mapgen
+  const initialSave = inspectSave();
+  let savePanel;
   let loadedSave = false; // true when state comes from a v4 save
 
   if (!forceNew) {
@@ -113,6 +124,7 @@ function startGame({ engine, screens, assets, params }) {
     for (let i = 0; i < CONFIG.startSurvivors; i++) addSurvivor(state);
   }
   state.mapSeed = seed;
+  reconcileCharacters(state);
   advanceWeather(state); // roll this day's forecast (deterministic per seed+day)
 
   // Records a tile type change for the save file; the latest state of a tile
@@ -124,7 +136,12 @@ function startGame({ engine, screens, assets, params }) {
   }
 
   // Autosave with the current run's data (see persistence.js).
-  const persist = () => saveGame(state, seed, changedTiles);
+  const persist = () => {
+    const result = saveGame(state, seed, changedTiles);
+    if (!result.ok) savePanel?.notify(`Autosave stopped: ${result.error} Existing data is retained. Open Saves to export it.`);
+    else if (result.warning) savePanel?.notify(result.warning);
+    return result;
+  };
 
   // --- camera, input, lighting, terrain ---
   const iso = createIsoCamera(window.innerWidth / window.innerHeight);
@@ -233,8 +250,8 @@ function startGame({ engine, screens, assets, params }) {
   const seedEl = document.createElement('button');
   seedEl.type = 'button';
   seedEl.className = 'seed-label';
-  seedEl.textContent = `seed #${seed}`;
-  seedEl.title = 'Copy the link to this map';
+  seedEl.textContent = t(`seed #${seed}`);
+  seedEl.title = t('Copy the link to this map');
   seedEl.addEventListener('click', () => {
     const url = `${location.origin}${location.pathname}?seed=${seed}`;
     navigator.clipboard?.writeText(url).then(
@@ -271,6 +288,25 @@ function startGame({ engine, screens, assets, params }) {
   // --- run state ---
   let speed = 1; // 1 | 2 | 3; pause is tracked separately (timeScale 0)
   let paused = false;
+  let pausedBeforeSaves = false;
+  let pausedBeforeCharacters = false;
+  createCharacterPanel(uiRoot, {
+    onControl:(id,mode)=>{const result=setResidentControl(state,id,mode);if(result.ok)assignJobs(state,BUILDING_DEFS);return result;},
+    onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
+    onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
+    onEffects:enabled=>setAbilityEffects(state,enabled),
+    onNeedsEffects:enabled=>setNeedsEffects(state,enabled),
+    getState: () => state,
+    onOpen: () => { pausedBeforeCharacters = paused; paused = true; input.keys.clear(); },
+    onClose: () => { paused = pausedBeforeCharacters; },
+  });
+  savePanel = createSavePanel(uiRoot, {
+    onOpen: () => { pausedBeforeSaves = paused; paused = true; input.keys.clear(); },
+    onClose: () => { paused = pausedBeforeSaves; },
+    onLoad: () => { window.location.href = window.location.pathname; },
+  });
+  if (!initialSave.ok) savePanel.notify(`Saved data could not be loaded: ${initialSave.error} Autosave is blocked; use Saves to export the original.`);
+  let survivalStep=state.characters.survival.lastStep;
   let jobTimer = JOB_INTERVAL; // staff the buildings on the first frame
   let menuTimer = 0;
   // Day/night transitions and the wave plan (currentWave + spawnSchedule).
@@ -385,13 +421,20 @@ function startGame({ engine, screens, assets, params }) {
 
   // Wipes the save and starts a fresh run on a new random seed.
   function restartRun() {
-    clearSave();
+    const result = clearSave();
+    if (!result.ok) {
+      savePanel.notify(`Restart stopped: ${result.error} Existing data is retained.`);
+      return;
+    }
+    if (result.warning) savePanel.notify(result.warning);
     window.location.href = window.location.pathname + '?new=1';
   }
 
   function handleGameOver() {
     gameOverHandled = true;
-    clearSave();
+    const result = clearSave();
+    if (!result.ok) savePanel.notify(`Could not archive the save: ${result.error} Existing data is retained.`);
+    else if (result.warning) savePanel.notify(result.warning);
     // Endless mode: the only ending is defeat, scored by nights survived.
     const record = Math.max(readRecord(), state.day - 1);
     writeRecord(record);
@@ -473,6 +516,7 @@ function startGame({ engine, screens, assets, params }) {
 
     zombies.update(dt, mods);
     combat.update(dt, zombies, mods);
+    tickNeeds(state,dt,++survivalStep,BUILDING_DEFS);
 
     if (state.timeInPhase >= phases.phaseDuration()) {
       if (state.phase === 'day') phases.startNight();
@@ -529,6 +573,7 @@ function startGame({ engine, screens, assets, params }) {
       if (dt > 0) simulate(dt, mods);
     }
 
+    reconcileCharacters(state);
     drainEvents();
 
     // Tutorial: watches state deltas (phase, buildings, staffing) and the

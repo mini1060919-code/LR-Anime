@@ -1,0 +1,81 @@
+{
+  "observedAtUTC": "2026-11-17T18:00:57.901970+00:00",
+  "apiError": "POST https://api.github.com/graphql: Forbidden",
+  "pullRequests": [
+    {
+      "number": 1,
+      "state": "OPEN",
+      "title": "M1｜存檔保護系統：v4 相容、v5 存檔與備份功能",
+      "baseBranch": "develop",
+      "baseSha": "f6faebbb8096967854bacf0708b196ffac2712b9",
+      "headBranch": "feature/save-protection-v5",
+      "headSha": "642c8d2fb1c6faddcfdd1b10e0c69d7231c53eec",
+      "commitsCount": 2,
+      "mergedTime": null,
+      "closedTime": null,
+      "mergeCommitSha": null,
+      "url": "https://github.com/mini1060919-code/LR-Anime/pull/1",
+      "source": "public GitHub HTML embedded JSON"
+    },
+    {
+      "number": 2,
+      "state": "OPEN",
+      "title": "M2｜繁體中文與日系動漫 UI",
+      "baseBranch": "feature/save-protection-v5",
+      "baseSha": "642c8d2fb1c6faddcfdd1b10e0c69d7231c53eec",
+      "headBranch": "feature/m2-zh-tw-anime-ui",
+      "headSha": "e89c3a7ffd3b4131a8be76ca28e5a864edee6fda",
+      "commitsCount": 1,
+      "mergedTime": null,
+      "closedTime": null,
+      "mergeCommitSha": null,
+      "url": "https://github.com/mini1060919-code/LR-Anime/pull/2",
+      "source": "public GitHub HTML embedded JSON"
+    },
+    {
+      "number": 3,
+      "state": "OPEN",
+      "title": "\tM4｜正式居民能力與成長系統",
+      "baseBranch": "feature/m3-anime-art-integration",
+      "baseSha": "14ddcddf0a6037e611a70a3a9bf34097d7a7a68f",
+      "headBranch": "feature/m4-survivor-progression",
+      "headSha": "2d1f4084b2d422b55cc9879fcf92b870a34a381f",
+      "commitsCount": 1,
+      "mergedTime": null,
+      "closedTime": null,
+      "mergeCommitSha": null,
+      "url": "https://github.com/mini1060919-code/LR-Anime/pull/3",
+      "source": "public GitHub HTML embedded JSON"
+    },
+    {
+      "number": 4,
+      "state": "OPEN",
+      "title": "M3｜動漫角色立繪與美術整合",
+      "baseBranch": "feature/m2-zh-tw-anime-ui",
+      "baseSha": "e89c3a7ffd3b4131a8be76ca28e5a864edee6fda",
+      "headBranch": "feature/m3-anime-art-integration",
+      "headSha": "14ddcddf0a6037e611a70a3a9bf34097d7a7a68f",
+      "commitsCount": 2,
+      "mergedTime": null,
+      "closedTime": null,
+      "mergeCommitSha": null,
+      "url": "https://github.com/mini1060919-code/LR-Anime/pull/4",
+      "source": "public GitHub HTML embedded JSON"
+    },
+    {
+      "number": 5,
+      "state": "OPEN",
+      "title": "M5-A｜居民疲勞、健康與士氣系統",
+      "baseBranch": "feature/m4-survivor-progression",
+      "baseSha": "2d1f4084b2d422b55cc9879fcf92b870a34a381f",
+      "headBranch": "feature/m5a-survival-needs",
+      "headSha": "002529e38d072f39f9af137b14de5206fee5d672",
+      "commitsCount": 1,
+      "mergedTime": null,
+      "closedTime": null,
+      "mergeCommitSha": null,
+      "url": "https://github.com/mini1060919-code/LR-Anime/pull/5",
+      "source": "public GitHub HTML embedded JSON"
+    }
+  ]
+}

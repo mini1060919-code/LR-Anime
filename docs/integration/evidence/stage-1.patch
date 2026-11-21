@@ -1,0 +1,1474 @@
+diff --git a/docs/M1-PREMERGE-REVIEW.md b/docs/M1-PREMERGE-REVIEW.md
+new file mode 100644
+index 0000000..eace6eb
+--- /dev/null
++++ b/docs/M1-PREMERGE-REVIEW.md
+@@ -0,0 +1,71 @@
++# M1 pre-merge review — PR #1
++
++Reviewed 2026-11-17 (Asia/Taipei). PR: https://github.com/mini1060919-code/LR-Anime/pull/1
++
++The initial PR head was `3d5082f9d9a2a31eb5dd214061821e48aee9ebbe`, on `feature/save-protection-v5`, targeting `develop` (confirmed from the PR page and Git pull ref). Corrections remain on that same branch. This review does not merge or deploy anything.
++
++## Findings and corrections
++
++| Severity | Finding in the initial M1 implementation | Correction and evidence |
++| --- | --- | --- |
++| High | Every changed dawn/boot stored another immutable UUID archive. Lifetime storage use was unbounded, eventually blocking saves. | Known v5 backups now share a **three-record rotation pool**. Reuse the oldest eligible key via atomic `localStorage.setItem`; verify the archive before touching the active save. A 200-dawn test under a 16 KiB simulated quota keeps the last three checkpoints and saves day 200 successfully. Unchanged v5 payloads do not rewrite the timestamp or create archives. |
++| High | There was no persistent way to exempt an important backup from a future retention policy. | **Keep permanently** persists a pin on the archive. Rotation cannot select pins. Releasing protection requires **Allow rotation** plus confirmation. Tests preserve exact pinned bytes through later rotation and verify failed pin writes do not report success. |
++| Medium | A single malformed archive caused `listBackups` to fail, hiding every other recovery download. | Parse records separately. Malformed/future/unrestorable archives remain protected and downloadable; other archives stay visible. Never infer that missing/unrecognized metadata means safe to rotate. |
++| Medium | Storage failures were surfaced but quota recovery guidance was generic. | `QuotaExceededError` explicitly reports **Storage full**, that saving stopped, and that existing progress/permanent backups remain protected. Main-save failure after a successful archive retains both the active bytes and that archive. No eviction of pinned records to make room. |
++| Medium | A crafted legacy payload mixing absent and explicit building IDs could reconstruct duplicate IDs. | Reject mixed IDs through the validated storage path, preserving the raw original. Normal v4 saves contain IDs, and all-absent legacy fixtures retain their supported default path. |
++
++## Retention and failure contract
++
++- The pool of three is shared by normal autosave, manual-slot replacement, load/import rollback and explicit restart/defeat archives. It is bounded by record count, not a promise of unlimited space for arbitrary-sized saves.
++- New archive metadata is `{format: "last-refuge-backup", version: 1, key, raw, reason, savedAt, sequence, pinned}`. A monotonic sequence determines recency even when wall-clock timestamps tie or move backward.
++- Previously created M1 archives have no retention metadata, so they are **permanent by default**. Valid legacy archives can only become eligible after the user explicitly allows rotation. Upgrading does not automatically delete a user's existing collection.
++- The exact v4 bytes archived during migration are permanent by default. Explicit recovery of malformed/unknown input also preserves the raw original permanently. Invalid/future archive formats and archives that cannot reconstruct their saved world are never eligible for automatic rotation.
++- Automatic operations never unpin an archive. Pinned bytes survive later saves and reloads. Protection is against the application's rotation, not browser profile clearing, eviction, disk failure or deliberate external edits; export independent copies.
++- First validate the proposed save, then inspect the current value, archive/verify the preceding bytes, and only then replace the primary key. A full quota or failed reconstruction leaves the primary key untouched. If rotation's archive write itself fails, browser `setItem` atomicity preserves its old value too. If primary replacement fails after archiving, the active save and pinned archives remain, with the preceding active bytes also recoverable from the archive. An older unpinned rotating record may already have been replaced as permitted by the rotation policy.
++- Releasing many legacy pins can temporarily produce more than three rotation candidates. Only after a successful primary write/removal are excess eligible records pruned, with a re-read to reject changed records. A cleanup failure is a warning on a successful save, not a claim that the save failed. Unknown archives and pins are never cleanup candidates.
++- Comparisons reject observed changes between archive selection and replacement, including a newly pinned record. This remains **single-tab gameplay**, not a transaction across multiple tabs: localStorage provides no compare-and-swap or multi-key transaction. Avoid simultaneous playing tabs. Introducing fully coordinated cross-tab writes is a separate task.
++- Permanent/legacy backups, the three manual slots, a larger save or unrelated origin data can still fill localStorage. At capacity, saving stops visibly; the application does not remove protected data. Existing full installations may need exported archives and deliberate browser storage management before they can save or change legacy retention metadata.
++
++## Compatibility and transfer review
++
++The v5 envelope and v4 payload schema are unchanged. Read-only v4 migration does not alter the source; the first actual upgrade archives its exact bytes. Existing optional-field defaults, resource cap restoration, workers, upgrades, priorities, changed terrain, research, kills and reputation remain covered by the original tests.
++
++JSON exports retain exact stored bytes. Imports validate syntax, supported versions, data schema, size and actual map reconstruction before replacement. Corrupt/unknown active saves block normal autosave/import/slot load/restart. Only explicit confirmed recovery can replace them, after a successful permanent archive. The added reconstruction-failure test forces `generateMap` to throw and verifies the v4 raw input remains exportable with no writes/removals.
++
++Three manual slots still store the last dawn checkpoint, rather than incomplete combat state. No rendering, simulation, economy, research, building or zombie logic changed. No dependency or lockfile changes were needed.
++
++## Validation
++
++- `npm test`: **456 passed**, 23 files. This includes 16 new pre-merge retention/failure tests in addition to the initial 440.
++- Explicit `npm run build`: **passed** after the final UI fix; the existing >500 kB chunk warning remains.
++- Browser regression: initial full run **3 passed, 1 failed**. The new permanent-backup test revealed that pinning rebuilt and collapsed the backup details section, hiding the next control. Fixed refresh to retain the expanded state. The targeted rerun then **1 passed**, exercising pin persistence, cancelled unpin, real quota failure, exact downloaded bytes, and successful retry after removing only test filler. All four cases have passed their relevant checks; the other three were not rerun after this two-line UI-only fix. Uses the prepared external system-Chromium config, one worker, software WebGL and `E2E_SLOW_WEBGL=1`; no assertions are disabled. Coverage includes the real day/night cycle, HUD/build menu, v4 migration, slots, JSON and protected recovery, permanent pins across reload, cancellation of unpin, real browser quota exhaustion, and downloaded JSON content.
++- `git diff --check`: passed. Dependency/lockfile and renderer/simulation/building/zombie files remain unchanged.
++
++Commands from `/workspace/LR-Anime`:
++
++```sh
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 npm run test:e2e -- --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs
++# Final targeted rerun after fixing the collapsed backup section:
++E2E_SLOW_WEBGL=1 npm run test:e2e -- --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs --grep 'permanent backup'
++```
++
++The system Chromium version differs from CI's Playwright-pinned browser. These are local cloud-machine results, not a claim that GitHub CI completed.
++
++## Rollback and merge recommendation
++
++To undo only this review's corrections, export important checkpoints/archives, then `git revert` its corrective commit on the feature/development branch. The v5 save schema stays compatible with the preceding M1 implementation; the old implementation retains all archives but reintroduces unbounded backup growth. Do not clear storage. To revert the entire PR to the original v4-only game, use the separately documented export/validated-v4-payload procedure in `SAVE-PROTECTION.md`.
++
++**Recommendation: ready for human review and manual merge into `develop` for M1 scope.** The identified merge-blocking growth/retention problems are corrected and no unexplained test failure remains. Retain the documented single-tab/dawn-checkpoint contract and export important permanent archives off-browser. Browser quota remains finite; deliberately protecting many backups can still stop new saves rather than destroy protected data. GitHub-hosted CI with its pinned browser remains independent of these local results. No automated merge, base-branch change or deployment was performed.
++
++
++## Corrective files
++
++- `src/persistence.js`: bounded archives, persistent retention choices, quota errors, safe record classification, unchanged-checkpoint deduplication and mixed-ID rejection.
++- `src/ui/savepanel.js`: pin/unpin controls, permanent/rotating labels, protected archive exports and retained disclosure state.
++- `src/main.js`: surface successful-save cleanup warnings.
++- `src/style.css`: backup-row styles.
++- `tests/save-protection.test.js`: 16 added pre-merge regression cases.
++- `e2e/save-protection.spec.js`: permanent pin/reload, cancelled unpin, actual quota failure, exact JSON download and retry.
++- `docs/SAVE-PROTECTION.md`, `docs/PHASE1-PR.md`, `docs/M1-PREMERGE-REVIEW.md`: current retention policy, review evidence, risks and rollback.
+diff --git a/docs/PHASE1-PR.md b/docs/PHASE1-PR.md
+new file mode 100644
+index 0000000..d0523ae
+--- /dev/null
++++ b/docs/PHASE1-PR.md
+@@ -0,0 +1,16 @@
++## Save protection and manual dawn checkpoints
++
++The original loader silently treats unknown/broken saves as a fresh run, and the next autosave overwrites the original. This change reads v4 and v5, validates and reconstructs checkpoints before accepting them, and archives the exact prior bytes before replacement or explicit restart/defeat removal. Unknown versions, malformed data and storage/backup failures block automatic overwrites and show a visible error. Explicit recovery requires the user's checkbox plus confirmation and a successful archive.
++
++Adds three independent manual slots, JSON import/export and downloadable recovery backups in a modal that pauses play. Slots intentionally store the most recent **dawn checkpoint**: the original game does not serialize live enemies or battle state. No renderer, simulation, economy, building, research or night-attack behavior was rewritten; no dependencies changed.
++
++Base is `develop`, newly created from original/upstream commit `f6faebbb8096967854bacf0708b196ffac2712b9` because no develop branch existed. This PR must not merge into `main` or deploy automatically.
++
++Validation:
++
++- Pre-merge review: 456 unit tests passed across 23 files, including migration, backup rotation, permanent pins, corruption, actual reconstruction failure, quota, slots and explicit recovery.
++- Production build passed; the pre-existing >500 kB chunk warning remains.
++- Pre-merge browser regression: initial full run had 3 passes and revealed one collapsed-backup-section UI failure. The UI was fixed, then that case passed its targeted rerun, including permanent pins across reload, actual browser quota exhaustion, exact exported JSON and successful retry. All four cases are covered by these runs; the other three were not repeated after the two-line UI-only fix. Uses system Chromium, the external cloud config and `E2E_SLOW_WEBGL=1` without disabling assertions.
++- Development HTML/module requests and `git diff --check` passed.
++
++Compatibility, licenses, versions, changed-file inventory and rollback are documented in `docs/SAVE-PROTECTION.md`. Normal v5 backups rotate in a shared pool of three. Permanent pins, existing legacy archives, v4 migration originals and unknown/corrupt recovery originals are never automatically rotated. Unchanged v5 checkpoints are not rewritten. Browser quota can still stop saves when protected archives/slots/other data fill the origin; errors preserve the active save and pins, and exports provide independent recovery. The detailed review is in `docs/M1-PREMERGE-REVIEW.md`. Use one playing tab. Reverting code requires preserving exports and restoring a validated v4 payload first, since the original application cannot read a v5 envelope. MIT and the existing asset attribution notices are preserved.
+diff --git a/docs/SAVE-PROTECTION.md b/docs/SAVE-PROTECTION.md
+new file mode 100644
+index 0000000..8f2ad32
+--- /dev/null
++++ b/docs/SAVE-PROTECTION.md
+@@ -0,0 +1,92 @@
++# Phase 1: save protection and development baseline
++
++## Baseline (2026-11-17)
++
++- Repository: `mini1060919-code/LR-Anime`.
++- Initial local branch: `work`; initial remote branches: `main` only.
++- Initial commit: `f6faebbb8096967854bacf0708b196ffac2712b9`.
++- The upstream `D590900/city-builder-survival` HEAD was the same commit when checked. Therefore no code difference existed at the baseline. No pre-existing `develop` branch was available to compare; `develop` was created from this exact baseline, with the feature on `feature/save-protection-v5`.
++- Runtime: Node.js `24.22.1`, npm `11.9.0`. Project documentation/CI require Node 22+ and use Node 22 in CI.
++- Locked direct dependencies: `@gltf-transform/core` 4.4.1, `@gltf-transform/functions` 4.4.1, `three` 0.185.1, `@playwright/test` 1.61.1, `vite` 8.1.5, `vitest` 4.1.10. `package-lock.json` remains unchanged and records transitive versions/integrities.
++- Code license: MIT, copyright 2026 Domenico Ricciotti. Preserve the license. Assets have separate CC0/CC-BY 3.0 obligations, including required attribution listed in `CREDITS.md`; this change does not replace or redistribute assets or add Hearthfall assets/code.
++- Original checks: 416 unit tests passed; production build passed with the existing >500 kB chunk warning.
++- Browser runtime: system Chromium 156.0.8078.79, software WebGL. Playwright's pinned browser download was blocked by the current network policy. A setup-only config outside the repository uses `/usr/bin/chromium`, one worker and device scale factor 0.5. Original browser checks: HUD/build menu passed; the dawn test exceeded 150 seconds while still progressing through night. A lower device scale alone did not resolve that deadline. `E2E_SLOW_WEBGL=1` allows up to 300 seconds for the same day transition without changing assertions or simulation.
++
++## Data contract and compatibility
++
++The original game saves at dawn and reconstructs from seed, buildings, survivors and changed tiles. It does **not** serialize an in-progress battle, zombie positions, projectiles, phase time, or transient rendering state. This implementation retains that checkpoint contract. Three manual slots copy the most recent dawn autosave, not live gameplay. Their UI explicitly explains that loading restarts the saved day. All original simulation, buildings, research, economy, night attacks and rendering code remain in place.
++
++A v5 save is an envelope:
++
++```json
++{
++  "format": "last-refuge",
++  "version": 5,
++  "checkpoint": "dawn",
++  "savedAt": "2026-11-17T00:00:00.000Z",
++  "payload": { "version": 4, "seed": 42, "day": 1 }
++}
++```
++
++The abbreviated payload above is illustrative, not an importable fixture. The actual payload contains the original resources, survivor/workplace links, buildings and upgrade/priority/on-off/repair fields, changed tiles, research, kills and reputation. Keeping the v4 payload allows pure migration and straightforward recovery. The existing defaults for optional fields introduced during v4 remain supported. Resources retain the original restoration caps/clamps. Original worker-roster rebuilding and weather reroll behavior are retained.
++
++- `readSave` reads either v4 or v5 without writing. Migration creates a new envelope without mutating the input. Boot's normal dawn write backs up the exact original v4 bytes before writing v5.
++- Validation checks versions, finite numbers, day/seed, building definitions/footprints/IDs/overlap, survivor IDs/workplaces, research definitions and changed tiles, then exercises actual restoration. Unrecognized/inconsistent input is protected instead of silently dropping buildings or research.
++- `cbs-save` remains the active key; manual slots use `cbs-slot-1` through `cbs-slot-3`; `cbs-record` is unaffected.
++- Before replacement or explicit restart/defeat removal, prior raw bytes are archived under `cbs-backup:<UUID>` with source key, timestamp, reason, sequence and retention metadata. The archive write is verified before modifying the active/slot key. Read, backup, quota or validation failure blocks replacement. Normal v5 archives share a three-record rotation pool; an atomic write replaces the oldest eligible record. Permanent pins, pre-review legacy archives, original v4 migrations and unknown/corrupt recovery originals do not rotate. See `docs/M1-PREMERGE-REVIEW.md` for the updated retention policy and evidence.
++- Unknown/corrupt existing saves block autosave, normal imports, slot loading and restart. A visible warning explains the problem. Raw JSON export remains available. Only the user's explicit recovery checkbox plus confirmed valid JSON import allows replacement of protected data, and only after its exact raw bytes have been backed up successfully.
++- JSON imports are limited to 2 MiB and pass the same validation/restoration path. Export downloads the exact stored bytes, including corrupt/unknown data. Recovery backups can be exported separately and re-imported if valid.
++- Existing old-version inputs with unknown definitions/invalid coordinates are intentionally rejected rather than partly loaded. This is a safety restriction, not a silent migration.
++
++## Usage and recovery
++
++Open **Saves** during gameplay. The modal pauses the simulation and restores its previous pause state when closed. Choose a slot to save/load, export autosave/slot JSON, or choose an import file. Slot replacement and loading/importing require confirmation. Recovery archives appear in the same modal.
++
++If an autosave is protected, first export its raw bytes. Investigate/correct a separate copy or select a known-good exported checkpoint. To restore it, explicitly select the recovery checkbox, import the valid JSON and confirm. If backup storage is full/unavailable, recovery refuses to overwrite; export backups to independent files before deciding what browser storage to manage. Automatic rotation only replaces known, unpinned archives. Use **Keep permanently** to exclude an archive indefinitely from rotation; **Allow rotation** requires confirmation before releasing that protection. No protected backup is evicted to make room. Export important copies off-browser.
++
++Local storage is per browser origin; changing host/port does not transfer saves. JSON transfer supports that workflow. Backups in the same localStorage are not independent protection against browser profile deletion, disk loss or manual clearing; export important checkpoints off-browser. Multiple simultaneous tabs are not a transactionally synchronized game session. Each replacement archives the preceding observed value, but use one playing tab to avoid conflicting progress.
++
++## Validation and rollback
++
++Run from the checkout:
++
++```sh
++npm ci --cache /workspace/.npm-cache --no-audit --no-fund
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 npm run test:e2e -- --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs
++```
++
++On CI, use the repository's regular Playwright config and pinned browser (`npx playwright install --with-deps chromium`). `E2E_SLOW_WEBGL` only lengthens the natural day/night wait on slow renderers; all assertions remain active. New tests cover pure v4 migration, default fields, exact-byte backups, schema rejection, unavailable/quota-limited storage, failed writes, slot isolation, JSON round trips, explicit recovery and browser UI integration.
++
++Rollback has two independent parts:
++
++1. Before reverting code, export the active checkpoint, manual slots and relevant recovery backups. Check the downloaded JSON files. Do not clear browser storage.
++2. Revert the feature commit(s) on the feature/development branch using `git revert`; run the baseline tests/build. The original application accepts v4 only, so do not start the old application over a v5 active key. Restore an exported original v4 backup, or extract the validated v5 envelope's `payload` into a separate JSON file and verify it using this version first. Preserve the v5 original off-browser before deliberately placing the v4 JSON at `cbs-save` with browser developer tools. Retain all `cbs-slot-*` and `cbs-backup:*` keys; the old application ignores them.
++
++No merge to main or production deployment is part of this change. Test results and PR delivery status are recorded in the phase-1 delivery report.
++
++## Initial phase-1 validation results (before pre-merge review)
++
++- Final unit suite: **440 passed**, 23 files (416 original tests plus 24 save-protection cases).
++- Final production build: **passed**; the existing large-chunk warning remains. No dependency/lockfile or rendering/simulation changes were made.
++- Full browser regression: **3 passed** with the external system-Chromium config and `E2E_SLOW_WEBGL=1`: v4/slots/JSON/protected-save UI, original HUD/build menu, and actual dawn autosave plus reload. After the final explicit-recovery UI additions, the targeted browser test was rerun: **1 passed** (v4 migration, slots, JSON transfer, protection and confirmed recovery with exact-original archive).
++- Development server: HTML and JavaScript requests succeeded on port 5173 at `/city-builder-survival/`.
++- `git diff --check` passed. `develop` is identical to the original baseline and was pushed independently; `main` was not modified.
++
++Changed files:
++
++- `src/persistence.js`: v5 envelope, validation, migration, archive-before-write, three slots, JSON transfer and explicit recovery.
++- `src/main.js`: save status reporting, management-panel wiring, protected restart/defeat behavior.
++- `src/ui/savepanel.js`: accessible paused management modal, slot controls, JSON/backup downloads, confirmed import/recovery.
++- `src/style.css`: scoped save controls/modal styles.
++- `tests/save-protection.test.js`: 24 migration/preservation/slot/import/storage-failure cases.
++- `e2e/smoke.spec.js`: v5 payload expectations and opt-in slow-renderer deadline.
++- `e2e/save-protection.spec.js`: browser integration of migration, slots, transfers and protected-save recovery.
++- `docs/SAVE-PROTECTION.md`: baseline, license review, compatibility, evidence, risks and rollback.
++- `docs/PHASE1-PR.md`: reviewable PR description and validation summary.
++
++Remaining limitations: checkpoints are dawn-only, the three normal rotating backups plus permanent/legacy archives and manual slots still consume finite browser quota, localStorage is not cloud storage, and multi-tab synchronization is not implemented. A plain HTTP non-localhost origin may not expose `crypto.randomUUID`; use HTTPS or localhost. The system browser differs from Playwright's pinned CI browser, so local results do not claim a GitHub-hosted CI run. No production deployment, environment publication or fresh-task restoration has been performed.
++
++
++The follow-up PR #1 pre-merge audit, revised retention contract, current test results and merge recommendation are in [M1-PREMERGE-REVIEW.md](M1-PREMERGE-REVIEW.md).
+diff --git a/e2e/save-protection.spec.js b/e2e/save-protection.spec.js
+new file mode 100644
+index 0000000..a132e1f
+--- /dev/null
++++ b/e2e/save-protection.spec.js
+@@ -0,0 +1,146 @@
++import { test, expect } from '@playwright/test';
++
++const BASE = '/city-builder-survival/';
++test('v4 migration, three slots, JSON transfers and protected corrupt saves', async ({ page }) => {
++  test.setTimeout(360_000);
++  await page.setViewportSize({ width: 480, height: 360 });
++  const errors = [];
++  page.on('pageerror', error => errors.push(error.message));
++  await page.goto(`${BASE}?autostart=1&seed=42`);
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++  const legacy = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
++  await page.evaluate(data => localStorage.setItem('cbs-save', JSON.stringify(data)), legacy);
++  await page.goto(BASE);
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
++  expect(await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('cbs-backup:'))
++    .some(k => JSON.parse(JSON.parse(localStorage.getItem(k)).raw).version === 4))).toBe(true);
++
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  const dialog = page.getByRole('dialog', { name: 'Save management' });
++  await expect(dialog).toBeVisible();
++  for (let i = 1; i <= 3; i++) {
++    await page.getByRole('button', { name: `Save slot ${i}`, exact: true }).click();
++    await expect(dialog.getByText(`Slot ${i}: Day 1`, { exact: true })).toBeVisible();
++  }
++  const download = page.waitForEvent('download');
++  await page.getByRole('button', { name: 'Export slot 1', exact: true }).click();
++  expect((await download).suggestedFilename()).toBe('last-refuge-slot-1.json');
++  page.on('dialog', dialog => dialog.accept());
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{broken'),
++  });
++  await expect(dialog.getByRole('status')).toContainText('Save protected');
++  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)),
++  });
++  await page.waitForURL(url => !url.search);
++  // Import reloads to the title screen; loading a slot follows the same flow.
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  await page.getByRole('button', { name: 'Load slot 2', exact: true }).click();
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++
++  const unknown = '{"version":99,"precious":"retain these exact bytes"}';
++  await page.evaluate(raw => localStorage.setItem('cbs-save', raw), unknown);
++  await page.goto(`${BASE}?autostart=1&seed=42`);
++  await expect(page.locator('.save-warning')).toContainText('Autosave stopped', { timeout: 30_000 });
++  expect(await page.evaluate(() => localStorage.getItem('cbs-save'))).toBe(unknown);
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  await expect(page.getByRole('dialog').getByText(/Autosave protected/)).toBeVisible();
++  const recovery = page.waitForEvent('download');
++  await page.getByRole('button', { name: 'Export autosave JSON', exact: true }).click();
++  expect((await recovery).suggestedFilename()).toBe('last-refuge-autosave.json');
++  await page.getByLabel('Recover a protected autosave by archiving it before this import').check();
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'recovery.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacy)),
++  });
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).version)).toBe(5);
++  expect(await page.evaluate(raw => Object.keys(localStorage).filter(k => k.startsWith('cbs-backup:'))
++    .some(k => JSON.parse(localStorage.getItem(k)).raw === raw), unknown)).toBe(true);
++  expect(errors).toEqual([]);
++});
++
++test('permanent backup survives reload and actual browser quota failure protects saved data', async ({ page }) => {
++  test.setTimeout(240_000);
++  await page.setViewportSize({ width: 480, height: 360 });
++  await page.goto(`${BASE}?autostart=1&seed=42`);
++  await expect(page.locator('.hud-day')).toHaveText('Day 1', { timeout: 30_000 });
++  const checkpoint = await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload);
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  page.once('dialog', dialog => dialog.accept());
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'day2.json', mimeType: 'application/json',
++    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 2 })),
++  });
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 2', { timeout: 30_000 });
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  await page.getByText(/Recovery backups/).click();
++  await page.getByRole('button', { name: 'Keep permanently', exact: true }).first().click();
++  await expect(page.getByRole('status')).toContainText('Backup kept permanently');
++  const permanent = await page.evaluate(() => {
++    const key = Object.keys(localStorage).find(key => key.startsWith('cbs-backup:') && JSON.parse(localStorage.getItem(key)).pinned === true);
++    return { key, value: localStorage.getItem(key) };
++  });
++  // Cancelling unpin must leave the saved retention setting untouched.
++  page.once('dialog', dialog => dialog.dismiss());
++  await page.getByRole('button', { name: 'Allow rotation', exact: true }).first().click();
++  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
++  await page.reload();
++  await page.getByRole('button', { name: 'Start game', exact: true }).click();
++  await expect(page.locator('.hud-day')).toHaveText('Day 2', { timeout: 30_000 });
++  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
++  await page.getByRole('button', { name: 'Saves', exact: true }).click();
++  const original = await page.evaluate(() => localStorage.getItem('cbs-save'));
++  // Fill this isolated test context's real localStorage, refining to the quota.
++  await page.evaluate(() => {
++    let filler = '';
++    for (const size of [65536, 1024, 32, 1]) {
++      const chunk = 'x'.repeat(size);
++      while (true) {
++        try {
++          if (filler.length > 8 * 1024 * 1024) throw new Error('Expected browser quota was not reached.');
++          localStorage.setItem('m1-test-quota', filler + chunk);
++          filler += chunk;
++        } catch (error) {
++          if (error.name !== 'QuotaExceededError') throw error;
++          break;
++        }
++      }
++    }
++  });
++  page.once('dialog', dialog => dialog.accept());
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'day3.json', mimeType: 'application/json',
++    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 3 })),
++  });
++  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Storage full');
++  expect(await page.evaluate(() => localStorage.getItem('cbs-save'))).toBe(original);
++  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
++  await page.evaluate(() => localStorage.removeItem('m1-test-quota'));
++  await page.getByText(/Recovery backups/).click();
++  const downloadPromise = page.waitForEvent('download');
++  await page.getByRole('button', { name: 'Export backup JSON', exact: true }).first().click();
++  const stream = await (await downloadPromise).createReadStream();
++  const parts = [];
++  for await (const part of stream) parts.push(part);
++  expect(Buffer.concat(parts).toString('utf8')).toBe(JSON.parse(permanent.value).raw);
++  // Freeing only the test filler permits a normal retry; pins remain unchanged.
++  page.once('dialog', dialog => dialog.accept());
++  await page.getByLabel('Import save JSON').setInputFiles({
++    name: 'retry-day3.json', mimeType: 'application/json',
++    buffer: Buffer.from(JSON.stringify({ ...checkpoint, day: 3 })),
++  });
++  await expect(page.getByRole('button', { name: 'Start game', exact: true })).toBeVisible();
++  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cbs-save')).payload.day)).toBe(3);
++  expect(await page.evaluate(key => localStorage.getItem(key), permanent.key)).toBe(permanent.value);
++});
+diff --git a/e2e/smoke.spec.js b/e2e/smoke.spec.js
+index 6143e27..243b466 100644
+--- a/e2e/smoke.spec.js
++++ b/e2e/smoke.spec.js
+@@ -78,15 +78,15 @@ test('boots to the HUD with day 1, resources and a working build menu', async ({
+     (key) => JSON.parse(localStorage.getItem(key)),
+     SAVE_KEY
+   );
+-  expect(save?.version).toBe(4);
+-  expect(save?.seed).toBe(42);
+-  expect(save?.day).toBe(1);
++  expect(save?.version).toBe(5);
++  expect(save?.payload?.seed).toBe(42);
++  expect(save?.payload?.day).toBe(1);
+ 
+   expect(errors).toEqual([]);
+ });
+ 
+ test('autosaves at dawn and restores the run after a reload', async ({ page }) => {
+-  test.setTimeout(180_000);
++  test.setTimeout(process.env.E2E_SLOW_WEBGL ? 360_000 : 180_000);
+   const errors = watchConsoleErrors(page);
+ 
+   // Tiny viewport: game time advances per rendered frame (MAX_DT clamp in
+@@ -104,7 +104,7 @@ test('autosaves at dawn and restores the run after a reload', async ({ page }) =
+   await page.keyboard.press('3');
+   await expect(page.getByTitle('Speed 3x')).toHaveClass(/active/);
+   await page.waitForFunction(() => window.__game?.state?.day >= 2, null, {
+-    timeout: 150_000,
++    timeout: process.env.E2E_SLOW_WEBGL ? 300_000 : 150_000,
+   });
+   await expect(page.locator('.hud-day')).toHaveText('Day 2');
+ 
+@@ -113,7 +113,7 @@ test('autosaves at dawn and restores the run after a reload', async ({ page }) =
+     (key) => JSON.parse(localStorage.getItem(key)),
+     SAVE_KEY
+   );
+-  expect(save?.day).toBe(2);
++  expect(save?.payload?.day).toBe(2);
+ 
+   // Reload without ?autostart: the title screen shows and the save loads
+   // (autostart would force a fresh game instead). The restored run starts
+diff --git a/src/main.js b/src/main.js
+index 42b560d..9a0ba58 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -47,6 +47,7 @@ import { createBuildingVisuals } from './buildings/visuals.js';
+ import { createOverlay } from './world/overlay.js';
+ import { createFx } from './core/fx.js';
+ import { createAudio } from './core/audio.js';
++import { createSavePanel } from './ui/savepanel.js';
+ import { createHud } from './ui/hud.js';
+ import { createBuildMenu } from './ui/buildmenu.js';
+ import { createInspector } from './ui/inspector.js';
+@@ -58,6 +59,7 @@ import {
+   writeRecord,
+   clearSave,
+   readSave,
++  inspectSave,
+   restoreSave,
+   saveGame,
+ } from './persistence.js';
+@@ -87,6 +89,8 @@ function startGame({ engine, screens, assets, params }) {
+   let grid = null;
+   let state = null;
+   let changedTiles = []; // [{ x, z, toType }] — extraction/planting since mapgen
++  const initialSave = inspectSave();
++  let savePanel;
+   let loadedSave = false; // true when state comes from a v4 save
+ 
+   if (!forceNew) {
+@@ -124,7 +128,12 @@ function startGame({ engine, screens, assets, params }) {
+   }
+ 
+   // Autosave with the current run's data (see persistence.js).
+-  const persist = () => saveGame(state, seed, changedTiles);
++  const persist = () => {
++    const result = saveGame(state, seed, changedTiles);
++    if (!result.ok) savePanel?.notify(`Autosave stopped: ${result.error} Existing data is retained. Open Saves to export it.`);
++    else if (result.warning) savePanel?.notify(result.warning);
++    return result;
++  };
+ 
+   // --- camera, input, lighting, terrain ---
+   const iso = createIsoCamera(window.innerWidth / window.innerHeight);
+@@ -271,6 +280,13 @@ function startGame({ engine, screens, assets, params }) {
+   // --- run state ---
+   let speed = 1; // 1 | 2 | 3; pause is tracked separately (timeScale 0)
+   let paused = false;
++  let pausedBeforeSaves = false;
++  savePanel = createSavePanel(uiRoot, {
++    onOpen: () => { pausedBeforeSaves = paused; paused = true; input.keys.clear(); },
++    onClose: () => { paused = pausedBeforeSaves; },
++    onLoad: () => { window.location.href = window.location.pathname; },
++  });
++  if (!initialSave.ok) savePanel.notify(`Saved data could not be loaded: ${initialSave.error} Autosave is blocked; use Saves to export the original.`);
+   let jobTimer = JOB_INTERVAL; // staff the buildings on the first frame
+   let menuTimer = 0;
+   // Day/night transitions and the wave plan (currentWave + spawnSchedule).
+@@ -385,13 +401,20 @@ function startGame({ engine, screens, assets, params }) {
+ 
+   // Wipes the save and starts a fresh run on a new random seed.
+   function restartRun() {
+-    clearSave();
++    const result = clearSave();
++    if (!result.ok) {
++      savePanel.notify(`Restart stopped: ${result.error} Existing data is retained.`);
++      return;
++    }
++    if (result.warning) savePanel.notify(result.warning);
+     window.location.href = window.location.pathname + '?new=1';
+   }
+ 
+   function handleGameOver() {
+     gameOverHandled = true;
+-    clearSave();
++    const result = clearSave();
++    if (!result.ok) savePanel.notify(`Could not archive the save: ${result.error} Existing data is retained.`);
++    else if (result.warning) savePanel.notify(result.warning);
+     // Endless mode: the only ending is defeat, scored by nights survived.
+     const record = Math.max(readRecord(), state.day - 1);
+     writeRecord(record);
+diff --git a/src/persistence.js b/src/persistence.js
+index 8b32e78..3063fe5 100644
+--- a/src/persistence.js
++++ b/src/persistence.js
+@@ -1,4 +1,4 @@
+-// Save/load and best-run record, persisted in localStorage (save v4).
++// Validated v5 dawn checkpoints with read-only v4 compatibility and archival writes.
+ // Pure data in/out — no DOM, no rendering: restoreSave rebuilds grid + state
+ // from the save data, saveGame serializes them back. The endless mode has no
+ // victory: the record is the number of nights survived, kept apart from the
+@@ -12,12 +12,18 @@ import {
+   addSurvivor,
+ } from './sim/state.js';
+ import { levelMultiplier, effectiveCaps } from './sim/economy.js';
+-import { createGrid, occupy, occupyTrap, getCell } from './world/grid.js';
++import { GRID_SIZE, createGrid, occupy, occupyTrap, getCell } from './world/grid.js';
+ import { generateMap } from './world/mapgen.js';
+ import { BUILDING_DEFS, getDef } from './buildings/definitions.js';
++import { TECHS } from './sim/research.js';
+ 
+ export const SAVE_KEY = 'cbs-save';
+-export const SAVE_VERSION = 4;
++export const SAVE_VERSION = 5;
++export const SLOT_KEYS = [1, 2, 3].map(n => `cbs-slot-${n}`);
++export const BACKUP_PREFIX = 'cbs-backup:';
++export const ROLLING_BACKUP_LIMIT = 3;
++const BACKUP_FORMAT = 'last-refuge-backup';
++export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
+ export const RECORD_KEY = 'cbs-record'; // best nights survived, across runs
+ const RESOURCE_KEYS = ['food', 'water', 'wood', 'metal', 'energy', 'fuel'];
+ 
+@@ -40,72 +46,326 @@ export function writeRecord(n) {
+   }
+ }
+ 
+-// Wipes the save (restart, defeat): the next load starts a fresh game.
++// Every operation returns an explicit result. No failed read is treated as empty.
++const fail = (error) => ({
++  ok: false,
++  error: error?.name === 'QuotaExceededError' || String(error?.message ?? error).includes('QuotaExceededError')
++    ? 'Storage full (QuotaExceededError). Saving stopped; the previous save and permanent backups are retained. Export important saves and free browser storage before retrying.'
++    : String(error?.message ?? error),
++});
++const assert = (condition, message) => { if (!condition) throw new Error(message); };
++const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
++const finite = value => typeof value === 'number' && Number.isFinite(value);
++
++/** Validate before restoration, rejecting data the legacy loader would discard. */
++export function validateSave(data) {
++  assert(object(data) && data.version === 4, 'Unsupported save payload version.');
++  assert(Number.isSafeInteger(data.seed), 'Invalid map seed.');
++  assert(Number.isSafeInteger(data.day) && data.day >= 1, 'Invalid day.');
++  assert(object(data.resources), 'Invalid resources.');
++  for (const [key, value] of Object.entries(data.resources)) {
++    assert(RESOURCE_KEYS.includes(key) && finite(value), 'Invalid resource value.');
++  }
++  for (const key of ['researchPoints', 'kills', 'reputation']) {
++    assert(data[key] === undefined || finite(data[key]), `Invalid ${key}.`);
++  }
++  assert(data.researched === undefined || (Array.isArray(data.researched) &&
++    data.researched.every(id => Object.hasOwn(TECHS, id))), 'Unknown research.');
++  assert(Array.isArray(data.buildings) && data.buildings.length <= GRID_SIZE ** 2,
++    'Invalid buildings.');
++  const ids = new Set();
++  const occupied = new Set();
++  let refuges = 0;
++  for (const b of data.buildings) {
++    assert(object(b) && Object.hasOwn(BUILDING_DEFS, b.defId), 'Unknown building.');
++    const def = getDef(b.defId);
++    if (b.defId === 'hq') refuges++;
++    assert(Number.isInteger(b.x) && Number.isInteger(b.z) && b.x >= 0 && b.z >= 0 &&
++      b.x + def.w <= GRID_SIZE && b.z + def.h <= GRID_SIZE, 'Building outside map.');
++    if (b.id !== undefined) {
++      assert(Number.isSafeInteger(b.id) && b.id > 0 && !ids.has(b.id), 'Invalid/duplicate building ID.');
++      ids.add(b.id);
++    }
++    for (let z = b.z; z < b.z + def.h; z++) {
++      for (let x = b.x; x < b.x + def.w; x++) {
++        const tile = `${x},${z}`;
++        assert(!occupied.has(tile), 'Overlapping buildings.');
++        occupied.add(tile);
++      }
++    }
++    for (const key of ['hp', 'extracted', 'efficiency']) {
++      assert(b[key] === undefined || finite(b[key]), `Invalid building ${key}.`);
++    }
++    for (const key of ['autoAssign', 'enabled', 'repairing']) {
++      assert(b[key] === undefined || typeof b[key] === 'boolean', `Invalid building ${key}.`);
++    }
++    assert(b.level === undefined || (Number.isInteger(b.level) && b.level >= 1 && b.level <= MAX_LEVEL), 'Invalid level.');
++    assert(b.priority === undefined || (Number.isInteger(b.priority) && b.priority >= 0 && b.priority <= 2), 'Invalid priority.');
++  }
++  assert(refuges === 1, 'Save must contain exactly one Refuge.');
++  assert(ids.size === 0 || ids.size === data.buildings.length, 'Mixed missing and explicit building IDs.');
++  assert(data.survivors === undefined || (Array.isArray(data.survivors) && data.survivors.length <= 10000), 'Invalid survivors.');
++  const survivors = new Set();
++  for (const s of data.survivors ?? []) {
++    assert(object(s), 'Invalid survivor.');
++    assert(Number.isSafeInteger(s.id) && s.id > 0 && !survivors.has(s.id), 'Invalid/duplicate survivor ID.');
++    survivors.add(s.id);
++    for (const key of ['hunger', 'thirst']) assert(s[key] === undefined || finite(s[key]), `Invalid ${key}.`);
++    assert(s.buildingId == null || ids.has(s.buildingId), 'Unknown workplace.');
++  }
++  assert(data.changedTiles === undefined || (Array.isArray(data.changedTiles) && data.changedTiles.length <= GRID_SIZE ** 2), 'Invalid changed tiles.');
++  for (const t of data.changedTiles ?? []) {
++    assert(object(t) && Number.isInteger(t.x) && Number.isInteger(t.z) &&
++      t.x >= 0 && t.z >= 0 && t.x < GRID_SIZE && t.z < GRID_SIZE &&
++      ['grass', 'forest', 'trail'].includes(t.toType), 'Invalid changed tile.');
++  }
++  return data;
++}
++
++/** Pure migration: does not mutate the input or touch storage. */
++export function migrateSave(data) {
++  if (data?.version === SAVE_VERSION) {
++    assert(data.format === 'last-refuge' && data.checkpoint === 'dawn' &&
++      typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
++    validateSave(data.payload);
++    return structuredClone(data);
++  }
++  validateSave(data);
++  return {
++    format: 'last-refuge', version: SAVE_VERSION, checkpoint: 'dawn',
++    savedAt: new Date().toISOString(), payload: structuredClone(data),
++  };
++}
++
++export function decodeSave(raw) {
++  assert(typeof raw === 'string' && new Blob([raw]).size <= MAX_SAVE_BYTES, 'Save exceeds 2 MiB limit.');
++  const envelope = migrateSave(JSON.parse(raw));
++  // Exercise the same reconstruction used by the game before committing data.
++  restoreSave(envelope.payload);
++  return envelope;
++}
++
++export function inspectSave(key = SAVE_KEY) {
++  try {
++    const raw = localStorage.getItem(key);
++    if (raw === null) return { ok: true, empty: true };
++    try { return { ok: true, raw, data: decodeSave(raw) }; }
++    catch (error) { return { ...fail(error), raw }; }
++  } catch (error) { return fail(error); }
++}
++
++// Only explicitly managed, valid, unpinned records may enter the rotation pool.
++// Legacy, malformed and future-format archives are protected by default.
++function parseBackup(backupKey, stored) {
++  const fallback = { backupKey, raw: stored, savedAt: 'Unknown date', reason: 'Unreadable archive',
++    pinned: true, mutable: false, stored };
++  try {
++    const record = JSON.parse(stored);
++    assert(object(record) && typeof record.raw === 'string', 'Invalid backup record.');
++    const entry = { ...fallback, raw: record.raw,
++      savedAt: typeof record.savedAt === 'string' ? record.savedAt : 'Unknown date',
++      reason: typeof record.reason === 'string' ? record.reason : 'Unknown archive' };
++    assert([SAVE_KEY, ...SLOT_KEYS].includes(record.key) &&
++      typeof record.reason === 'string' && typeof record.savedAt === 'string' &&
++      Number.isFinite(Date.parse(record.savedAt)), 'Invalid backup metadata.');
++    const legacy = record.format === undefined && record.version === undefined && record.pinned === undefined;
++    const managed = record.format === BACKUP_FORMAT && record.version === 1 &&
++      typeof record.pinned === 'boolean' && Number.isSafeInteger(record.sequence) && record.sequence >= 1;
++    // Keep the raw save downloadable even if the archive belongs to a future format.
++    if (!legacy && !managed) return { ...entry, error: 'Unsupported backup format; permanently protected.' };
++    try { decodeSave(record.raw); }
++    catch (error) { return { ...entry, error: `Unrestorable archive; permanently protected: ${error.message}` }; }
++    return { ...entry, key: record.key, pinned: legacy || record.pinned,
++      mutable: true, sequence: managed ? record.sequence : 0 };
++  } catch (error) { return { ...fallback, error: String(error.message ?? error) }; }
++}
++
++export function listBackups() {
++  try {
++    const entries = [];
++    for (let i = 0; i < localStorage.length; i++) {
++      const key = localStorage.key(i);
++      if (key?.startsWith(BACKUP_PREFIX)) entries.push(parseBackup(key, localStorage.getItem(key)));
++    }
++    return { ok: true, entries };
++  } catch (error) { return fail(error); }
++}
++
++function backupSequence(entries) {
++  const sequence = entries.reduce((max, entry) => Math.max(max, entry.sequence ?? 0), 0) + 1;
++  assert(Number.isSafeInteger(sequence), 'Backup sequence limit reached; original retained.');
++  return sequence;
++}
++
++/** Persist a player's retention choice atomically; never report a failed pin as saved. */
++export function setBackupPinned(backupKey, pinned) {
++  try {
++    assert(typeof backupKey === 'string' && backupKey.startsWith(BACKUP_PREFIX) &&
++      typeof pinned === 'boolean', 'Invalid backup selection.');
++    const stored = localStorage.getItem(backupKey);
++    assert(stored !== null, 'Backup no longer exists.');
++    const entry = parseBackup(backupKey, stored);
++    assert(entry.mutable, 'This archive is permanently protected; export it for manual recovery.');
++    const backups = listBackups();
++    assert(backups.ok, backups.error);
++    const value = JSON.stringify({ format: BACKUP_FORMAT, version: 1, key: entry.key,
++      raw: entry.raw, reason: entry.reason, savedAt: entry.savedAt,
++      sequence: backupSequence(backups.entries), pinned });
++    assert(localStorage.getItem(backupKey) === stored, 'Backup changed in another tab; reload first.');
++    localStorage.setItem(backupKey, value);
++    assert(localStorage.getItem(backupKey) === value, 'Retention change could not be verified.');
++    return { ok: true };
++  } catch (error) { return fail(error); }
++}
++
++/** Archive before touching the active key. setItem is atomic on quota failure.
++ * Only an old unpinned archive may be replaced; never evict pins to make room.
++ */
++function backup(key, raw, reason) {
++  const result = listBackups();
++  assert(result.ok, result.error);
++  const entries = result.entries;
++  let pinned = true;
++  try { decodeSave(raw); pinned = JSON.parse(raw).version !== SAVE_VERSION; }
++  catch { /* A recovery original is never automatically rotated. */ }
++  const duplicate = entries.find(entry => entry.key === key && entry.raw === raw &&
++    (entry.pinned || !pinned));
++  if (duplicate?.pinned) return duplicate.backupKey;
++  const rotating = entries.filter(entry => entry.mutable && !entry.pinned)
++    .sort((a, b) => a.sequence - b.sequence);
++  const replaced = duplicate ?? (!pinned && rotating.length >= ROLLING_BACKUP_LIMIT ? rotating[0] : null);
++  const id = replaced?.backupKey ?? `${BACKUP_PREFIX}${crypto.randomUUID()}`;
++  const value = JSON.stringify({ format: BACKUP_FORMAT, version: 1, key, raw, reason,
++    savedAt: new Date().toISOString(), sequence: backupSequence(entries), pinned });
++  assert(localStorage.getItem(id) === (replaced?.stored ?? null), 'Backup changed; original retained.');
++  localStorage.setItem(id, value);
++  assert(localStorage.getItem(id) === value, 'Backup verification failed.');
++  return id;
++}
++
++// This only runs after the primary write/removal succeeds. Explicitly unpinning
++// legacy archives can temporarily create >3 candidates; unknown entries stay put.
++function trimBackups(keep) {
++  try {
++    const result = listBackups();
++    assert(result.ok, result.error);
++    const rotating = result.entries.filter(entry => entry.mutable && !entry.pinned)
++      .sort((a, b) => a.sequence - b.sequence);
++    let extra = rotating.length - ROLLING_BACKUP_LIMIT;
++    for (const entry of rotating) {
++      if (extra <= 0) break;
++      if (entry.backupKey === keep) continue;
++      assert(localStorage.getItem(entry.backupKey) === entry.stored, 'Backup changed; cleanup stopped.');
++      localStorage.removeItem(entry.backupKey);
++      extra--;
++    }
++    return {};
++  } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
++}
++
++function writeSave(key, raw, reason, recoverProtected = false) {
++  try {
++    decodeSave(raw);
++    const previous = inspectSave(key);
++    assert(previous.ok || (recoverProtected && typeof previous.raw === 'string'), `Existing save protected: ${previous.error}`);
++    if (previous.raw === raw) return { ok: true };
++    // A reload of an unchanged v5 checkpoint must not consume storage. v4 still
++    // goes through migration and an exact, permanently retained original backup.
++    if (reason === 'autosave/migration' && previous.ok && !previous.empty &&
++      JSON.parse(previous.raw).version === SAVE_VERSION &&
++      JSON.stringify(previous.data.payload) === JSON.stringify(JSON.parse(raw).payload)) return { ok: true };
++    const archived = !previous.empty ? backup(key, previous.raw, reason) : null;
++    localStorage.setItem(key, raw);
++    assert(localStorage.getItem(key) === raw, 'Save verification failed; recover from backup.');
++    return { ok: true, ...trimBackups(archived) };
++  } catch (error) { return fail(error); }
++}
++
++// Restart/defeat archive known data before removal; unrecognized data stays put.
+ export function clearSave() {
+   try {
+-    localStorage.removeItem(SAVE_KEY);
+-  } catch {
+-    // ignore
+-  }
++    const existing = inspectSave();
++    assert(existing.ok, `Existing save protected: ${existing.error}`);
++    if (!existing.empty) {
++      const archived = backup(SAVE_KEY, existing.raw, 'restart/defeat');
++      localStorage.removeItem(SAVE_KEY);
++      return { ok: true, ...trimBackups(archived) };
++    }
++    return { ok: true };
++  } catch (error) { return fail(error); }
+ }
+ 
+ export function readSave() {
++  const result = inspectSave();
++  return result.ok && !result.empty ? result.data.payload : null;
++}
++
++export function listSlots() { return SLOT_KEYS.map(key => ({ key, ...inspectSave(key) })); }
++export function saveSlot(slot) {
++  if (!SLOT_KEYS.includes(slot)) return fail('Invalid slot.');
++  const current = inspectSave();
++  if (!current.ok || current.empty) return fail(current.error ?? 'No dawn checkpoint available.');
++  return writeSave(slot, JSON.stringify(current.data), 'manual slot replacement');
++}
++export function loadSlot(slot) {
++  if (!SLOT_KEYS.includes(slot)) return fail('Invalid slot.');
++  const current = inspectSave(slot);
++  if (!current.ok || current.empty) return fail(current.error ?? 'Slot is empty.');
++  return writeSave(SAVE_KEY, JSON.stringify(current.data), 'load manual slot');
++}
++export function importSave(raw, { recoverProtected = false } = {}) {
++  try { return writeSave(SAVE_KEY, JSON.stringify(decodeSave(raw)), 'JSON import', recoverProtected); }
++  catch (error) { return fail(error); }
++}
++// Export raw bytes even when unknown/corrupt; recovery must remain possible.
++export function exportSave(key = SAVE_KEY) {
+   try {
+-    const raw = localStorage.getItem(SAVE_KEY);
+-    if (!raw) return null;
+-    const data = JSON.parse(raw);
+-    // Only v4 saves load; older versions silently start a fresh game.
+-    if (!data || data.version !== SAVE_VERSION) return null;
+-    if (typeof data.seed !== 'number' || !Array.isArray(data.buildings)) {
+-      return null;
+-    }
+-    return data;
+-  } catch {
+-    return null;
+-  }
++    const raw = localStorage.getItem(key);
++    assert(raw !== null, 'No save available.');
++    return { ok: true, raw };
++  } catch (error) { return fail(error); }
++}
++// Serialize the legacy-compatible payload. Only call at dawn; combat is not serialized.
++export function createSaveData(state, seed, changedTiles) {
++  return {
++    version: 4,
++    seed,
++    day: state.day,
++    resources: { ...state.resources },
++    survivors: state.survivors.map((s) => ({
++      id: s.id,
++      hunger: s.hunger,
++      thirst: s.thirst,
++      buildingId: s.buildingId,
++    })),
++    buildings: state.buildings.map((b) => ({
++      id: b.id,
++      defId: b.defId,
++      x: b.x,
++      z: b.z,
++      hp: Math.round(b.hp),
++      workers: [...b.workers],
++      autoAssign: b.autoAssign,
++      extracted: b.extracted,
++      efficiency: b.efficiency,
++      enabled: b.enabled !== false,
++      repairing: b.repairing === true,
++      priority: b.priority ?? 1,
++      level: b.level ?? 1,
++    })),
++    changedTiles: changedTiles.map((t) => ({ ...t })),
++    researchPoints: state.researchPoints,
++    researched: [...state.researched],
++    kills: state.kills,
++    reputation: state.reputation ?? 0,
++  };
+ }
+ 
+-// Serializes the run (state + map seed + the changed-tile log) to a v4 save.
+-// Silently does nothing when storage is unavailable: keep playing without
+-// saves.
+ export function saveGame(state, seed, changedTiles) {
+   try {
+-    const data = {
+-      version: SAVE_VERSION,
+-      seed,
+-      day: state.day,
+-      resources: { ...state.resources },
+-      survivors: state.survivors.map((s) => ({
+-        id: s.id,
+-        hunger: s.hunger,
+-        thirst: s.thirst,
+-        buildingId: s.buildingId,
+-      })),
+-      buildings: state.buildings.map((b) => ({
+-        id: b.id,
+-        defId: b.defId,
+-        x: b.x,
+-        z: b.z,
+-        hp: Math.round(b.hp),
+-        workers: [...b.workers],
+-        autoAssign: b.autoAssign,
+-        extracted: b.extracted,
+-        efficiency: b.efficiency,
+-        enabled: b.enabled !== false,
+-        repairing: b.repairing === true,
+-        priority: b.priority ?? 1,
+-        level: b.level ?? 1,
+-      })),
+-      changedTiles: changedTiles.map((t) => ({ ...t })),
+-      researchPoints: state.researchPoints,
+-      researched: [...state.researched],
+-      kills: state.kills,
+-      reputation: state.reputation ?? 0,
+-    };
+-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+-  } catch {
+-    // Storage unavailable: keep playing without saves.
+-  }
++    const data = migrateSave(createSaveData(state, seed, changedTiles));
++    return writeSave(SAVE_KEY, JSON.stringify(data), 'autosave/migration');
++  } catch (error) { return fail(error); }
+ }
+ 
+ // Rebuilds grid + state from a v4 save. Throws on inconsistent data; the
+diff --git a/src/style.css b/src/style.css
+index 758de84..65d6b00 100644
+--- a/src/style.css
++++ b/src/style.css
+@@ -30,3 +30,16 @@ body {
+   pointer-events: none;
+   z-index: 10;
+ }
++
++/* Save controls live above the canvas and remain available after a load error. */
++.save-launch { position: fixed; right: 12px; bottom: 40px; z-index: 110; pointer-events: auto; }
++.save-warning { position: fixed; left: 10%; right: 10%; top: 100px; z-index: 120; padding: 12px; background: #682c27; color: white; pointer-events: auto; }
++.save-dialog { color: #e5eaf0; background: #19232d; border: 1px solid #8294a8; border-radius: 8px; width: min(620px, 90vw); max-height: 80vh; overflow: auto; pointer-events: auto; }
++.save-dialog::backdrop { background: #0009; }
++.save-dialog button { margin: 5px; padding: 8px; cursor: pointer; }
++.save-dialog button:disabled { cursor: default; opacity: .5; }
++.save-slot { border-top: 1px solid #8294a8; padding: 10px 0; }
++.save-slot strong { display: block; }
++.save-dialog details button { display: block; }
++.save-backup { border-top: 1px solid #8294a8; padding: 6px 0; }
++.save-dialog .save-backup button { display: inline-block; }
+diff --git a/src/ui/savepanel.js b/src/ui/savepanel.js
+new file mode 100644
+index 0000000..c8f02bf
+--- /dev/null
++++ b/src/ui/savepanel.js
+@@ -0,0 +1,145 @@
++// Save management UI. Slots store dawn checkpoints, never incomplete combat state.
++import {
++  SAVE_KEY, MAX_SAVE_BYTES, inspectSave, listSlots, saveSlot, loadSlot,
++  importSave, exportSave, listBackups, setBackupPinned, ROLLING_BACKUP_LIMIT,
++} from '../persistence.js';
++
++function el(tag, text) {
++  const node = document.createElement(tag);
++  if (text !== undefined) node.textContent = text;
++  return node;
++}
++
++/** Create accessible save controls; callbacks pause/resume play and reload after a load. */
++export function createSavePanel(root, { onOpen, onClose, onLoad }) {
++  const launch = el('button', 'Saves');
++  launch.className = 'save-launch';
++  const warning = el('div');
++  warning.className = 'save-warning';
++  warning.setAttribute('role', 'alert');
++  warning.hidden = true;
++  const dialog = el('dialog');
++  dialog.className = 'save-dialog';
++  dialog.setAttribute('aria-label', 'Save management');
++  root.append(launch, warning, dialog);
++  let status;
++
++  function notify(message) {
++    warning.textContent = message;
++    warning.hidden = false;
++    if (status) status.textContent = message;
++  }
++  function result(outcome, success) {
++    if (!outcome.ok) notify(`Save protected: ${outcome.error} Original data was retained. Export it before recovery.`);
++    else { status.textContent = success; refresh(); if (outcome.warning) notify(outcome.warning); }
++    return outcome.ok;
++  }
++  function button(parent, label, action, disabled = false) {
++    const node = el('button', label);
++    node.type = 'button';
++    node.disabled = disabled;
++    node.addEventListener('click', action);
++    parent.append(node);
++  }
++  function download(raw, name) {
++    const url = URL.createObjectURL(new Blob([raw], { type: 'application/json' }));
++    const a = el('a');
++    a.href = url;
++    a.download = name;
++    a.click();
++    setTimeout(() => URL.revokeObjectURL(url), 1000);
++  }
++  function exportKey(key, name) {
++    const out = exportSave(key);
++    if (out.ok) download(out.raw, name);
++    else notify(out.error);
++  }
++  const body = el('div');
++  function refresh() {
++    const backupsOpen = body.querySelector('details')?.open ?? false;
++    body.replaceChildren();
++    const active = inspectSave();
++    body.append(el('p', active.ok
++      ? (active.empty ? 'No autosave yet.' : `Autosave: Day ${active.data.payload.day}`)
++      : `Autosave protected: ${active.error}`));
++    button(body, 'Export autosave JSON', () => exportKey(SAVE_KEY, 'last-refuge-autosave.json'));
++    for (const [i, slot] of listSlots().entries()) {
++      const row = el('div');
++      row.className = 'save-slot';
++      row.append(el('strong', `Slot ${i + 1}: ${!slot.ok ? 'Protected / unreadable' : slot.empty ? 'Empty' : `Day ${slot.data.payload.day}`}`));
++      button(row, `Save slot ${i + 1}`, () => {
++        if (!slot.empty && !window.confirm(`Replace slot ${i + 1}? Its previous contents will be backed up.`)) return;
++        result(saveSlot(slot.key), 'Dawn checkpoint saved.');
++      });
++      button(row, `Load slot ${i + 1}`, () => {
++        if (!window.confirm('Load this dawn checkpoint? The current autosave will be backed up. Unsaved play since dawn is not retained.')) return;
++        if (result(loadSlot(slot.key), 'Loaded.')) onLoad();
++      }, !slot.ok || slot.empty);
++      button(row, `Export slot ${i + 1}`, () => exportKey(slot.key, `last-refuge-slot-${i + 1}.json`), slot.empty === true);
++      body.append(row);
++    }
++    const backups = listBackups();
++    const details = el('details');
++    details.open = backupsOpen;
++    details.append(el('summary', `Recovery backups (${backups.ok ? backups.entries.length : 'unavailable'})`));
++    if (!backups.ok) details.append(el('p', backups.error));
++    for (const entry of [...(backups.entries ?? [])].sort((a, b) => (b.sequence ?? 0) - (a.sequence ?? 0))) {
++      const row = el('div');
++      row.className = 'save-backup';
++      row.append(el('p', `${entry.pinned ? 'Permanent' : 'Rotating'} backup: ${entry.savedAt} (${entry.reason})`));
++      if (entry.error) row.append(el('p', entry.error));
++      button(row, 'Export backup JSON', () => download(entry.raw, 'last-refuge-backup.json'));
++      if (entry.mutable) {
++        button(row, entry.pinned ? 'Allow rotation' : 'Keep permanently', () => {
++          if (entry.pinned && !window.confirm('Allow this backup to be replaced by future saves? Export a copy first if it is important.')) return;
++          result(setBackupPinned(entry.backupKey, !entry.pinned),
++            entry.pinned ? 'Backup may now rotate.' : 'Backup kept permanently. Automatic rotation cannot replace it.');
++        });
++      }
++      details.append(row);
++    }
++    body.append(details);
++  }
++  dialog.append(el('h2', 'Save management'), el('p',
++    `Three manual slots preserve the latest dawn checkpoint. Loading restarts that day; current battles are not saved. Up to ${ROLLING_BACKUP_LIMIT} normal backups rotate. Permanent backups, existing archives, and migration/recovery originals are excluded. Browser storage is finite: export important backups off-browser.`));
++  status = el('p');
++  status.setAttribute('role', 'status');
++  dialog.append(status, body);
++  const label = el('label', 'Import JSON ');
++  const file = el('input');
++  file.type = 'file';
++  file.accept = '.json,application/json';
++  file.setAttribute('aria-label', 'Import save JSON');
++  label.append(file);
++  dialog.append(label);
++  const recoveryLabel = el('label', ' Recover a protected autosave by archiving it before this import');
++  const recovery = el('input');
++  recovery.type = 'checkbox';
++  recoveryLabel.prepend(recovery);
++  dialog.append(recoveryLabel);
++  file.addEventListener('change', async () => {
++    try {
++      const selected = file.files[0];
++      if (!selected) return;
++      if (selected.size > MAX_SAVE_BYTES) throw new Error('Save exceeds 2 MiB limit.');
++      const raw = await selected.text();
++      if (!window.confirm(recovery.checked
++        ? 'Recover using this import and reload? The protected original will be archived byte-for-byte before replacement. If backup fails, nothing will be replaced.'
++        : 'Import this checkpoint and reload? The existing autosave will be backed up. Unknown or damaged existing saves will remain protected.')) return;
++      if (result(importSave(raw, { recoverProtected: recovery.checked }), 'Imported.')) onLoad();
++    } catch (error) { notify(`Import failed: ${error.message}`); }
++    finally { file.value = ''; }
++  });
++  function close() { dialog.close(); }
++  button(dialog, 'Close saves', close);
++  dialog.addEventListener('close', () => { onClose(); launch.focus(); });
++  // Keep camera/building hotkeys out of the modal, including file input controls.
++  dialog.addEventListener('keydown', event => event.stopPropagation());
++  dialog.addEventListener('keyup', event => event.stopPropagation());
++  launch.addEventListener('click', () => {
++    onOpen();
++    refresh();
++    dialog.showModal();
++  });
++  return { notify };
++}
+diff --git a/tests/save-protection.test.js b/tests/save-protection.test.js
+new file mode 100644
+index 0000000..881d2c2
+--- /dev/null
++++ b/tests/save-protection.test.js
+@@ -0,0 +1,411 @@
++import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
++import {
++  SAVE_KEY, SLOT_KEYS, BACKUP_PREFIX, createSaveData, migrateSave, decodeSave,
++  inspectSave, readSave, restoreSave, saveGame, clearSave, saveSlot, loadSlot,
++  importSave, exportSave, listBackups, listSlots, MAX_SAVE_BYTES,
++  ROLLING_BACKUP_LIMIT, setBackupPinned,
++} from '../src/persistence.js';
++import { createGameState, addBuilding, addSurvivor } from '../src/sim/state.js';
++import * as mapgen from '../src/world/mapgen.js';
++import { getDef } from '../src/buildings/definitions.js';
++
++let values;
++let storage;
++function game() {
++  const state = createGameState();
++  addBuilding(state, 'hq', getDef('hq'), 30, 30);
++  addBuilding(state, 'warehouse', getDef('warehouse'), 20, 20);
++  const farm = addBuilding(state, 'farm', getDef('farm'), 15, 15);
++  const survivor = addSurvivor(state);
++  survivor.buildingId = farm.id;
++  farm.workers.push(survivor.id);
++  farm.level = 2;
++  farm.priority = 2;
++  farm.enabled = false;
++  farm.repairing = true;
++  state.resources.wood = 200;
++  state.researched = ['forestry'];
++  state.researchPoints = 12;
++  state.kills = 10;
++  state.reputation = 15;
++  state.day = 3;
++  return state;
++}
++const legacy = () => createSaveData(game(), 42, [{ x: 1, z: 2, toType: 'forest' }]);
++const rawLegacy = () => JSON.stringify(legacy());
++function backups() { return listBackups().entries; }
++
++beforeEach(() => {
++  values = new Map();
++  storage = {
++    get length() { return values.size; },
++    key: i => [...values.keys()][i] ?? null,
++    getItem: vi.fn(key => values.get(key) ?? null),
++    setItem: vi.fn((key, value) => values.set(key, String(value))),
++    removeItem: vi.fn(key => values.delete(key)),
++  };
++  vi.stubGlobal('localStorage', storage);
++});
++afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
++
++describe('v4 to v5 compatibility', () => {
++  it('migrates without mutating or losing legacy data', () => {
++    const data = legacy();
++    const original = structuredClone(data);
++    const migrated = migrateSave(data);
++    expect(data).toEqual(original);
++    expect(migrated).toMatchObject({ version: 5, format: 'last-refuge', checkpoint: 'dawn', payload: original });
++    const restored = restoreSave(decodeSave(JSON.stringify(migrated)).payload);
++    expect(restored.state.resources.wood).toBe(200);
++    expect(restored.state).toMatchObject({ day: 3, researched: ['forestry'], researchPoints: 12, kills: 10, reputation: 15 });
++    expect(restored.state.buildings[2]).toMatchObject({ level: 2, priority: 2, enabled: false, repairing: true, workers: [1] });
++    expect(restored.state.survivors[0].buildingId).toBe(3);
++    expect(restored.changedTiles).toEqual(original.changedTiles);
++  });
++  it('accepts legacy v4 fields added after v4 first shipped', () => {
++    const data = legacy();
++    for (const b of data.buildings) {
++      for (const key of ['enabled', 'repairing', 'level', 'priority']) delete b[key];
++    }
++    delete data.reputation;
++    const restored = restoreSave(migrateSave(data).payload);
++    expect(restored.state.buildings[0]).toMatchObject({ enabled: true, repairing: false, level: 1, priority: 1 });
++    expect(restored.state.reputation).toBe(0);
++  });
++  it('reads v4 without writing and backs up its exact bytes before first v5 write', () => {
++    const raw = '  ' + rawLegacy();
++    values.set(SAVE_KEY, raw);
++    expect(readSave()).toEqual(legacy());
++    expect(storage.setItem).not.toHaveBeenCalled();
++    expect(saveGame(game(), 42, []).ok).toBe(true);
++    expect(JSON.parse(values.get(SAVE_KEY)).version).toBe(5);
++    expect(backups()[0].raw).toBe(raw);
++  });
++  it('migration of v5 is idempotent', () => {
++    const v5 = migrateSave(legacy());
++    expect(migrateSave(v5)).toEqual(v5);
++  });
++});
++
++describe('validation and preservation', () => {
++  it.each([
++    ['malformed JSON', '{broken'],
++    ['future version', JSON.stringify({ version: 99 })],
++    ['missing Refuge', JSON.stringify({ ...legacy(), buildings: [] })],
++    ['unknown building', JSON.stringify({ ...legacy(), buildings: [{ defId: 'future', x: 1, z: 1 }] })],
++    ['invalid position', JSON.stringify({ ...legacy(), buildings: [{ defId: 'hq', x: -1, z: 1 }] })],
++    ['invalid field', JSON.stringify({ ...legacy(), day: '3' })],
++    ['unknown research', JSON.stringify({ ...legacy(), researched: ['future'] })],
++    ['bad envelope', JSON.stringify({ version: 5, payload: legacy() })],
++  ])('never overwrites or deletes %s', (_, raw) => {
++    values.set(SAVE_KEY, raw);
++    expect(inspectSave().ok).toBe(false);
++    expect(saveGame(game(), 42, []).ok).toBe(false);
++    expect(clearSave().ok).toBe(false);
++    expect(importSave(rawLegacy()).ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(raw);
++    expect(exportSave().raw).toBe(raw);
++    expect(storage.removeItem).not.toHaveBeenCalled();
++  });
++  it('rejects duplicate IDs, overlap, invalid workplace and changed tiles', () => {
++    const variants = [
++      d => { d.buildings[1].id = d.buildings[0].id; },
++      d => { d.buildings[1].x = 30; d.buildings[1].z = 30; },
++      d => { d.survivors[0].buildingId = 999; },
++      d => { d.changedTiles[0].toType = 'lava'; },
++      d => { d.resources.wood = Infinity; },
++      d => { d.buildings[0].hp = NaN; },
++    ];
++    for (const change of variants) {
++      const data = legacy(); change(data);
++      expect(() => migrateSave(data)).toThrow();
++    }
++  });
++  it('keeps saves untouched if storage cannot be read', () => {
++    storage.getItem.mockImplementation(() => { throw new Error('SecurityError'); });
++    expect(saveGame(game(), 42, []).ok).toBe(false);
++    expect(storage.setItem).not.toHaveBeenCalled();
++  });
++  it('does not overwrite if backup fails from quota', () => {
++    const raw = rawLegacy(); values.set(SAVE_KEY, raw);
++    storage.setItem.mockImplementation(() => { throw new Error('QuotaExceededError'); });
++    expect(saveGame(game(), 42, []).error).toContain('QuotaExceededError');
++    expect(values.get(SAVE_KEY)).toBe(raw);
++    expect(clearSave().ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(raw);
++  });
++  it('retains both original and backup if replacement fails after backup', () => {
++    const raw = rawLegacy(); values.set(SAVE_KEY, raw);
++    storage.setItem.mockImplementation((key, value) => {
++      if (key === SAVE_KEY) throw new Error('QuotaExceededError');
++      values.set(key, value);
++    });
++    expect(saveGame(game(), 42, []).ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(raw);
++    expect(backups()[0].raw).toBe(raw);
++  });
++  it('archives before explicit restart and does not touch slots or record', () => {
++    const raw = rawLegacy(); values.set(SAVE_KEY, raw);
++    values.set(SLOT_KEYS[0], raw); values.set('cbs-record', '9');
++    expect(clearSave().ok).toBe(true);
++    expect(values.has(SAVE_KEY)).toBe(false);
++    expect(values.get(SLOT_KEYS[0])).toBe(raw);
++    expect(values.get('cbs-record')).toBe('9');
++    expect(backups()[0].raw).toBe(raw);
++  });
++});
++
++describe('manual slots and JSON', () => {
++  it('stores three independent checkpoints, exports and loads them with backup', () => {
++    expect(listSlots()).toHaveLength(3);
++    for (const [i, key] of SLOT_KEYS.entries()) {
++      const state = game(); state.day = i + 1;
++      expect(saveGame(state, 42, []).ok).toBe(true);
++      expect(saveSlot(key).ok).toBe(true);
++    }
++    expect(listSlots().map(s => s.data.payload.day)).toEqual([1, 2, 3]);
++    expect(loadSlot(SLOT_KEYS[0]).ok).toBe(true);
++    expect(readSave().day).toBe(1);
++    expect(JSON.parse(exportSave(SLOT_KEYS[2]).raw).payload.day).toBe(3);
++    expect(backups().length).toBeGreaterThan(0);
++  });
++  it('preserves an unreadable manual slot and invalid imports', () => {
++    values.set(SAVE_KEY, rawLegacy()); values.set(SLOT_KEYS[0], '{broken');
++    expect(saveSlot(SLOT_KEYS[0]).ok).toBe(false);
++    expect(loadSlot(SLOT_KEYS[0]).ok).toBe(false);
++    expect(importSave('{broken').ok).toBe(false);
++    expect(values.get(SLOT_KEYS[0])).toBe('{broken');
++    expect(readSave().day).toBe(3);
++  });
++  it('round trips JSON from v4 and v5 and retains preceding snapshots', () => {
++    const raw = rawLegacy();
++    expect(importSave(raw).ok).toBe(true);
++    const v5 = exportSave().raw;
++    expect(importSave(v5).ok).toBe(true);
++    const state = game(); state.day++;
++    expect(saveGame(state, 42, []).ok).toBe(true);
++    const first = backups()[0];
++    expect(importSave(raw).ok).toBe(true);
++    expect(backups()).toContainEqual(first);
++    expect([...values.keys()].filter(k => k.startsWith(BACKUP_PREFIX))).toHaveLength(2);
++  });
++  it('rejects oversized imports without writing', () => {
++    expect(importSave(' '.repeat(MAX_SAVE_BYTES + 1)).ok).toBe(false);
++    expect(storage.setItem).not.toHaveBeenCalled();
++  });
++  it('requires explicit recovery to replace protected data and archives the raw original', () => {
++    const unknown = '{"version":99}'; values.set(SAVE_KEY, unknown);
++    expect(importSave(rawLegacy()).ok).toBe(false);
++    expect(importSave(rawLegacy(), { recoverProtected: true }).ok).toBe(true);
++    expect(backups()[0].raw).toBe(unknown);
++    expect(readSave().day).toBe(3);
++  });
++  it('does not recover protected data when archiving fails', () => {
++    values.set(SAVE_KEY, '{broken');
++    storage.setItem.mockImplementation(() => { throw new Error('QuotaExceededError'); });
++    expect(importSave(rawLegacy(), { recoverProtected: true }).ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe('{broken');
++  });
++  it('reports empty/invalid slots', () => {
++    expect(saveSlot('other').ok).toBe(false);
++    expect(loadSlot(SLOT_KEYS[0]).ok).toBe(false);
++    expect(saveSlot(SLOT_KEYS[0]).ok).toBe(false);
++  });
++});
++
++
++function quota(bytes) {
++  storage.setItem.mockImplementation((key, value) => {
++    const next = new Map(values);
++    next.set(key, String(value));
++    const used = [...next].reduce((sum, [k, v]) => sum + 2 * (k.length + v.length), 0);
++    if (used > bytes) throw new DOMException('QuotaExceededError', 'QuotaExceededError');
++    values.set(key, String(value));
++  });
++}
++function advance(day) {
++  const state = game(); state.day = day;
++  return saveGame(state, 42, []);
++}
++function rolling() { return backups().filter(entry => !entry.pinned); }
++function oldArchive(id, raw = rawLegacy()) {
++  const key = BACKUP_PREFIX + id;
++  const value = JSON.stringify({ key: SAVE_KEY, raw, reason: 'legacy archive', savedAt: '2026-11-17T00:00:00Z' });
++  values.set(key, value);
++  return { key, value };
++}
++
++describe('bounded rotation and permanent retention', () => {
++  it('runs 200 dawns within a finite quota and retains exactly the three latest checkpoints', () => {
++    quota(16 * 1024);
++    for (let day = 1; day <= 200; day++) expect(advance(day).ok).toBe(true);
++    expect(readSave().day).toBe(200);
++    expect(rolling()).toHaveLength(ROLLING_BACKUP_LIMIT);
++    expect(rolling().map(entry => decodeSave(entry.raw).payload.day).sort((a, b) => a - b)).toEqual([197, 198, 199]);
++    expect(values.size).toBe(4);
++  }, 20000);
++  it('does not create a backup or rewrite an unchanged v5 checkpoint on repeated reloads', () => {
++    expect(advance(3).ok).toBe(true);
++    const raw = values.get(SAVE_KEY);
++    storage.setItem.mockClear();
++    for (let i = 0; i < 10; i++) expect(advance(3).ok).toBe(true);
++    expect(values.get(SAVE_KEY)).toBe(raw);
++    expect(backups()).toHaveLength(0);
++    expect(storage.setItem).not.toHaveBeenCalled();
++  });
++  it('retains a pinned backup byte-for-byte across later rotation', () => {
++    for (let day = 1; day <= 4; day++) expect(advance(day).ok).toBe(true);
++    const oldest = rolling().sort((a, b) => a.sequence - b.sequence)[0];
++    expect(setBackupPinned(oldest.backupKey, true).ok).toBe(true);
++    const pinned = values.get(oldest.backupKey);
++    for (let day = 5; day <= 50; day++) expect(advance(day).ok).toBe(true);
++    expect(values.get(oldest.backupKey)).toBe(pinned);
++    expect(backups().find(entry => entry.backupKey === oldest.backupKey).pinned).toBe(true);
++    expect(rolling()).toHaveLength(3);
++  });
++  it('keeps legacy, corrupt and future-format archives without hiding healthy backups', () => {
++    const legacyArchive = oldArchive('legacy');
++    const corruptKey = BACKUP_PREFIX + 'corrupt'; values.set(corruptKey, '{broken');
++    const futureKey = BACKUP_PREFIX + 'future';
++    const future = JSON.stringify({ format: 'last-refuge-backup', version: 99, key: SAVE_KEY,
++      raw: rawLegacy(), reason: 'future', savedAt: '2026-11-17T00:00:00Z', pinned: false });
++    values.set(futureKey, future);
++    for (let day = 1; day <= 12; day++) expect(advance(day).ok).toBe(true);
++    expect(values.get(legacyArchive.key)).toBe(legacyArchive.value);
++    expect(values.get(corruptKey)).toBe('{broken');
++    expect(values.get(futureKey)).toBe(future);
++    expect(listBackups().ok).toBe(true);
++    expect(backups().filter(entry => entry.pinned)).toHaveLength(3);
++    expect(rolling()).toHaveLength(3);
++  });
++  it('permanently retains the original v4 migration and unknown recovery originals', () => {
++    const v4 = '  ' + rawLegacy(); values.set(SAVE_KEY, v4);
++    expect(advance(3).ok).toBe(true);
++    const unknown = '{"version":99}'; values.set(SAVE_KEY, unknown);
++    expect(importSave(rawLegacy(), { recoverProtected: true }).ok).toBe(true);
++    for (let day = 4; day <= 12; day++) expect(advance(day).ok).toBe(true);
++    for (const raw of [v4, unknown]) expect(backups().some(entry => entry.pinned && entry.raw === raw)).toBe(true);
++  });
++  it('only makes a legacy backup rotatable after an explicit unpin', () => {
++    const archive = oldArchive('legacy');
++    expect(backups()[0].pinned).toBe(true);
++    expect(setBackupPinned(archive.key, false).ok).toBe(true);
++    expect(backups()[0].pinned).toBe(false);
++    for (let day = 1; day <= 10; day++) expect(advance(day).ok).toBe(true);
++    expect(backups().some(entry => entry.raw === rawLegacy())).toBe(false);
++    expect(rolling()).toHaveLength(3);
++  });
++  it('cleans excess explicitly unpinned legacy archives only after a successful primary write', () => {
++    const archives = Array.from({ length: 6 }, (_, i) => {
++      const data = legacy(); data.day = i + 10;
++      const archive = oldArchive('legacy-' + i, JSON.stringify(data));
++      expect(setBackupPinned(archive.key, false).ok).toBe(true);
++      return archive;
++    });
++    expect(rolling()).toHaveLength(6);
++    expect(advance(1).ok).toBe(true);
++    expect(rolling()).toHaveLength(3);
++    expect(archives.filter(archive => values.has(archive.key))).toHaveLength(3);
++  });
++  it('does not silently claim success when a pin update fails', () => {
++    const archive = oldArchive('legacy');
++    storage.setItem.mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError'); });
++    const result = setBackupPinned(archive.key, false);
++    expect(result.ok).toBe(false);
++    expect(result.error).toContain('Storage full');
++    expect(values.get(archive.key)).toBe(archive.value);
++    expect(backups()[0].pinned).toBe(true);
++  });
++  it('cannot make malformed or unknown-version save archives eligible for rotation', () => {
++    const archive = oldArchive('unknown', '{"version":99}');
++    expect(setBackupPinned(archive.key, false).ok).toBe(false);
++    expect(values.get(archive.key)).toBe(archive.value);
++    expect(backups()[0].pinned).toBe(true);
++  });
++  it('preserves the active save and every pin when storage is completely full', () => {
++    for (let day = 1; day <= 4; day++) expect(advance(day).ok).toBe(true);
++    const first = rolling()[0]; expect(setBackupPinned(first.backupKey, true).ok).toBe(true);
++    const original = new Map(values);
++    quota(1);
++    const result = advance(5);
++    expect(result.ok).toBe(false);
++    expect(result.error).toContain('Storage full');
++    expect(values).toEqual(original);
++    expect(clearSave().ok).toBe(false);
++    expect(values).toEqual(original);
++  });
++  it('protects the active save and pins if replacement fails after rotating an old archive', () => {
++    for (let day = 1; day <= 5; day++) expect(advance(day).ok).toBe(true);
++    expect(setBackupPinned(rolling()[0].backupKey, true).ok).toBe(true);
++    expect(advance(6).ok).toBe(true);
++    const active = values.get(SAVE_KEY);
++    const pinned = backups().find(entry => entry.pinned);
++    const pinnedBytes = values.get(pinned.backupKey);
++    storage.setItem.mockImplementation((key, value) => {
++      if (key === SAVE_KEY) throw new DOMException('full', 'QuotaExceededError');
++      values.set(key, String(value));
++    });
++    expect(advance(7).ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(active);
++    expect(values.get(pinned.backupKey)).toBe(pinnedBytes);
++    expect(backups().some(entry => entry.raw === active)).toBe(true);
++    expect(rolling()).toHaveLength(3);
++  });
++  it('reports a failed permanent pin without changing its prior retention state', () => {
++    expect(advance(1).ok).toBe(true);
++    expect(advance(2).ok).toBe(true);
++    const entry = rolling()[0];
++    const original = values.get(entry.backupKey);
++    storage.setItem.mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError'); });
++    expect(setBackupPinned(entry.backupKey, true)).toMatchObject({ ok: false });
++    expect(values.get(entry.backupKey)).toBe(original);
++    expect(rolling()[0].pinned).toBe(false);
++  });
++  it('reports cleanup failure separately from a successful save and never touches pins', () => {
++    const permanent = oldArchive('important');
++    for (let i = 0; i < 5; i++) {
++      const data = legacy(); data.day = i + 10;
++      const archive = oldArchive('excess-' + i, JSON.stringify(data));
++      expect(setBackupPinned(archive.key, false).ok).toBe(true);
++    }
++    storage.removeItem.mockImplementation(() => { throw new Error('cleanup unavailable'); });
++    const result = advance(1);
++    expect(result.ok).toBe(true);
++    expect(result.warning).toContain('cleanup unavailable');
++    expect(readSave().day).toBe(1);
++    expect(values.get(permanent.key)).toBe(permanent.value);
++    expect(rolling()).toHaveLength(5);
++  });
++  it('refuses rotation when a selected archive was pinned after the backup scan', () => {
++    for (let day = 1; day <= 4; day++) expect(advance(day).ok).toBe(true);
++    const selected = rolling().sort((a, b) => a.sequence - b.sequence)[0];
++    const pinned = JSON.stringify({ ...JSON.parse(selected.stored), pinned: true });
++    const original = values.get(SAVE_KEY);
++    let reads = 0;
++    storage.getItem.mockImplementation(key => {
++      if (key === selected.backupKey && ++reads === 2) values.set(key, pinned);
++      return values.get(key) ?? null;
++    });
++    expect(advance(5).ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(original);
++    expect(values.get(selected.backupKey)).toBe(pinned);
++  });
++  it('preserves raw v4 data when actual map reconstruction fails', () => {
++    const raw = rawLegacy(); values.set(SAVE_KEY, raw);
++    vi.spyOn(mapgen, 'generateMap').mockImplementation(() => { throw new Error('Map reconstruction failed'); });
++    expect(inspectSave().error).toContain('Map reconstruction failed');
++    expect(importSave(raw).ok).toBe(false);
++    expect(advance(4).ok).toBe(false);
++    expect(clearSave().ok).toBe(false);
++    expect(values.get(SAVE_KEY)).toBe(raw);
++    expect(storage.setItem).not.toHaveBeenCalled();
++    expect(exportSave().raw).toBe(raw);
++  });
++  it('rejects mixed legacy building IDs rather than creating duplicate IDs during restoration', () => {
++    const data = legacy(); delete data.buildings[0].id;
++    values.set(SAVE_KEY, JSON.stringify(data));
++    expect(inspectSave().ok).toBe(false);
++    expect(advance(4).ok).toBe(false);
++    expect(JSON.parse(values.get(SAVE_KEY))).toEqual(data);
++  });
++});

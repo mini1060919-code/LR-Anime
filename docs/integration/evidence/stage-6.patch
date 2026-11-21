@@ -1,0 +1,1012 @@
+diff --git a/docs/M5B-CHANGED-FILES.md b/docs/M5B-CHANGED-FILES.md
+new file mode 100644
+index 0000000..69c7d11
+--- /dev/null
++++ b/docs/M5B-CHANGED-FILES.md
+@@ -0,0 +1,35 @@
++# M5-B 修改檔案
++
++相對於 M5-A 基準 `002529e`；沒有修改既有美術、Three.js 渲染、建築定義、戰鬥模組或套件依賴。
++
++- `docs/M5B-CHANGED-FILES.md`
++- `docs/M5B-IMPLEMENTATION.md`
++- `docs/M5B-PR.md`
++- `docs/M5B-SAVE-COMPATIBILITY.md`
++- `docs/M5B-TEST-RESULTS.md`
++- `docs/screenshots/m5b-rest-1000.png`
++- `docs/screenshots/m5b-rest-390.png`
++- `docs/screenshots/m5b-work-1000.png`
++- `docs/screenshots/m5b-work-390.png`
++- `e2e/m4-progression.spec.js`
++- `e2e/m5a-survival-needs.spec.js`
++- `e2e/m5b-survivor-autonomy.spec.js`
++- `src/autonomy/control.js`
++- `src/autonomy/rules.js`
++- `src/autonomy/scheduler.js`
++- `src/autonomy/schema.js`
++- `src/characters/state.js`
++- `src/main.js`
++- `src/persistence.js`
++- `src/progression/assignments.js`
++- `src/sim/state.js`
++- `src/sim/survivors.js`
++- `src/ui/anime-theme.css`
++- `src/ui/autonomypanel.js`
++- `src/ui/characterpanel.js`
++- `src/ui/i18n/zh-TW.js`
++- `src/ui/inspector.js`
++- `src/ui/laborpanel.js`
++- `tests/autonomy.test.js`
++- `tests/progression.test.js`
++- `tests/survival-needs.test.js`
+diff --git a/docs/M5B-IMPLEMENTATION.md b/docs/M5B-IMPLEMENTATION.md
+new file mode 100644
+index 0000000..b70bccc
+--- /dev/null
++++ b/docs/M5B-IMPLEMENTATION.md
+@@ -0,0 +1,40 @@
++# M5-B 居民自主休息與工作優先級
++
++基準：M5-A `002529e38d072f39f9af137b14de5206fee5d672`，分支 `feature/m5b-survivor-autonomy`。本分支供 M5-A 分支驗收，不合併任何前置 PR、不部署。
++
++## 行為規格
++
++排程沿用主迴圈每 2 遊戲秒執行一次的 `assignJobs`；沒有新增瀏覽器計時器或離線補算。冷卻以 M5-A 的 `survival.elapsedSeconds` 計時，暫停、讀檔與遊戲日切換不會重設。
++
++- 所有居民（含手動指定者）疲勞達 85 時進入休息、釋放實際工作槽。
++- 疲勞降至 35 以下且至少休息 10 遊戲秒後，才可返工。重複排程不會延長休息截止時間。85/35 遲滯避免頻繁切換。
++- 健康低於 50 者的新派工順位較低；沒有強制住院、疾病或額外死亡規則。必要工作仍可由健康較低者承擔。
++- 手動命令保存「指定建築」或「手動待命」意向。休息不刪除指定建築。恢復後先返原指定建築，必要時釋放一位自主工作者；絕不搶另一位手動居民的工作槽。滿員皆為手動者時繼續等待。
++- 手動待命不會被自動派工；玩家可在角色面板選擇恢復自主。建築的 Auto 命令會解除該建築目前及等待中的手動意向；不影響其他建築。
++- 關閉建築釋放實際工作槽，保留手動目標待重新開啟；拆除則解除其目標，避免懸空參照。關閉中的建築可以預先設定 Auto，但不會派工。
++- 現有有效工作不因小幅分數變化重新洗牌。只處理休息、無效工作及空缺。
++
++## 派工排序（確定性）
++
++可自動派工的建築須啟用、HP > 0、有工作容量且 Auto 開啟。排序依序為：
++
++1. 玩家建築優先級（高至低）。
++2. 基地需求：食物 < 30／飲水 < 20 時急迫度 3；能源 < 5／燃料 < 5 時急迫度 2。
++3. 原版類別：食物、飲水、採集、研究、其他。
++4. 建築 ID。
++
++候選居民依序比較：健康至少 50 優先、職業對應技能 +20 與技能等級 ×5 的分數、較低疲勞、居民 ID。技能映射沿用 M4；分數只用於派工，不直接生產資源或授予經驗。自主工作者讓位時依相同比較取較低順位者。
++
++## 邊界與 UI
++
++排程重建居民與建築的雙向工作參照，檢查存活、容量及去重。手動命令經核心驗證；UI 不直接寫 workers。舊版 +/- 工作控制仍可使用；UI 的可派工人數另行排除休息者，原版 `idleCount` 不改動。
++
++角色面板保留肖像、技能、經驗及疲勞／健康／士氣，新增自主／手動／休息狀態、保留工作目標及切換控制，支援繁中／英文。
++
++休息是退出日常工作，不是免除戰鬥：原版 HQ 待命居民防衛保持，戰鬥仍可造成疲勞。Three.js 地圖、攝影機、夜襲、傷亡、原有建築與經濟公式均未重寫。居民休息會減少實際在崗時間，因此總產量會下降；沒有新增無上限產量加成。防衛建築也適用相同休息規則，夜間可能暫時缺員；本階段沒有緊急作戰豁免，需人工觀察防線配置。
++
++## 限制與回復
++
++這是有限排程器，沒有路徑、社交、疾病、複雜情緒或自動治療 AI。低健康不會替玩家規劃治療。優先級變更影響後續空缺，不會立刻撤換正常工作者。依居民數排序，尚未對極大人口專門效能最佳化。
++
++回復請切回 M5-A 基準；先匯出 M5-B 完整 JSON，並保留升級前永久備份。M5-A 不認得 autonomy-v1，會拒絕新版存檔；不能直接降版讀取而保留自主意向。詳見存檔報告。
+diff --git a/docs/M5B-PR.md b/docs/M5B-PR.md
+new file mode 100644
+index 0000000..02a824f
+--- /dev/null
++++ b/docs/M5B-PR.md
+@@ -0,0 +1,20 @@
++居民現在會在疲勞達 85 時退出工作休息，恢復至 35 且至少休息 10 遊戲秒後返工。保留玩家手動指定的建築與待命意向；手動返工優先於自主空缺分配，同時驗證建築容量、存活及單一工作歸屬。
++
++目標分支：`feature/m5a-survival-needs`；基準 `002529e38d072f39f9af137b14de5206fee5d672`。依賴 M1／M2／M3／M4／M5-A；本 PR 不包含合併或正式部署操作。
++
++自主空缺依建築優先級、資源急迫度、職業、技能及健康排序；有效現職保持穩定。角色面板新增繁中／英文自主狀態與控制，保留原立繪、技能及需求面板。Three.js 地圖、攝影機、經濟公式及夜襲傷亡規則保持。
++
++v6 增加獨立 `autonomy-v1` 元件，保留 v4／v5／v6 安全遷移、原始備份、手動槽及 JSON 往返。未知或損壞資料拒讀，不以預設值掩蓋新版損壞欄位。
++
++驗證：701 項單元測試、正式建置與 16 項完整 Chromium 瀏覽器回歸全部通過；含 30,000 遊戲秒長期經濟／需求模擬、跨版存檔及實際 localStorage 空間不足保護。建置仍有既有主 chunk 超過 500 KiB 的警告。
++
++驗證結果與畫面：
++
++- [實作與排序規格](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/M5B-IMPLEMENTATION.md)
++- [存檔相容性及回復流程](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/M5B-SAVE-COMPATIBILITY.md)
++- [測試結果](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/M5B-TEST-RESULTS.md)
++- [修改檔案](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/M5B-CHANGED-FILES.md)
++- [桌面休息畫面](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/screenshots/m5b-rest-1000.png)
++- [手機返工畫面](https://github.com/mini1060919-code/LR-Anime/blob/feature/m5b-survivor-autonomy/docs/screenshots/m5b-work-390.png)
++
++休息會降低實際在崗時間，需後續遊玩觀察產量與防衛建築缺員情況；低健康只降低派工順位，不自動治療。原版 HQ 待命防衛保持，因此休息中的居民仍可能因防衛產生疲勞。舊檔無法推導以前的手動待命意向，會預設自主。回復 M5-A 前請保留新版完整 JSON，再使用升級前受保護來源恢復；M5-A 會拒讀 autonomy-v1。
+diff --git a/docs/M5B-SAVE-COMPATIBILITY.md b/docs/M5B-SAVE-COMPATIBILITY.md
+new file mode 100644
+index 0000000..0c58353
+--- /dev/null
++++ b/docs/M5B-SAVE-COMPATIBILITY.md
+@@ -0,0 +1,54 @@
++# M5-B 存檔相容性報告
++
++## 格式
++
++保留 v6 外層、角色 schemaVersion 1、runId、UID、高水位 ID、職業、能力、經驗、needs 與素材參照。新增獨立版本元件，不更換外層存檔版本：
++
++```json
++{
++  "requiredFeatures": ["characters-v1", "progression-v1", "survival-needs-v1", "autonomy-v1"],
++  "characters": {
++    "autonomy": { "schemaVersion": 1 },
++    "records": {
++      "1": {
++        "autonomy": {
++          "mode": "manual",
++          "targetBuildingId": 2,
++          "resting": true,
++          "reason": "fatigue",
++          "cooldownUntil": 110
++        }
++      }
++    }
++  }
++}
++```
++
++上例為結構節錄。requiredFeatures 按上述固定順序保留全部既有標記並追加 autonomy-v1；其餘角色及核心欄位均須保留，不可用節錄替代完整存檔。
++
++- mode：auto／manual；auto 的 targetBuildingId 必須為 null。
++- 手動目標為 null 表示玩家指定待命，否則必須指向有工作容量的現存建築。
++- resting 必須為布林；休息者實際 buildingId 必須為 null、reason 為 fatigue；非休息者 reason 必須為 null。
++- cooldownUntil 為有限非負遊戲秒數，不能超過 survival.elapsedSeconds + 10（含浮點容差）。讀檔保留原截止時間。
++- 手動實際工作必須與保留目標一致。精確欄位、元件版本及功能旗標一致性均驗證；已標記新版的損壞欄位不會被安全預設值掩蓋。
++
++## 舊版遷移
++
++| 輸入 | 行為 |
++| --- | --- |
++| v4／v5 | 沿用既有身分、成長、需求遷移，再加自主元件 |
++| M3／M4／M5-A v6 | 保留既有資料，僅補缺少的已知元件 |
++| M5-B v6 | 驗證後原樣恢復自主意向、休息與時鐘 |
++| 未知外層／元件版本、旗標不符、損壞資料 | 拒絕載入；不自動覆寫原資料 |
++
++缺自主資料時，若居民正在 autoAssign=false 的建築工作，推導為手動並記錄原建築；其他居民預設 auto／未休息／截止時間 0。舊檔沒有保存「玩家手動待命」意向，無法可靠推導，故預設自主。疲勞過高者於第一次排程進入休息。
++
++升級前來源沿用 M1 永久備份規則；即使升級後內容與目前原生存檔相同，仍保護舊來源。手動槽與 JSON 匯入匯出共用驗證、遷移及備份路徑。既有輪替備份、重要備份、空間不足時拒寫並保留原檔的行為保持。新功能未新增每幀或每次派工存檔，仍採原本黎明快照。
++
++## 驗證與限制
++
++單元測試涵蓋跨版遷移、舊來源保護、手動槽／JSON 往返、冷卻續接、死亡不復活與 ID 不重用，以及錯誤模式／目標／截止時間／版本／旗標等拒讀情況。既有全部存檔保護測試保留。
++
++欄位增加會使存檔略增；原有大小及 localStorage 容量限制仍有效。多分頁同時操作的原有限制不在本階段擴充。
++
++回復流程：先匯出目前 M5-B JSON，再切回 M5-A `002529e38d072f39f9af137b14de5206fee5d672`，以升級前受保護備份恢復。M5-A 會安全拒讀 autonomy-v1，不能用移除旗標的方法強迫讀取。舊 v4 相容副本無法完整保留角色身分、經驗、需求或自主意向，不可取代完整新版備份。
+diff --git a/docs/M5B-TEST-RESULTS.md b/docs/M5B-TEST-RESULTS.md
+new file mode 100644
+index 0000000..016d080
+--- /dev/null
++++ b/docs/M5B-TEST-RESULTS.md
+@@ -0,0 +1,55 @@
++# M5-B 自動測試報告
++
++## 環境與基準
++
++- M5-A 基準：`002529e38d072f39f9af137b14de5206fee5d672`
++- Node.js v24.22.1、npm 11.9.0；沿用鎖檔，沒有新增相依套件。
++- Chromium／SwiftShader；本雲端以外部 Playwright 設定指定 `/usr/bin/chromium`、單 worker、deviceScaleFactor 0.5。未修改專案預設瀏覽器設定。
++
++## 單元與建置
++
++`npm test`：30 個測試檔、701 項全部通過（原有 657 + M5-B 44）。
++
++`npm run build`：成功；32 張來源 RGBA PNG、四人固定映射與 20 表情、28 張可用素材與 18 預留槽驗證通過。既有單一主 chunk 超過 500 KiB 的建置警告仍存在；不是建置失敗。
++
++新增覆蓋：85/35 疲勞遲滯及 10 秒最低休息、讀檔冷卻續接、手動目標保留及優先返工、不可驅離手動工作者、手動待命、Auto 控制、關閉建築預設 Auto、可工作人數與 HQ 待命人數分離、健康順位、職業／技能／建築優先級、容量／重複／懸空參照、死亡及拆除目標清理、確定性、無額外 XP 或資源、跨版原始來源備份、槽位與 JSON 往返、14 類損壞／未知資料保護。
++
++長期模型測試以 8 人基地運行 30,000 遊戲秒（200 個 150 秒日夜週期等值），使用實際經濟、飢渴與需求計算，每 2 秒自主派工；觀察多次真實休息／返工、容量去重、資源有限且在上限內、無飢渴死亡。此測試不模擬 200 次夜襲；原夜襲由既有單元與瀏覽器日夜回歸驗證。
++
++既有 M4／M5-A 測試快照更新為四個功能標記；舊版 fixture 則移除相應新元件，確保測到真實舊版輸入。原有需求效率測試改用疲勞 84（避免觸發新增的 85 強制休息），仍以健康／士氣為 0 驗證 40% 效率下限，未關閉自主功能來繞過測試。
++
++## 瀏覽器回歸
++
++完整回歸 **16／16 項全部通過**（47.2 分鐘），沒有失敗或重試：
++
++| 案例組 | 數量 | 結果 |
++| --- | ---: | --- |
++| M2 繁中、語言切換、手機面板 | 2 | 通過 |
++| M3 四人立繪、五表情、缺圖回退 | 2 | 通過 |
++| M3 身分、招募高水位、v5 與素材錯誤回退 | 2 | 通過 |
++| M4 技能、實際工作成長、黎明存讀 | 2 | 通過 |
++| M5-A 疲勞／健康／士氣與成長保存 | 2 | 通過 |
++| M5-B 休息、手動優先返工、自主控制 | 2 | 通過 |
++| M1 v4、槽位、JSON、損壞與真實容量不足 | 2 | 通過 |
++| 原版啟動、建築選單、自然日夜與自動存讀 | 2 | 通過 |
++
++執行命令：
++
++```sh
++npm test
++npm run build
++E2E_SLOW_WEBGL=1 ./node_modules/.bin/playwright test --config /workspace/.cloud-setup/LR-Anime/playwright.config.mjs
++```
++
++專案標準命令仍為 `npm run test:e2e`；上述外部設定僅用於本雲端的系統 Chromium 與軟體 WebGL。已恢復既有 M3／M4／M5-A 回歸產生的歷史截圖，只提交新的 M5-B 畫面。
++
++M5-B 桌面 1000px 與手機 390px 兩案例：實際高疲勞進入休息、手動指定保留但不強迫疲勞者上工、匯入有效休息中快照後由真實需求模擬恢復、優先返工並讓自主者讓位、容量唯一性、黎明保存及重載 UID／工作意向、恢復自主與手動待命、英文切換。該測試加速設定夜晚結束以檢查黎明存讀，原版 smoke 另驗證自然日夜。
++
++截圖由測試產生，viewport 高 900；因雲端 deviceScaleFactor 0.5，PNG 為 CSS 尺寸的一半：
++
++- [桌面休息](screenshots/m5b-rest-1000.png)
++- [桌面返工](screenshots/m5b-work-1000.png)
++- [手機休息](screenshots/m5b-rest-390.png)
++- [手機返工](screenshots/m5b-work-390.png)
++
++手機角色面板使用原有可捲動內容；截圖捲至自主狀態，立繪在上方且未移除。桌面可同時看到立繪與工作狀態。
+diff --git a/docs/screenshots/m5b-rest-1000.png b/docs/screenshots/m5b-rest-1000.png
+new file mode 100644
+index 0000000..c49130e
+Binary files /dev/null and b/docs/screenshots/m5b-rest-1000.png differ
+diff --git a/docs/screenshots/m5b-rest-390.png b/docs/screenshots/m5b-rest-390.png
+new file mode 100644
+index 0000000..c85af6e
+Binary files /dev/null and b/docs/screenshots/m5b-rest-390.png differ
+diff --git a/docs/screenshots/m5b-work-1000.png b/docs/screenshots/m5b-work-1000.png
+new file mode 100644
+index 0000000..2515018
+Binary files /dev/null and b/docs/screenshots/m5b-work-1000.png differ
+diff --git a/docs/screenshots/m5b-work-390.png b/docs/screenshots/m5b-work-390.png
+new file mode 100644
+index 0000000..e70f6ca
+Binary files /dev/null and b/docs/screenshots/m5b-work-390.png differ
+diff --git a/e2e/m4-progression.spec.js b/e2e/m4-progression.spec.js
+index 84cfe23..66704af 100644
+--- a/e2e/m4-progression.spec.js
++++ b/e2e/m4-progression.spec.js
+@@ -35,7 +35,7 @@ for(const width of [1000,390])test(`Traditional Chinese skills, validated assign
+  await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});
+  await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
+  const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
+- expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1','survival-needs-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
++ expect(dawn.requiredFeatures).toEqual(['characters-v1','progression-v1','survival-needs-v1','autonomy-v1']);expect(dawn.characters.records[farmer].experience.agriculture).toBeGreaterThanOrEqual(xp);
+  expect(dawn.core.survivors.find(s=>String(s.id)===farmer).buildingId).toBe(2);
+  await page.reload();await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
+  await page.getByRole('button',{name:'角色資訊',exact:true}).click();await page.locator(`[data-survivor-id="${farmer}"]`).click();
+diff --git a/e2e/m5a-survival-needs.spec.js b/e2e/m5a-survival-needs.spec.js
+index 59d88a1..625cccd 100644
+--- a/e2e/m5a-survival-needs.spec.js
++++ b/e2e/m5a-survival-needs.spec.js
+@@ -7,7 +7,7 @@ for(const width of [1000,390])test(`M5-A needs, real duty and rest, saved growth
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
+  let save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
+  if(width===1000){
+-  const old=structuredClone(save);old.requiredFeatures.pop();delete old.characters.survival;for(const r of Object.values(old.characters.records))delete r.needs;
++  const old=structuredClone(save);old.requiredFeatures=old.requiredFeatures.slice(0,2);delete old.characters.survival;delete old.characters.autonomy;for(const r of Object.values(old.characters.records)){delete r.needs;delete r.autonomy;}
+   await transfer(page,old);save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
+   expect(save.characters.records['1'].needs).toEqual({fatigue:0,health:100,morale:70});expect(save.characters.records['1'].uid).toBe(old.characters.records['1'].uid);
+   expect(save.characters.records['1'].experience).toEqual(old.characters.records['1'].experience);
+diff --git a/e2e/m5b-survivor-autonomy.spec.js b/e2e/m5b-survivor-autonomy.spec.js
+new file mode 100644
+index 0000000..590b5b6
+--- /dev/null
++++ b/e2e/m5b-survivor-autonomy.spec.js
+@@ -0,0 +1,42 @@
++import {test,expect} from '@playwright/test';
++const BASE='/city-builder-survival/';
++async function start(page){await page.getByRole('button',{name:'開始遊戲',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});}
++async function transfer(page,data){await page.getByRole('button',{name:'存檔',exact:true}).click();page.once('dialog',d=>d.accept());await page.getByLabel('匯入存檔 JSON',{exact:true}).setInputFiles({name:'autonomy.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(data))});await start(page);}
++for(const width of [1000,390])test(`M5-B rest, reserved manual priority and recovered work at ${width}px`,async({page})=>{
++ test.setTimeout(process.env.E2E_SLOW_WEBGL?600000:240000);await page.setViewportSize({width,height:900});const errors=[];page.on('pageerror',e=>errors.push(e.message));
++ await page.goto(`${BASE}?autostart=1&seed=42`);await expect(page.locator('.hud-day')).toHaveText('第 1 天',{timeout:30000});
++ const save=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));
++ save.core.buildings.push({id:2,defId:'farm',x:20,z:20,hp:180,workers:[1],autoAssign:true,extracted:0,efficiency:1,enabled:true,repairing:false,priority:1,level:1});save.core.survivors.find(s=>s.id===1).buildingId=2;
++ save.characters.records['1'].needs.fatigue=90;
++ for(const id of ['2','3','4'])save.characters.records[id].autonomy.mode='manual';
++ await transfer(page,save);
++ await expect.poll(()=>page.evaluate(()=>window.__game.state.characters.records['1'].autonomy.resting),{timeout:30000}).toBe(true);
++ expect(await page.evaluate(()=>window.__game.state.survivors.find(s=>s.id===1).buildingId)).toBeNull();
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();await expect(page.locator('.autonomy-status')).toHaveText('自主休息：疲勞偏高');
++ await expect(page.locator('.character-portrait')).toBeVisible();await expect(page.locator('.skill-row')).toHaveCount(6);await expect(page.locator('.needs-row')).toHaveCount(3);
++ await page.getByLabel('工作建築',{exact:true}).selectOption('2');await page.getByRole('button',{name:'指派居民',exact:true}).click();
++ await expect(page.locator('.resident-autonomy')).toContainText('已保留手動工作意向：建築 #2');expect(await page.evaluate(()=>window.__game.state.characters.records['1'].autonomy.mode)).toBe('manual');
++ expect(await page.evaluate(()=>window.__game.state.survivors.find(s=>s.id===1).buildingId)).toBeNull();
++ await page.locator('.resident-autonomy').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m5b-rest-${width}.png`});
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();
++ // A valid saved mid-rest fixture: subsequent recovery and priority displacement use real simulation.
++ const mid=structuredClone(save);mid.characters.survival.lastStep=1000;mid.characters.survival.elapsedSeconds=100;
++ mid.characters.records['1'].needs.fatigue=35.2;mid.characters.records['1'].autonomy={mode:'manual',targetBuildingId:2,resting:true,reason:'fatigue',cooldownUntil:10};mid.core.survivors.find(s=>s.id===1).buildingId=null;
++ for(const id of ['2','3']){mid.characters.records[id].autonomy={mode:'auto',targetBuildingId:null,resting:false,reason:null,cooldownUntil:0};mid.core.survivors.find(s=>String(s.id)===id).buildingId=2;}
++ mid.core.buildings.find(b=>b.id===2).workers=[2,3];
++ await transfer(page,mid);await page.keyboard.press('3');
++ await expect.poll(()=>page.evaluate(()=>window.__game.state.survivors.find(s=>s.id===1).buildingId),{timeout:60000}).toBe(2);
++ await page.getByRole('button',{name:'角色資訊',exact:true}).click();await expect(page.locator('.autonomy-status')).toHaveText('手動指定工作');
++ const state=await page.evaluate(()=>({a:window.__game.state.characters.records['1'].autonomy,workers:window.__game.state.buildings.find(b=>b.id===2).workers,owners:window.__game.state.buildings.filter(b=>b.workers.includes(1)).length}));
++ expect(state.a.resting).toBe(false);expect(state.a.targetBuildingId).toBe(2);expect(state.workers).toHaveLength(2);expect(state.workers).toContain(1);expect(state.owners).toBe(1);
++ await page.locator('.resident-autonomy').scrollIntoViewIfNeeded();await page.screenshot({path:`docs/screenshots/m5b-work-${width}.png`});
++ await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await page.evaluate(()=>{window.__game.state.phase='night';window.__game.state.timeInPhase=60;});await expect(page.locator('.hud-day')).toHaveText('第 2 天',{timeout:30000});
++ const dawn=await page.evaluate(()=>JSON.parse(localStorage.getItem('cbs-save')));expect(dawn.characters.records['1'].autonomy.mode).toBe('manual');expect(dawn.requiredFeatures.at(-1)).toBe('autonomy-v1');
++ await page.reload();await start(page);await page.getByRole('button',{name:'角色資訊',exact:true}).click();await expect(page.locator('.autonomy-status')).toHaveText('手動指定工作');expect(await page.evaluate(()=>window.__game.state.characters.records['1'].uid)).toBe(save.characters.records['1'].uid);
++ await page.getByRole('button',{name:'交回居民自主安排',exact:true}).click();await expect(page.locator('.autonomy-status')).toHaveText('自主工作中');
++ await page.getByLabel('工作建築',{exact:true}).selectOption('');await page.getByRole('button',{name:'指派居民',exact:true}).click();await expect(page.locator('.autonomy-status')).toHaveText('手動待命');
++ const before=await page.evaluate(()=>window.__game.state.characters.survival.elapsedSeconds);await page.getByRole('button',{name:'關閉檔案',exact:true}).click();await page.keyboard.press('3');
++ await expect.poll(()=>page.evaluate(()=>window.__game.state.characters.survival.elapsedSeconds),{timeout:30000}).toBeGreaterThan(before+3);expect(await page.evaluate(()=>window.__game.state.survivors.find(s=>s.id===1).buildingId)).toBeNull();
++ if(width===1000){page.once('dialog',d=>d.accept());await page.getByLabel('語言',{exact:true}).selectOption('en');await page.getByRole('button',{name:'Start game',exact:true}).click();await expect(page.locator('.hud-day')).toBeVisible({timeout:30000});await page.getByRole('button',{name:'Characters',exact:true}).click();await expect(page.locator('.resident-autonomy')).toHaveAttribute('aria-label','Resident autonomy');}
++ expect(errors).toEqual([]);
++});
+diff --git a/src/autonomy/control.js b/src/autonomy/control.js
+new file mode 100644
+index 0000000..f492b3a
+--- /dev/null
++++ b/src/autonomy/control.js
+@@ -0,0 +1,13 @@
++// Player intent is independent of building-level automatic management.
++import {updateRestState} from './rules.js';
++export function writeManualMode(state,id,manual){
++ const r=state.characters?.records?.[id],s=state.survivors.find(s=>s.id===id);if(!r?.autonomy||!s)return;
++ const a=r.autonomy;a.mode=manual?'manual':'auto';a.targetBuildingId=manual?s.buildingId:null;
++ updateRestState(a,r.needs,state.characters.survival.elapsedSeconds);
++ if(a.resting){for(const b of state.buildings)b.workers=b.workers.filter(worker=>worker!==id);s.buildingId=null;}
++}
++export function setResidentControl(state,id,mode){
++ if(!['auto','manual'].includes(mode)||!state.characters?.autonomy||!state.survivors.some(s=>s.id===id)||!state.characters.records[id]?.autonomy)return {ok:false,error:'Resident control is unavailable.'};
++ if(state.characters.records[id].autonomy.mode===mode)return {ok:true};
++ writeManualMode(state,id,mode==='manual');return {ok:true};
++}
+diff --git a/src/autonomy/rules.js b/src/autonomy/rules.js
+new file mode 100644
+index 0000000..880f037
+--- /dev/null
++++ b/src/autonomy/rules.js
+@@ -0,0 +1,23 @@
++import {buildingSkill,PROFESSION_SKILL} from '../progression/rules.js';
++export const AUTONOMY_FEATURE='autonomy-v1';
++export const REST_RULES=Object.freeze({fatigueEnter:85,fatigueExit:35,healthPriority:50,minimumRestSeconds:10});
++export function workCategory(def){if(def.produces?.food)return 0;if(def.produces?.water)return 1;if(def.extracts)return 2;if(def.researchRate>0)return 3;return 4;}
++export function urgency(state,def){
++ if(def.produces?.food&&(state.resources.food ?? 0)<30)return 3;
++ if(def.produces?.water&&(state.resources.water ?? 0)<20)return 3;
++ if(def.produces?.energy&&(state.resources.energy ?? 0)<5)return 2;
++ if(def.produces?.fuel&&(state.resources.fuel ?? 0)<5)return 2;
++ return 0;
++}
++export function compareBuildings(state,DEFS,a,b){return (b.priority ?? 1)-(a.priority ?? 1)||urgency(state,DEFS[b.defId])-urgency(state,DEFS[a.defId])||workCategory(DEFS[a.defId])-workCategory(DEFS[b.defId])||a.id-b.id;}
++export function compareResidents(state,building,def,a,b){
++ const ra=state.characters.records[a.id],rb=state.characters.records[b.id],skill=buildingSkill(building.defId,def);
++ const tier=r=>r.needs.health<REST_RULES.healthPriority?1:0;
++ const score=r=>(PROFESSION_SKILL[r.professionId]===skill?20:0)+(r.abilityRanks[skill] ?? 0)*5;
++ return tier(ra)-tier(rb)||score(rb)-score(ra)||ra.needs.fatigue-rb.needs.fatigue||a.id-b.id;
++}
++
++export function updateRestState(a,needs,now){
++ if(!a.resting&&needs.fatigue>=REST_RULES.fatigueEnter)Object.assign(a,{resting:true,reason:'fatigue',cooldownUntil:Math.round((now+REST_RULES.minimumRestSeconds)*1e6)/1e6});
++ else if(a.resting&&now>=a.cooldownUntil&&needs.fatigue<=REST_RULES.fatigueExit)Object.assign(a,{resting:false,reason:null,cooldownUntil:Math.round((now+REST_RULES.minimumRestSeconds)*1e6)/1e6});
++}
+diff --git a/src/autonomy/scheduler.js b/src/autonomy/scheduler.js
+new file mode 100644
+index 0000000..60c9098
+--- /dev/null
++++ b/src/autonomy/scheduler.js
+@@ -0,0 +1,32 @@
++// Bounded deterministic scheduler; no movement, social AI, deaths or economy writes.
++import {updateRestState,compareBuildings,compareResidents} from './rules.js';
++export function runAutonomy(state,DEFS){
++ if(!state.characters?.autonomy)return false;
++ const records=state.characters.records,now=state.characters.survival.elapsedSeconds;
++ const buildings=new Map(state.buildings.map(b=>[b.id,b]));
++ const valid=b=>b&&b.hp>0&&b.enabled!==false&&(DEFS[b.defId]?.jobs ?? 0)>0;
++ const original=new Map(state.buildings.map(b=>[b.id,new Set(b.workers)]));
++ // Rebuild reciprocal membership once, preserving manual orders first.
++ for(const b of state.buildings)b.workers=[];
++ const ordered=[...state.survivors].sort((a,b)=>Number(records[b.id]?.autonomy?.mode==='manual')-Number(records[a.id]?.autonomy?.mode==='manual')||a.id-b.id);
++ for(const s of ordered){const a=records[s.id]?.autonomy,b=buildings.get(s.buildingId);
++  if(!a){s.buildingId=null;continue;}
++  updateRestState(a,records[s.id].needs,now);
++  if(!a.resting&&valid(b)&&original.get(b.id).has(s.id)&&b.workers.length<DEFS[b.defId].jobs){b.workers.push(s.id);}else{s.buildingId=null;}
++ }
++ for(const b of state.buildings){const rank=new Map([...original.get(b.id)].map((id,i)=>[id,i]));b.workers.sort((a,c)=>rank.get(a)-rank.get(c));}
++ // Resume reserved manual jobs before offering vacancies to autonomous candidates.
++ for(const s of [...state.survivors].sort((a,b)=>a.id-b.id)){
++  const a=records[s.id]?.autonomy,b=buildings.get(a?.targetBuildingId);
++  if(a?.mode!=='manual'||a.resting||s.buildingId!==null||!valid(b))continue;
++  if(b.workers.length>=DEFS[b.defId].jobs){
++   const candidates=b.workers.map(id=>state.survivors.find(s=>s.id===id)).filter(s=>records[s.id]?.autonomy?.mode==='auto').sort((x,y)=>compareResidents(state,b,DEFS[b.defId],y,x));
++   const displaced=candidates[0];if(displaced){b.workers=b.workers.filter(id=>id!==displaced.id);displaced.buildingId=null;}
++  }
++  if(b.workers.length<DEFS[b.defId].jobs){s.buildingId=b.id;b.workers.push(s.id);}
++ }
++ const idle=state.survivors.filter(s=>s.buildingId===null&&records[s.id]?.autonomy?.mode==='auto'&&!records[s.id].autonomy.resting);
++ const open=state.buildings.filter(b=>valid(b)&&b.autoAssign!==false&&b.workers.length<DEFS[b.defId].jobs).sort((a,b)=>compareBuildings(state,DEFS,a,b));
++ for(const b of open){idle.sort((a,c)=>compareResidents(state,b,DEFS[b.defId],a,c));while(b.workers.length<DEFS[b.defId].jobs&&idle.length){const s=idle.shift();s.buildingId=b.id;b.workers.push(s.id);}}
++ return true;
++}
+diff --git a/src/autonomy/schema.js b/src/autonomy/schema.js
+new file mode 100644
+index 0000000..840c932
+--- /dev/null
++++ b/src/autonomy/schema.js
+@@ -0,0 +1,19 @@
++import {BUILDING_DEFS} from '../buildings/definitions.js';
++import {REST_RULES} from './rules.js';
++export function upgradeAutonomy(characters,core){
++ characters.autonomy ??= {schemaVersion:1};
++ for(const [id,record] of Object.entries(characters.records))if(!record.autonomy){
++  const resident=core.survivors.find(s=>String(s.id)===id),building=core.buildings.find(b=>b.id===resident?.buildingId);
++  record.autonomy={mode:building?.autoAssign===false?'manual':'auto',targetBuildingId:building?.autoAssign===false?building.id:null,resting:false,reason:null,cooldownUntil:0};
++ }
++ return characters;
++}
++export function validateAutonomy(characters,survivors,exactKeys,check,buildings=[]){
++ exactKeys(characters.autonomy,['schemaVersion'],'autonomy');check(characters.autonomy.schemaVersion===1,'Unsupported autonomy schema.');
++ for(const s of survivors){const a=characters.records[s.id].autonomy;exactKeys(a,['mode','targetBuildingId','resting','reason','cooldownUntil'],'resident autonomy');
++  check(['auto','manual'].includes(a.mode)&&typeof a.resting==='boolean'&&typeof a.cooldownUntil==='number'&&Number.isFinite(a.cooldownUntil)&&a.cooldownUntil>=0&&a.cooldownUntil<=characters.survival.elapsedSeconds+REST_RULES.minimumRestSeconds+1e-6,'Invalid autonomy state.');
++  check(a.resting?(a.reason==='fatigue'&&s.buildingId==null):a.reason===null,'Inconsistent resting state.');
++  check(a.mode==='auto'?a.targetBuildingId===null:(a.targetBuildingId===null||buildings.some(b=>b.id===a.targetBuildingId&&(BUILDING_DEFS[b.defId]?.jobs ?? 0)>0)), 'Invalid manual work target.');
++  check(a.mode!=='manual'||s.buildingId==null||s.buildingId===a.targetBuildingId,'Manual target does not match current work.');
++ }
++}
+diff --git a/src/characters/state.js b/src/characters/state.js
+index 1279bfb..1e89253 100644
+--- a/src/characters/state.js
++++ b/src/characters/state.js
+@@ -1,3 +1,4 @@
++import {upgradeAutonomy,validateAutonomy} from '../autonomy/schema.js';
+ import {upgradeNeeds,validateNeeds} from '../needs/schema.js';
+ // Identity and growth records; work effects live in independent progression modules.
+ import { ARCHETYPES, SKILLS, PROFESSIONS, PERSONALITIES } from './catalog.js';
+@@ -47,15 +48,17 @@ export function reconcileCharacters(state) {
+   rosterCache.set(state,{array:state.survivors,count:state.survivors.length,next:state.nextSurvivorId});
+   upgradeProgression(state.characters);
+   upgradeNeeds(state.characters);
++  upgradeAutonomy(state.characters,state);
+   return state.characters;
+ }
+-export function validateCharacters(run, characters, survivors) {
++export function validateCharacters(run, characters, survivors, buildings=[]) {
+   exactKeys(run,['id','nextSurvivorId'],'run');
+   check(validRunId(run.id),'Invalid run identity.');
+   check(Number.isSafeInteger(run.nextSurvivorId) && run.nextSurvivorId>Math.max(0,...survivors.map(s=>s.id)) && run.nextSurvivorId<=Number.MAX_SAFE_INTEGER,'Invalid survivor high-water mark.');
+   const growth=Object.hasOwn(characters,'progression');
+   const survival=Object.hasOwn(characters,'survival');
+-  exactKeys(characters,[...(survival?['survival']:[]),...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
++  const autonomy=Object.hasOwn(characters,'autonomy');
++  exactKeys(characters,[...(autonomy?['autonomy']:[]),...(survival?['survival']:[]),...(growth?['progression']:[]),'schemaVersion','generatorVersion','contentPackId','contentPackVersion','usedUniqueArchetypeIds','records'],'characters');
+   check(characters.schemaVersion===1 && [1,2].includes(characters.generatorVersion),'Unsupported character schema/generator.');
+   check(typeof characters.contentPackId==='string' && /^[a-z0-9-]{1,64}$/.test(characters.contentPackId) && Number.isSafeInteger(characters.contentPackVersion) && characters.contentPackVersion>0,'Invalid character content pack.');
+   check(Array.isArray(characters.usedUniqueArchetypeIds) && characters.usedUniqueArchetypeIds.length<=128 && new Set(characters.usedUniqueArchetypeIds).size===characters.usedUniqueArchetypeIds.length && characters.usedUniqueArchetypeIds.every(id=>typeof id==='string' && /^chr_[a-z0-9_]{1,64}$/.test(id)), 'Invalid reserved archetypes.');
+@@ -64,7 +67,7 @@ export function validateCharacters(run, characters, survivors) {
+   const usedLive=new Set();
+   for (const id of ids) {
+     const record=characters.records[id];
+-    exactKeys(record,[...(survival?['needs']:[]),...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
++    exactKeys(record,[...(autonomy?['autonomy']:[]),...(survival?['needs']:[]),...(growth?['experience','experienceRemainders']:[]),'uid','archetypeId','archetypeRevision','nameSnapshot','customName','professionId','personalityIds','abilityRanks','portraitSetId'],'character record');
+     check(record.uid===`${run.id}:${id}`,'Character UID mismatch.');
+     check(typeof record.archetypeId==='string' && /^chr_[a-z0-9_]{1,64}$/.test(record.archetypeId) && Number.isSafeInteger(record.archetypeRevision) && record.archetypeRevision>0,'Invalid character archetype.');
+     exactKeys(record.nameSnapshot,['zh-TW','en'],'name snapshot');
+@@ -82,5 +85,6 @@ export function validateCharacters(run, characters, survivors) {
+   }
+   if(growth)validateProgression(characters,exactKeys,check);
+   if(survival)validateNeeds(characters,exactKeys,check);
++  if(autonomy)validateAutonomy(characters,survivors,exactKeys,check,buildings);
+   return characters;
+ }
+diff --git a/src/main.js b/src/main.js
+index 070ec71..3bd682b 100644
+--- a/src/main.js
++++ b/src/main.js
+@@ -1,3 +1,4 @@
++import {setResidentControl} from './autonomy/control.js';
+ import {tickNeeds,setNeedsEffects} from './needs/simulation.js';
+ import {assignResident,restoreAutomaticAssignment} from './progression/assignments.js';
+ import {setAbilityEffects} from './progression/work.js';
+@@ -290,6 +291,7 @@ function startGame({ engine, screens, assets, params }) {
+   let pausedBeforeSaves = false;
+   let pausedBeforeCharacters = false;
+   createCharacterPanel(uiRoot, {
++    onControl:(id,mode)=>{const result=setResidentControl(state,id,mode);if(result.ok)assignJobs(state,BUILDING_DEFS);return result;},
+     onAssign:(id,buildingId)=>assignResident(state,id,buildingId,BUILDING_DEFS),
+     onAutomatic:id=>restoreAutomaticAssignment(state,id,BUILDING_DEFS),
+     onEffects:enabled=>setAbilityEffects(state,enabled),
+diff --git a/src/persistence.js b/src/persistence.js
+index d444025..c78fb45 100644
+--- a/src/persistence.js
++++ b/src/persistence.js
+@@ -1,3 +1,5 @@
++import {upgradeAutonomy} from './autonomy/schema.js';
++import {AUTONOMY_FEATURE} from './autonomy/rules.js';
+ import {upgradeNeeds} from './needs/schema.js';
+ import {NEEDS_FEATURE} from './needs/rules.js';
+ import {upgradeProgression,GROWTH_FEATURE} from './progression/schema.js';
+@@ -132,8 +134,9 @@ function validateEnvelope(data) {
+   exactKeys(data,['format','version','checkpoint','savedAt','requiredFeatures','run','core','characters'],'v6 envelope');
+   assert(data.format === 'last-refuge' && data.version === 6 && data.checkpoint === 'dawn' &&
+     typeof data.savedAt === 'string' && Number.isFinite(Date.parse(data.savedAt)), 'Invalid save envelope.');
+-  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE];
++  const supported=['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE];
+   assert(Array.isArray(data.requiredFeatures) && data.requiredFeatures.length>=1 && data.requiredFeatures.length<=supported.length && data.requiredFeatures.every((f,i)=>f===supported[i]), 'Unsupported required save feature.');
++  assert(data.requiredFeatures?.includes(AUTONOMY_FEATURE)===Object.hasOwn(data.characters ?? {},'autonomy'),'Missing or unmarked autonomy data.');
+   assert(data.requiredFeatures.includes(NEEDS_FEATURE)===Object.hasOwn(data.characters ?? {},'survival'),'Missing or unmarked survival data.');
+   assert(data.requiredFeatures.includes(GROWTH_FEATURE)===Object.hasOwn(data.characters ?? {},'progression'),'Missing or unmarked progression data.');
+   validateSave(data.core);
+@@ -150,7 +153,7 @@ function validateEnvelope(data) {
+       assert(Array.isArray(b.workers) && b.workers.length<=(BUILDING_DEFS[b.defId].jobs ?? 0) && b.workers.length===assigned.length && [...b.workers].sort((a,b)=>a-b).every((id,i)=>id===assigned[i]),'Inconsistent work roster; original protected.');
+     }
+   }
+-  validateCharacters(data.run,data.characters,data.core.survivors);
++  validateCharacters(data.run,data.characters,data.core.survivors,data.core.buildings);
+   return data;
+ }
+ 
+@@ -165,6 +168,7 @@ export function migrateSave(data) {
+     const copy=structuredClone(validateEnvelope(data));
+     if(!copy.requiredFeatures.includes(GROWTH_FEATURE)){upgradeProgression(copy.characters);fillLegacyWorkDefaults(copy.core);copy.requiredFeatures.push(GROWTH_FEATURE);}
+     if(!copy.requiredFeatures.includes(NEEDS_FEATURE)){upgradeNeeds(copy.characters);copy.requiredFeatures.push(NEEDS_FEATURE);}
++    if(!copy.requiredFeatures.includes(AUTONOMY_FEATURE)){upgradeAutonomy(copy.characters,copy.core);copy.requiredFeatures.push(AUTONOMY_FEATURE);}
+     return validateEnvelope(copy);
+   }
+   let core=data;
+@@ -179,7 +183,7 @@ export function migrateSave(data) {
+   const identityCore=createSaveData(restored.state,restored.seed,restored.changedTiles);
+   initializeCharacters(restored.state,`run_${sha256(canonicalJSON(identityCore))}`);
+   const envelope={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
++    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE],run:{id:restored.state.runId,nextSurvivorId:restored.state.nextSurvivorId},
+     core:fillLegacyWorkDefaults(structuredClone(core)),characters:structuredClone(restored.state.characters)};
+   return validateEnvelope(envelope);
+ }
+@@ -310,7 +314,7 @@ function trimBackups(keep) {
+   } catch (error) { return { warning: `Save completed, but backup cleanup stopped: ${error.message}` }; }
+ }
+ 
+-const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(NEEDS_FEATURE);
++const currentSaveFormat=data=>data.version===SAVE_VERSION && data.requiredFeatures?.includes(AUTONOMY_FEATURE);
+ 
+ const checkpointContent = ({core,run,characters}) => canonicalJSON({core,run,characters});
+ 
+@@ -581,14 +585,14 @@ function restoreCore(data, legacyPopulationFallback = true) {
+ export function createCheckpoint(state, seed, changedTiles) {
+   reconcileCharacters(state);
+   const data={format:'last-refuge',version:6,checkpoint:'dawn',savedAt:new Date().toISOString(),
+-    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
++    requiredFeatures:['characters-v1',GROWTH_FEATURE,NEEDS_FEATURE,AUTONOMY_FEATURE],run:{id:state.runId,nextSurvivorId:state.nextSurvivorId},
+     core:createSaveData(state,seed,changedTiles),characters:structuredClone(state.characters)};
+   return validateEnvelope(data);
+ }
+ 
+ export function restoreSave(data) {
+   if (data?.version !== 6) return restoreCore(data); // retained legacy pure API
+-  if(!data.requiredFeatures?.includes(NEEDS_FEATURE))data=migrateSave(data);
++  if(!data.requiredFeatures?.includes(AUTONOMY_FEATURE))data=migrateSave(data);
+   validateEnvelope(data);
+   const restored=restoreCore(data.core,false);
+   restored.state.runId=data.run.id;
+diff --git a/src/progression/assignments.js b/src/progression/assignments.js
+index 67937e2..19ca520 100644
+--- a/src/progression/assignments.js
++++ b/src/progression/assignments.js
+@@ -1,3 +1,4 @@
++import {writeManualMode} from '../autonomy/control.js';
+ // Player commands validate the current core roster; UI never edits workers.
+ import {assignJobs} from '../sim/survivors.js';
+ export function assignResident(state,residentId,buildingId,DEFS){
+@@ -15,10 +16,11 @@ export function assignResident(state,residentId,buildingId,DEFS){
+   for(const source of state.buildings)source.workers=source.workers.filter(id=>id!==s.id);
+   s.buildingId=null;if(old)old.autoAssign=false;
+  }
++ writeManualMode(state,s.id,true);
+  return {ok:true};
+ }
+ export function restoreAutomaticAssignment(state,buildingId,DEFS){
+  const b=state.buildings.find(b=>b.id===buildingId);
+- if(!b || b.hp<=0 || b.enabled===false || !(DEFS[b.defId]?.jobs>0))return {ok:false,error:'Building is unavailable.'};
+- b.autoAssign=true;assignJobs(state,DEFS);return {ok:true};
++ if(!b || b.hp<=0 || !(DEFS[b.defId]?.jobs>0))return {ok:false,error:'Building is unavailable.'};
++ b.autoAssign=true;for(const s of state.survivors)if(s.buildingId===b.id||state.characters?.records?.[s.id]?.autonomy?.targetBuildingId===b.id)writeManualMode(state,s.id,false);assignJobs(state,DEFS);return {ok:true};
+ }
+diff --git a/src/sim/state.js b/src/sim/state.js
+index e17b0cb..c101923 100644
+--- a/src/sim/state.js
++++ b/src/sim/state.js
+@@ -1,3 +1,4 @@
++import {writeManualMode} from '../autonomy/control.js';
+ // Pure game-state module: no three.js, no DOM. Safe to import in node tests.
+ 
+ import { levelMultiplier, payCost } from './economy.js';
+@@ -127,6 +128,7 @@ export function removeBuilding(state, id) {
+   // Free any survivors who worked there.
+   for (const s of state.survivors) {
+     if (s.buildingId === id) s.buildingId = null;
++    if(state.characters?.records?.[s.id]?.autonomy?.targetBuildingId===id)writeManualMode(state,s.id,false);
+   }
+   return true;
+ }
+diff --git a/src/sim/survivors.js b/src/sim/survivors.js
+index acfd7a6..053842e 100644
+--- a/src/sim/survivors.js
++++ b/src/sim/survivors.js
+@@ -1,3 +1,6 @@
++import {runAutonomy} from '../autonomy/scheduler.js';
++import {REST_RULES} from '../autonomy/rules.js';
++import {writeManualMode} from '../autonomy/control.js';
+ import {completeWork,supportingBuilding,careProof} from '../progression/work.js';
+ // Survivor lifecycle: hunger, thirst, eating, drinking, death, jobs,
+ // recruitment. Pure logic.
+@@ -98,6 +101,7 @@ function jobPriority(def) {
+ // manually managed buildings (autoAssign === false).
+ // Also reconciles stale references (dead workers, demolished buildings).
+ export function assignJobs(state, DEFS) {
++  if(runAutonomy(state,DEFS))return;
+   const survivorsById = new Map(state.survivors.map((s) => [s.id, s]));
+ 
+   // Drop worker references that no longer point back to this building.
+@@ -152,14 +156,12 @@ export function assignWorker(state, buildingId, DEFS) {
+   const def = b && DEFS[b.defId];
+   if (!def || !(def.jobs > 0) || b.workers.length >= def.jobs) return false;
+   if (b.enabled === false) return false; // spento: niente personale
+-  const buildingIds = new Set(state.buildings.map((x) => x.id));
+-  const s = state.survivors.find(
+-    (x) => x.buildingId === null || !buildingIds.has(x.buildingId)
+-  );
++  const s = state.survivors.find(x => availableForManualWork(state,x));
+   if (!s) return false;
+   b.autoAssign = false;
+   s.buildingId = b.id;
+   b.workers.push(s.id);
++  writeManualMode(state,s.id,true);
+   return true;
+ }
+ 
+@@ -172,7 +174,7 @@ export function unassignWorker(state, buildingId) {
+   b.autoAssign = false;
+   const id = b.workers.pop();
+   const s = state.survivors.find((x) => x.id === id);
+-  if (s) s.buildingId = null;
++  if (s) {s.buildingId = null;writeManualMode(state,s.id,true);}
+   return true;
+ }
+ 
+@@ -203,6 +205,16 @@ export function setBuildingEnabled(state, b, on) {
+   return true;
+ }
+ 
++// UI availability is separate from idleCount: resting residents retain original HQ defense.
++function availableForManualWork(state,s) {
++  const record=state.characters?.records?.[s.id];
++  return !record?.autonomy?.resting && (!record?.needs || record.needs.fatigue<REST_RULES.fatigueEnter)
++    && (s.buildingId===null || !state.buildings.some(b=>b.id===s.buildingId));
++}
++export function availableWorkerCount(state) {
++  return state.survivors.filter(s=>availableForManualWork(state,s)).length;
++}
++
+ // Number of survivors without a job.
+ export function idleCount(state) {
+   return state.survivors.filter((s) => s.buildingId === null).length;
+diff --git a/src/ui/anime-theme.css b/src/ui/anime-theme.css
+index a81f804..9ca1173 100644
+--- a/src/ui/anime-theme.css
++++ b/src/ui/anime-theme.css
+@@ -164,3 +164,7 @@
+ .needs-row meter { width: 100%; }
+ .resident-needs small { color: #a9c7d5; }
+ .needs-efficiency { color: #9bd5ce; font-size: 13px; }
++
++.resident-autonomy { display: grid; gap: 8px; margin-top: 12px; border-top: 1px solid var(--ui-line); padding-top: 10px; }
++.resident-autonomy small { color: #a9c7d5; }
++.autonomy-status { color: #a4dcd1; }
+diff --git a/src/ui/autonomypanel.js b/src/ui/autonomypanel.js
+new file mode 100644
+index 0000000..c1eaa09
+--- /dev/null
++++ b/src/ui/autonomypanel.js
+@@ -0,0 +1,16 @@
++import {t} from './i18n/index.js';
++function el(tag,text){const n=document.createElement(tag);if(text!==undefined)n.textContent=t(text);return n;}
++export function createAutonomyPanel(survivor,state,{onControl,onRefresh}={}){
++ const root=el('section');root.className='resident-autonomy';root.setAttribute('aria-label',t('Resident autonomy'));
++ const a=state.characters?.records?.[survivor.id]?.autonomy;if(!a)return root;
++ const label=a.resting?'Resting for fatigue':a.mode==='manual'?(survivor.buildingId===null?(a.targetBuildingId===null?'Manual idle':'Awaiting manual workplace'):'Manual assignment'):survivor.buildingId===null?'Awaiting autonomous work':'Autonomous work';
++ const status=el('p',label);status.className='autonomy-status';root.append(status);
++ root.append(el('small','Automatic rest at fatigue 85; resume at 35 after at least 10 seconds. Health below 50 lowers work priority.'));
++ if(a.mode==='manual'&&a.targetBuildingId!==null)root.append(el('p',t('Reserved manual workplace: #{id}',{id:a.targetBuildingId})));
++ root.append(el('small','Manual jobs are reserved during rest and take priority on recovery. Existing HQ defense remains active.'));
++ root.append(el('small','Autonomous vacancies use buildings with automatic assignment enabled.'));
++ if(onControl){const button=el('button',a.mode==='manual'?'Return resident to autonomy':'Keep manual control');button.type='button';const feedback=el('p');feedback.setAttribute('role','status');
++  button.addEventListener('click',()=>{const result=onControl(survivor.id,a.mode==='manual'?'auto':'manual');if(result.ok)onRefresh();else feedback.textContent=t(result.error);});root.append(button,feedback);
++ }
++ return root;
++}
+diff --git a/src/ui/characterpanel.js b/src/ui/characterpanel.js
+index 906bbb6..6ec5a8c 100644
+--- a/src/ui/characterpanel.js
++++ b/src/ui/characterpanel.js
+@@ -1,3 +1,4 @@
++import {createAutonomyPanel} from './autonomypanel.js';
+ import {createNeedsPanel} from './needspanel.js';
+ import {createProgressionControls} from './progressionpanel.js';
+ // Presentation adapter with validated command callbacks. Saves contain identity snapshots and asset IDs, never image bytes.
+@@ -46,7 +47,7 @@ function el(tag, className, text) {
+ }
+ 
+ /** Snapshot the paused roster. Assignment/effect changes go through injected core commands. */
+-export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, onNeedsEffects, portraitManager = createPortraitManager() }) {
++export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign, onAutomatic, onEffects, onNeedsEffects, onControl, portraitManager = createPortraitManager() }) {
+   const launch = el('button', 'character-launch', 'Characters');
+   launch.type = 'button';
+   const dialog = el('dialog', 'character-dialog');
+@@ -130,6 +131,7 @@ export function createCharacterPanel(root, { getState, onOpen, onClose, onAssign
+       row.append(meter, el('span', 'character-stat-value', `${Math.round(profile[key])}/100`));
+       info.append(row);
+     }
++    info.append(createAutonomyPanel(survivor,state,{onControl,onRefresh:()=>renderPage(survivor.id)}));
+     info.append(createNeedsPanel(state.characters?.records?.[survivor.id],state,{onEffects:onNeedsEffects,onRefresh:()=>renderPage(survivor.id)}));
+     info.append(createProgressionControls(survivor,state,{onAssign,onAutomatic,onEffects,onRefresh:()=>{renderPage(survivor.id);}}));
+     detail.append(frame, info);
+diff --git a/src/ui/i18n/zh-TW.js b/src/ui/i18n/zh-TW.js
+index 02bec2a..51705d6 100644
+--- a/src/ui/i18n/zh-TW.js
++++ b/src/ui/i18n/zh-TW.js
+@@ -237,3 +237,9 @@ Object.assign(messages,{"Skill bonus limits: work and defense +10%, hauling +5%,
+ Object.assign(messages,{"Survival needs":"居民生存需求","Fatigue":"疲勞","Health":"健康","Morale":"士氣","Exhausted":"精疲力竭","Rested":"精神充足","Unwell":"欠佳","Critical":"危急","Low spirits":"低落","Uneasy":"不安","Stable":"穩定","Healthy":"良好","Needs work efficiency: {value}%":"需求造成的工作效率：{value}%","Unassign or switch off the workplace to rest. Needs do not introduce new death rules.":"解除工作或關閉建築即可休息；需求數值不會新增死亡條件。","Apply survival efficiency":"套用生存需求效率"});
+ 
+ Object.assign(messages,{"Idle or stopped workplaces allow rest. Automatic assignment may allocate another job.":"待命或建築停工時可休息；自動派工可能再分配其他工作。","Efficiency applies to production, extraction, planting and research. Combat and support auras retain their existing rules.":"需求效率適用生產、採集、植林與研究；戰鬥及支援光環沿用既有規則。"});
++
++Object.assign(messages,{"Resident autonomy":"居民自主安排","Manual idle":"手動待命","Manual assignment":"手動指定工作","Resting for fatigue":"自主休息：疲勞偏高","Awaiting autonomous work":"自主候工","Autonomous work":"自主工作中","Return resident to autonomy":"交回居民自主安排","Keep manual control":"保留手動控制","Resident control is unavailable.":"目前無法調整此居民的控制方式。"});
++
++Object.assign(messages,{"Reserved manual workplace: #{id}":"已保留手動工作意向：建築 #{id}","Manual jobs are reserved during rest and take priority on recovery. Existing HQ defense remains active.":"休息時保留手動工作意向，恢復後優先安排；原有庇護所防衛規則保持。","Autonomous vacancies use buildings with automatic assignment enabled.":"自主候工只填補已開啟自動派工的建築。"});
++
++Object.assign(messages,{"Awaiting manual workplace":"等待指定工作空位","Automatic rest at fatigue 85; resume at 35 after at least 10 seconds. Health below 50 lowers work priority.":"疲勞達 85 自主休息，至少 10 秒後恢復至 35 才候工；健康低於 50 時降低派工順位。"});
+diff --git a/src/ui/inspector.js b/src/ui/inspector.js
+index 12805cf..a8d6c31 100644
+--- a/src/ui/inspector.js
++++ b/src/ui/inspector.js
+@@ -6,7 +6,7 @@
+ 
+ import { t } from './i18n/index.js';
+ import { findBuilding, isUpgradeable, upgradeBuilding, upgradeCost, MAX_LEVEL, pushEvent } from '../sim/state.js';
+-import { assignWorker, unassignWorker, setBuildingEnabled, idleCount } from '../sim/survivors.js';
++import { assignWorker, unassignWorker, setBuildingEnabled, availableWorkerCount, idleCount } from '../sim/survivors.js';
+ import { countNodesInRange, TILE_YIELDS } from '../sim/extraction.js';
+ import { effectiveCaps, buildingDailyOutput, canAfford } from '../sim/economy.js';
+ import { repairCost, startRepair } from '../sim/repair.js';
+@@ -321,7 +321,7 @@ export function createInspector(root, { state, grid, input, placement, visuals,
+     }
+     if (dyn.workersText) dyn.workersText.textContent = t(`👷 ${b.workers.length}/${def.jobs}`);
+     if (dyn.plusBtn) {
+-      dyn.plusBtn.disabled = off || idleCount(state) === 0 || b.workers.length >= def.jobs;
++      dyn.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
+     }
+     if (dyn.minusBtn) dyn.minusBtn.disabled = off || b.workers.length === 0;
+     if (dyn.autoBadge) dyn.autoBadge.style.display = b.autoAssign ? '' : 'none';
+diff --git a/src/ui/laborpanel.js b/src/ui/laborpanel.js
+index 61ff74a..0c47ffb 100644
+--- a/src/ui/laborpanel.js
++++ b/src/ui/laborpanel.js
+@@ -1,3 +1,4 @@
++import {restoreAutomaticAssignment} from '../progression/assignments.js';
+ // Labor panel: right-side overlay listing every standing building with job
+ // slots. Each row shows icon, name, current workers x/y and +/− buttons
+ // (manual assignment via survivors.js, which switches the building out of
+@@ -9,7 +10,7 @@
+ 
+ import { t } from './i18n/index.js';
+ import { BUILDING_DEFS } from '../buildings/definitions.js';
+-import { assignWorker, unassignWorker, idleCount } from '../sim/survivors.js';
++import { assignWorker, unassignWorker, availableWorkerCount, idleCount } from '../sim/survivors.js';
+ import { ICONS } from './buildmenu.js';
+ 
+ // Per-building worker priority (b.priority): the row button cycles
+@@ -97,7 +98,7 @@ export function createLaborPanel(root) {
+       autoBtn.type = 'button';
+       autoBtn.title = t('Return to automatic assignment');
+       autoBtn.addEventListener('click', () => {
+-        b.autoAssign = true;
++        restoreAutomaticAssignment(state,b.id,BUILDING_DEFS);
+         update(state);
+       });
+       const offBadge = h('span', 'labor-off', 'off');
+@@ -142,7 +143,7 @@ export function createLaborPanel(root) {
+       row.rowEl.classList.toggle('labor-row--off', off);
+       row.offBadge.style.display = off ? '' : 'none';
+       row.workersEl.textContent = t(`${b.workers.length}/${def.jobs}`);
+-      row.plusBtn.disabled = off || idle === 0 || b.workers.length >= def.jobs;
++      row.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
+       row.minusBtn.disabled = off || b.workers.length === 0;
+       const isAuto = b.autoAssign !== false;
+       row.autoBadge.style.display = !off && isAuto ? '' : 'none';
+diff --git a/tests/autonomy.test.js b/tests/autonomy.test.js
+new file mode 100644
+index 0000000..5faa66f
+--- /dev/null
++++ b/tests/autonomy.test.js
+@@ -0,0 +1,163 @@
++import {describe,it,expect,vi,afterEach} from 'vitest';
++import {createGameState,addBuilding,addSurvivor,removeBuilding} from '../src/sim/state.js';
++import {BUILDING_DEFS as DEFS} from '../src/buildings/definitions.js';
++import {initializeCharacters,reconcileCharacters} from '../src/characters/state.js';
++import {assignJobs,assignWorker,unassignWorker,availableWorkerCount,idleCount,killBuildingWorkers,tickSurvivors} from '../src/sim/survivors.js';
++import {assignResident,restoreAutomaticAssignment} from '../src/progression/assignments.js';
++import {setResidentControl} from '../src/autonomy/control.js';
++import {REST_RULES} from '../src/autonomy/rules.js';
++import {tickNeeds} from '../src/needs/simulation.js';
++import {tickEconomy} from '../src/sim/economy.js';
++import {getModifiers} from '../src/sim/modifiers.js';
++import {createCheckpoint,restoreSave,migrateSave,saveGame,importSave,exportSave,listBackups,saveSlot,loadSlot,SLOT_KEYS,SAVE_KEY} from '../src/persistence.js';
++const RUN='run_12345678-1234-4234-8234-123456789abc';
++function game(count=4){const s=createGameState();addBuilding(s,'hq',DEFS.hq,30,30);for(let i=0;i<count;i++)addSurvivor(s);initializeCharacters(s,RUN);return s;}
++function build(s,id='farm',x=20,z=20){return addBuilding(s,id,DEFS[id],x,z);}
++const r=(s,id=1)=>s.characters.records[id];
++function autoPlace(s,id,b){s.survivors.find(x=>x.id===id).buildingId=b.id;b.workers.push(id);}
++function advance(s,n){for(let i=0;i<n;i++)tickNeeds(s,1,s.characters.survival.lastStep+1,DEFS);}
++function invariant(s){const seen=new Set();for(const b of s.buildings){expect(b.workers.length).toBeLessThanOrEqual(DEFS[b.defId].jobs);for(const id of b.workers){expect(seen.has(id)).toBe(false);seen.add(id);expect(s.survivors.find(x=>x.id===id)?.buildingId).toBe(b.id);}}for(const x of s.survivors)if(x.buildingId!==null)expect(s.buildings.find(b=>b.id===x.buildingId)?.workers).toContain(x.id);}
++function storage(){const values=new Map();vi.stubGlobal('localStorage',{get length(){return values.size;},key:i=>[...values.keys()][i]??null,getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v)),removeItem:k=>values.delete(k)});return values;}
++afterEach(()=>vi.unstubAllGlobals());
++describe('bounded rest lifecycle and hysteresis',()=>{
++ it('releases an exhausted worker and fills the vacancy with one eligible resident',()=>{
++  const s=game(),b=build(s);autoPlace(s,1,b);r(s).needs.fatigue=85;assignJobs(s,DEFS);
++  expect(r(s).autonomy).toMatchObject({mode:'auto',resting:true,reason:'fatigue',cooldownUntil:10});expect(s.survivors[0].buildingId).toBeNull();expect(b.workers).not.toContain(1);invariant(s);
++ });
++ it('requires both the low fatigue threshold and the saved minimum rest time',()=>{
++  const s=game(1),b=build(s);autoPlace(s,1,b);r(s).needs.fatigue=85;assignJobs(s,DEFS);r(s).needs.fatigue=35;advance(s,5);assignJobs(s,DEFS);expect(r(s).autonomy.resting).toBe(true);expect(r(s).autonomy.cooldownUntil).toBe(10);
++  advance(s,5);assignJobs(s,DEFS);expect(r(s).autonomy.resting).toBe(false);expect(s.survivors[0].buildingId).toBe(b.id);invariant(s);
++ });
++ it('does not thrash around the upper threshold or reassign a stable job for small score changes',()=>{
++  const s=game(1),b=build(s);assignJobs(s,DEFS);r(s).needs.fatigue=85;assignJobs(s,DEFS);const deadline=r(s).autonomy.cooldownUntil;
++  for(const fatigue of [84.9,85.1,70,36]){r(s).needs.fatigue=fatigue;advance(s,1);assignJobs(s,DEFS);expect(r(s).autonomy.resting).toBe(true);expect(r(s).autonomy.cooldownUntil).toBe(deadline);}
++  advance(s,10);r(s).needs.fatigue=35;assignJobs(s,DEFS);r(s).needs.fatigue=40;assignJobs(s,DEFS);expect(r(s).autonomy.resting).toBe(false);expect(b.workers).toEqual([1]);
++ });
++ it('low health lowers ranking without inventing compulsory illness or new deaths',()=>{
++  const s=game(2),b=build(s,'garden');r(s,1).needs.health=0;r(s,1).professionId='farmer';r(s,1).abilityRanks.agriculture=5;assignJobs(s,DEFS);expect(b.workers).toEqual([2]);expect(s.survivors).toHaveLength(2);
++  assignResident(s,2,null,DEFS);b.autoAssign=true;assignJobs(s,DEFS);expect(b.workers).toEqual([1]);expect(r(s,1).autonomy.resting).toBe(false);
++ });
++ it('preserves cooldown on restore and does not restart the rest timer on every evaluation',()=>{
++  const s=game(1),b=build(s);autoPlace(s,1,b);r(s).needs.fatigue=90;assignJobs(s,DEFS);advance(s,5);
++  const copy=restoreSave(createCheckpoint(s,42,[])).state;for(let i=0;i<10;i++)assignJobs(copy,DEFS);expect(r(copy).autonomy.cooldownUntil).toBe(10);expect(r(copy).autonomy.resting).toBe(true);
++  r(copy).needs.fatigue=35;advance(copy,5);assignJobs(copy,DEFS);expect(r(copy).autonomy.resting).toBe(false);
++ });
++});
++describe('player intent and all existing manual entry points',()=>{
++ it('reserves a manual target while exhausted, then resumes it ahead of autonomous occupants',()=>{
++  const s=game(2),b=build(s,'garden');r(s).needs.fatigue=90;expect(assignResident(s,1,b.id,DEFS).ok).toBe(true);
++  expect(r(s).autonomy).toMatchObject({mode:'manual',targetBuildingId:b.id,resting:true});expect(b.workers).toEqual([]);
++  b.autoAssign=true;assignJobs(s,DEFS);expect(b.workers).toEqual([2]);r(s).needs.fatigue=35;advance(s,10);assignJobs(s,DEFS);
++  expect(b.workers).toEqual([1]);expect(s.survivors[1].buildingId).toBeNull();expect(r(s).autonomy.mode).toBe('manual');invariant(s);
++ });
++ it('never evicts another manual worker when a reserved manual target is full',()=>{
++  const s=game(2),b=build(s,'garden');r(s).needs.fatigue=90;assignResident(s,1,b.id,DEFS);assignResident(s,2,b.id,DEFS);r(s).needs.fatigue=35;advance(s,10);assignJobs(s,DEFS);
++  expect(b.workers).toEqual([2]);expect(r(s).autonomy).toMatchObject({mode:'manual',resting:false,targetBuildingId:b.id});expect(s.survivors[0].buildingId).toBeNull();
++ });
++ it('keeps manual idle intent until the player explicitly returns control',()=>{
++  const s=game(1),b=build(s);assignResident(s,1,null,DEFS);assignJobs(s,DEFS);expect(b.workers).toEqual([]);
++  expect(setResidentControl(s,1,'auto').ok).toBe(true);assignJobs(s,DEFS);expect(b.workers).toEqual([1]);
++ });
++ it('keeps healthy manual assignments stable despite profession scores and other vacancies',()=>{
++  const s=game(),farm=build(s),lab=build(s,'lab',24,20);assignResident(s,1,lab.id,DEFS);for(let i=0;i<10;i++)assignJobs(s,DEFS);
++  expect(s.survivors[0].buildingId).toBe(lab.id);expect(r(s).autonomy.targetBuildingId).toBe(lab.id);invariant(s);
++ });
++ it('failed manual requests preserve the complete rest state and old target',()=>{
++  const s=game(2),b=build(s,'garden');assignResident(s,2,b.id,DEFS);r(s).needs.fatigue=90;assignJobs(s,DEFS);const before=structuredClone(s);
++  expect(assignResident(s,1,b.id,DEFS).ok).toBe(false);expect(assignResident(s,1,999,DEFS).ok).toBe(false);expect(s).toEqual(before);
++ });
++ it('generic plus/minus commands preserve player intent and skip resting residents',()=>{
++  const s=game(2),b=build(s);r(s).needs.fatigue=90;assignJobs(s,DEFS);expect(assignWorker(s,b.id,DEFS)).toBe(false); // only healthy resident already occupied
++  expect(unassignWorker(s,b.id)).toBe(true);expect(r(s,2).autonomy.mode).toBe('manual');assignJobs(s,DEFS);expect(b.workers).toEqual([]);
++  expect(assignWorker(s,b.id,DEFS)).toBe(true);expect(r(s,2).autonomy.targetBuildingId).toBe(b.id);invariant(s);
++ });
++ it('returning a building to automatic management clears its live and pending manual orders only',()=>{
++  const s=game(3),b=build(s);r(s).needs.fatigue=90;assignResident(s,1,b.id,DEFS);assignResident(s,2,b.id,DEFS);assignResident(s,3,null,DEFS);
++  expect(restoreAutomaticAssignment(s,b.id,DEFS).ok).toBe(true);expect(r(s,1).autonomy.mode).toBe('auto');expect(r(s,2).autonomy.mode).toBe('auto');expect(r(s,3).autonomy.mode).toBe('manual');invariant(s);
++ });
++ it('idempotent control commands do not erase a pending manual target',()=>{
++  const s=game(1),b=build(s);r(s).needs.fatigue=90;assignResident(s,1,b.id,DEFS);const before=structuredClone(r(s).autonomy);
++  expect(setResidentControl(s,1,'manual').ok).toBe(true);expect(r(s).autonomy).toEqual(before);
++ });
++ it.each(['invalid',null,0])('rejects unknown control mode %s without mutation',mode=>{
++  const s=game(),before=structuredClone(s);expect(setResidentControl(s,1,mode).ok).toBe(false);expect(setResidentControl(s,999,'auto').ok).toBe(false);expect(s).toEqual(before);
++ });
++ it('releases pending targets when a building is demolished and never restores dead residents',()=>{
++  const s=game(2),b=build(s);r(s).needs.fatigue=90;assignResident(s,1,b.id,DEFS);assignResident(s,2,b.id,DEFS);const uid=r(s,2).uid;
++  killBuildingWorkers(s,b);removeBuilding(s,b.id);reconcileCharacters(s);assignJobs(s,DEFS);expect(r(s,1).autonomy).toMatchObject({mode:'auto',targetBuildingId:null});expect(r(s,2)).toBeUndefined();
++  const loaded=restoreSave(createCheckpoint(s,42,[])).state;addSurvivor(loaded);reconcileCharacters(loaded);expect(r(loaded,3).uid).not.toBe(uid);
++ });
++});
++describe('deterministic job priority, suitability and capacity',()=>{
++ it('prioritizes a building flag before resource urgency',()=>{
++  const s=game(1),farm=build(s),lab=build(s,'lab',24,20);s.resources.food=0;lab.priority=2;assignJobs(s,DEFS);expect(s.survivors[0].buildingId).toBe(lab.id);
++ });
++ it('uses base water/fuel shortage before the ordinary category at equal building priority',()=>{
++  const s=game(1);build(s);const dist=build(s,'distillery',24,20);s.resources.food=100;s.resources.fuel=0;assignJobs(s,DEFS);expect(s.survivors[0].buildingId).toBe(dist.id);
++ });
++ it('considers profession and skill with stable ID tie breaks',()=>{
++  const s=game(2),b=build(s,'garden');r(s,2).professionId='farmer';assignJobs(s,DEFS);expect(b.workers).toEqual([2]);
++  const other=game(2),g=build(other,'garden');r(other,1).professionId='generalist';r(other,2).professionId='generalist';r(other,2).abilityRanks.agriculture=5;assignJobs(other,DEFS);expect(g.workers).toEqual([2]);
++  const tie=game(2),t=build(tie,'garden');r(tie,1).professionId='generalist';r(tie,2).professionId='generalist';assignJobs(tie,DEFS);expect(t.workers).toEqual([1]);
++ });
++ it('prefers healthier candidates over a low-health expert',()=>{
++  const s=game(2),b=build(s,'garden');r(s,1).needs.health=40;r(s,1).professionId='farmer';r(s,1).abilityRanks.agriculture=5;r(s,2).professionId='generalist';assignJobs(s,DEFS);expect(b.workers).toEqual([2]);
++ });
++ it('deduplicates stale cross-building references and respects every capacity',()=>{
++  const s=game(),a=build(s,'garden'),b=build(s,'lab',24,20);autoPlace(s,1,a);a.workers.push(1,999);b.workers.push(1,2);s.survivors[1].buildingId=a.id;
++  assignJobs(s,DEFS);invariant(s);expect(a.workers).toHaveLength(1);
++ });
++ it('does not reorder valid manual worker history or emit XP for repeated job evaluation',()=>{
++  const s=game(2),b=build(s);assignResident(s,2,b.id,DEFS);assignResident(s,1,b.id,DEFS);const before=structuredClone(s.resources),xp=structuredClone(s.characters.progression);
++  for(let i=0;i<20;i++)assignJobs(s,DEFS);expect(b.workers).toEqual([2,1]);expect(s.resources).toEqual(before);expect(s.characters.progression).toEqual(xp);
++ });
++ it('does not use wall time or RNG to decide jobs',()=>{
++  const a=game(6),b=structuredClone(a);build(a);build(b);r(a).needs.fatigue=90;r(b).needs.fatigue=90;assignJobs(a,DEFS);assignJobs(b,DEFS);expect(a).toEqual(b);
++ });
++});
++describe('safe v6 autonomy extension',()=>{
++ function oldM5A(){const s=game(),b=build(s);assignResident(s,1,b.id,DEFS);const d=createCheckpoint(s,42,[]);d.requiredFeatures.pop();delete d.characters.autonomy;for(const r of Object.values(d.characters.records))delete r.autonomy;return d;}
++ it('infers old manual work without changing any M5-A fields',()=>{
++  const old=oldM5A(),copy=structuredClone(old),d=migrateSave(old);expect(old).toEqual(copy);expect(d.run).toEqual(old.run);expect(d.core).toEqual(old.core);expect(d.characters.records[1].autonomy).toMatchObject({mode:'manual',targetBuildingId:2});
++  for(const [id,r] of Object.entries(d.characters.records)){const {autonomy,...original}=r;expect(original).toEqual(old.characters.records[id]);}expect(migrateSave(d)).toEqual(d);
++ });
++ it('preserves exact old v6 import bytes even when the upgraded payload already exists',()=>{
++  const values=storage(),old=oldM5A(),current=JSON.stringify(migrateSave(old));values.set(SAVE_KEY,current);const raw=' '+JSON.stringify(old);expect(importSave(raw).ok).toBe(true);expect(listBackups().entries.some(b=>b.pinned&&b.raw===raw)).toBe(true);expect(values.get(SAVE_KEY)).toBe(current);
++ });
++ it('persists manual targets, rest cooldown and needs through three slots and JSON',()=>{
++  storage();const s=game(1),b=build(s);r(s).needs.fatigue=90;assignResident(s,1,b.id,DEFS);advance(s,3);expect(saveGame(s,42,[]).ok).toBe(true);const old=exportSave().raw;
++  for(const slot of SLOT_KEYS){expect(saveSlot(slot).ok).toBe(true);expect(loadSlot(slot).ok).toBe(true);expect(restoreSave(JSON.parse(exportSave().raw)).state.characters).toEqual(s.characters);}expect(JSON.parse(old).version).toBe(6);
++ });
++ it.each([
++  d=>{d.characters.autonomy.schemaVersion=2;},d=>{delete d.characters.records[1].autonomy;},d=>{d.characters.records[1].autonomy.mode='ai';},d=>{d.characters.records[1].autonomy.resting='true';},d=>{d.characters.records[1].autonomy.cooldownUntil=-1;},d=>{d.characters.records[1].autonomy.cooldownUntil=1000;},d=>{d.characters.records[1].autonomy.reason='disease';},d=>{d.characters.records[1].autonomy.targetBuildingId=999;},d=>{d.characters.records[1].autonomy.mode='manual';d.characters.records[1].autonomy.targetBuildingId=1;},d=>{d.characters.records[1].autonomy.resting=true;d.characters.records[1].autonomy.reason='fatigue';},d=>{d.requiredFeatures.pop();},d=>{d.requiredFeatures.push('future');},d=>{d.requiredFeatures=5;},d=>{d.version=99;}
++ ])('blocks corrupt/unknown autonomy and preserves raw originals',change=>{
++  const values=storage(),s=game(),b=build(s);autoPlace(s,1,b);const d=createCheckpoint(s,42,[]);change(d);const raw=JSON.stringify(d);values.set(SAVE_KEY,raw);expect(importSave(raw).ok).toBe(false);expect(saveGame(game(),42,[]).ok).toBe(false);expect(exportSave().raw).toBe(raw);
++ });
++});
++describe('long autonomous rest/work simulation',()=>{
++ it('runs 200 cycle-equivalents with real repeated rest/resume, bounded resources and no duplicate jobs',()=>{
++  const s=game(8);for(let i=0;i<3;i++)build(s,'farm',8+i*8,8);build(s,'clinic',8,16);for(let i=0;i<4;i++)build(s,'well',16+i*4,16);build(s,'house',8,24);
++  s.resources.food=150;s.resources.water=100;assignJobs(s,DEFS);let rests=0,resumes=0;const flags=new Map(s.survivors.map(x=>[x.id,false]));
++  for(let step=1;step<=30000;step++){
++   if(step%2===0){assignJobs(s,DEFS);for(const x of s.survivors){const now=r(s,x.id).autonomy.resting;if(now!==flags.get(x.id)){if(now)rests++;else resumes++;flags.set(x.id,now);}}}
++   const mods=getModifiers(s);tickEconomy(s,1,DEFS,mods);tickSurvivors(s,1,mods);tickNeeds(s,1,step,DEFS);
++   if(step%150===0){s.day++;invariant(s);expect(s.survivors).toHaveLength(8);for(const [key,value] of Object.entries(s.resources)){expect(Number.isFinite(value)&&value>=0).toBe(true);expect(value).toBeLessThanOrEqual(s.caps[key]);}}
++  }
++  expect(rests).toBeGreaterThan(20);expect(resumes).toBeGreaterThan(20);expect(createCheckpoint(s,42,[]).version).toBe(6);expect(s.resources.food).toBeGreaterThan(0);expect(s.resources.water).toBeGreaterThan(0);
++ },30000);
++});
++
++describe('legacy staffing controls with autonomous rest',()=>{
++ it('configures Auto while a building is off without staffing it until enabled',()=>{
++  const s=game(1),b=build(s);assignResident(s,1,b.id,DEFS);b.enabled=false;
++  expect(restoreAutomaticAssignment(s,b.id,DEFS).ok).toBe(true);
++  expect(b.autoAssign).toBe(true);expect(b.workers).toEqual([]);expect(r(s).autonomy.mode).toBe('auto');
++  b.enabled=true;assignJobs(s,DEFS);expect(b.workers).toEqual([1]);
++ });
++ it('counts available manual workers separately from idle HQ defenders',()=>{
++  const s=game(2),b=build(s);r(s,1).needs.fatigue=90;r(s,2).needs.fatigue=90;assignJobs(s,DEFS);
++  expect(idleCount(s)).toBe(2);expect(availableWorkerCount(s)).toBe(0);expect(assignWorker(s,b.id,DEFS)).toBe(false);
++  r(s,2).needs.fatigue=35;advance(s,10);assignJobs(s,DEFS);assignResident(s,2,null,DEFS);
++  expect(availableWorkerCount(s)).toBe(1);expect(assignWorker(s,b.id,DEFS)).toBe(true);expect(b.workers).toEqual([2]);
++ });
++});
+diff --git a/tests/progression.test.js b/tests/progression.test.js
+index c061364..8cb633e 100644
+--- a/tests/progression.test.js
++++ b/tests/progression.test.js
+@@ -161,7 +161,7 @@ describe('validated player assignment and original automation',()=>{
+  });
+ });
+ describe('v4/v5/v6 add-on migration and protection',()=>{
+- function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;delete data.characters.survival;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;delete r.needs;}return data;}
++ function oldV6(){const state=game(),data=createCheckpoint(state,42,[]);data.requiredFeatures=['characters-v1'];delete data.characters.progression;delete data.characters.survival;delete data.characters.autonomy;for(const r of Object.values(data.characters.records)){delete r.experience;delete r.experienceRemainders;delete r.needs;delete r.autonomy;}return data;}
+  it('preserves v6 run, UID, art, names, ranks and safe defaults without version redesign',()=>{
+   const old=oldV6();old.characters.records[1].abilityRanks.agriculture=3;const copy=structuredClone(old);const data=migrateSave(old);
+   expect(old).toEqual(copy);expect(data.version).toBe(6);expect(data.run).toEqual(old.run);const r=data.characters.records[1];expect(r.uid).toBe(old.characters.records[1].uid);expect(r.portraitSetId).toBe(old.characters.records[1].portraitSetId);expect(r.experience.agriculture).toBe(60000);expect(r.abilityRanks.agriculture).toBe(3);expect(migrateSave(data)).toEqual(data);
+diff --git a/tests/survival-needs.test.js b/tests/survival-needs.test.js
+index 4beadb2..f271b8a 100644
+--- a/tests/survival-needs.test.js
++++ b/tests/survival-needs.test.js
+@@ -95,7 +95,7 @@ describe('bounded real output and long-running simulation',()=>{
+   setNeedsEffects(s,false);s.resources.food=0;tickEconomy(s,90,DEFS);expect(s.resources.food).toBe(4);
+  });
+  it('uses average crew needs, preserves skills, and affects research/extraction',()=>{
+-  const s=game(),b=build(s,'lab');put(s,1,b);record(s).needs={fatigue:100,health:0,morale:0};expect(crewEfficiency(s,b)).toBe(.4);
++  const s=game(),b=build(s,'lab');put(s,1,b);record(s).needs={fatigue:84,health:0,morale:0};expect(crewEfficiency(s,b)).toBe(.4);
+   tickResearch(s,1,DEFS);const poor=s.researchPoints;setNeedsEffects(s,false);s.researchPoints=0;tickResearch(s,1,DEFS);expect(poor/s.researchPoints).toBeCloseTo(.4);
+   const l=build(s,'lumber',24,20);put(s,1,l);const grid=createGrid(64);grid.cells[19][24].type='forest';setNeedsEffects(s,true);s.resources.wood=0;tickExtraction(s,grid,1,DEFS);expect(s.resources.wood).toBeCloseTo(10*.5*.4/90);
+  });
+@@ -112,10 +112,10 @@ describe('bounded real output and long-running simulation',()=>{
+  },20000);
+ });
+ describe('v4/v5/M3/M4 v6 migration and safe protection',()=>{
+- function m4(){const s=game(),b=build(s);put(s,1,b);const d=createCheckpoint(s,42,[]);d.requiredFeatures=d.requiredFeatures.filter(f=>f!==NEEDS_FEATURE);delete d.characters.survival;for(const r of Object.values(d.characters.records))delete r.needs;return d;}
++ function m4(){const s=game(),b=build(s);put(s,1,b);const d=createCheckpoint(s,42,[]);d.requiredFeatures=d.requiredFeatures.filter(f=>f!==NEEDS_FEATURE&&f!=='autonomy-v1');delete d.characters.survival;delete d.characters.autonomy;for(const r of Object.values(d.characters.records)){delete r.needs;delete r.autonomy;}return d;}
+  it('preserves every M4 identity, XP, skill, work and art reference while adding safe defaults',()=>{
+   const old=m4(),copy=structuredClone(old),d=migrateSave(old);expect(old).toEqual(copy);expect(d.version).toBe(6);expect(d.run).toEqual(old.run);expect(d.core).toEqual(old.core);expect(d.characters.progression).toEqual(old.characters.progression);
+-  for(const [id,r] of Object.entries(d.characters.records)){const {needs,...rest}=r;expect(needs).toEqual(DEFAULT_NEEDS);expect(rest).toEqual(old.characters.records[id]);}
++  for(const [id,r] of Object.entries(d.characters.records)){const {needs,autonomy,...rest}=r;expect(needs).toEqual(DEFAULT_NEEDS);expect(rest).toEqual(old.characters.records[id]);}
+   expect(migrateSave(d)).toEqual(d);
+  });
+  it('loads v4/v5/M3 v6 and permanently backs up exact pre-needs v6 import bytes',()=>{

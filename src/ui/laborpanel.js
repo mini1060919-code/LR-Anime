@@ -1,3 +1,4 @@
+import {restoreAutomaticAssignment} from '../progression/assignments.js';
 // Labor panel: right-side overlay listing every standing building with job
 // slots. Each row shows icon, name, current workers x/y and +/− buttons
 // (manual assignment via survivors.js, which switches the building out of
@@ -7,8 +8,9 @@
 // No DOM access at import time — everything is built inside
 // createLaborPanel().
 
+import { t } from './i18n/index.js';
 import { BUILDING_DEFS } from '../buildings/definitions.js';
-import { assignWorker, unassignWorker, idleCount } from '../sim/survivors.js';
+import { assignWorker, unassignWorker, availableWorkerCount, idleCount } from '../sim/survivors.js';
 import { ICONS } from './buildmenu.js';
 
 // Per-building worker priority (b.priority): the row button cycles
@@ -22,7 +24,7 @@ const PRIORITIES = [
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -56,7 +58,7 @@ export function createLaborPanel(root) {
   head.appendChild(idleEl);
   const closeBtn = h('button', 'labor-close', '✖');
   closeBtn.type = 'button';
-  closeBtn.title = 'Close';
+  closeBtn.title = t('Close');
   closeBtn.addEventListener('click', close);
   head.appendChild(closeBtn);
 
@@ -70,37 +72,37 @@ export function createLaborPanel(root) {
   // keep their hover/focus state across routine refreshes.
   function rebuild(state, jobBuildings) {
     rows.clear();
-    list.textContent = '';
+    list.textContent = t('');
     for (const b of jobBuildings) {
       const def = BUILDING_DEFS[b.defId];
       const row = h('div', 'labor-row');
-      row.appendChild(h('span', 'labor-name', `${ICONS[b.defId] ?? '🏗'} ${def.name}`));
+      row.appendChild(h('span', 'labor-name', `${ICONS[b.defId] ?? '🏗'} ${t(def.name)}`));
 
       const controls = h('div', 'labor-controls');
       const minusBtn = h('button', 'labor-btn', '−');
       minusBtn.type = 'button';
-      minusBtn.title = 'Remove a worker';
+      minusBtn.title = t('Remove a worker');
       minusBtn.addEventListener('click', () => {
         if (unassignWorker(state, b.id)) update(state);
       });
       const workersEl = h('span', 'labor-workers');
       const plusBtn = h('button', 'labor-btn', '+');
       plusBtn.type = 'button';
-      plusBtn.title = 'Assign a worker';
+      plusBtn.title = t('Assign a worker');
       plusBtn.addEventListener('click', () => {
         if (assignWorker(state, b.id, BUILDING_DEFS)) update(state);
       });
       const autoBadge = h('span', 'labor-auto', 'auto');
-      autoBadge.title = 'Automatic worker assignment active';
+      autoBadge.title = t('Automatic worker assignment active');
       const autoBtn = h('button', 'labor-btn labor-auto-btn', 'Auto');
       autoBtn.type = 'button';
-      autoBtn.title = 'Return to automatic assignment';
+      autoBtn.title = t('Return to automatic assignment');
       autoBtn.addEventListener('click', () => {
-        b.autoAssign = true;
+        restoreAutomaticAssignment(state,b.id,BUILDING_DEFS);
         update(state);
       });
       const offBadge = h('span', 'labor-off', 'off');
-      offBadge.title = 'Building switched off: inert, no workers';
+      offBadge.title = t('Building switched off: inert, no workers');
       // Priority cycle: also works while switched off (applies on reactivation).
       const priorityBtn = h('button', 'labor-btn labor-priority');
       priorityBtn.type = 'button';
@@ -123,7 +125,7 @@ export function createLaborPanel(root) {
     lastState = state;
     if (!visible) return;
     const idle = idleCount(state);
-    idleEl.textContent = `— ${idle} free`;
+    idleEl.textContent = t(`— ${idle} free`);
 
     const jobBuildings = state.buildings.filter(
       (b) => (BUILDING_DEFS[b.defId]?.jobs ?? 0) > 0
@@ -140,15 +142,15 @@ export function createLaborPanel(root) {
       const off = b.enabled === false;
       row.rowEl.classList.toggle('labor-row--off', off);
       row.offBadge.style.display = off ? '' : 'none';
-      row.workersEl.textContent = `${b.workers.length}/${def.jobs}`;
-      row.plusBtn.disabled = off || idle === 0 || b.workers.length >= def.jobs;
+      row.workersEl.textContent = t(`${b.workers.length}/${def.jobs}`);
+      row.plusBtn.disabled = off || availableWorkerCount(state) === 0 || b.workers.length >= def.jobs;
       row.minusBtn.disabled = off || b.workers.length === 0;
       const isAuto = b.autoAssign !== false;
       row.autoBadge.style.display = !off && isAuto ? '' : 'none';
       row.autoBtn.style.display = !off && !isAuto ? '' : 'none';
       const pri = PRIORITIES[b.priority ?? 1] ?? PRIORITIES[1];
-      row.priorityBtn.textContent = pri.icon;
-      row.priorityBtn.title = `Worker priority: ${pri.label} (click to change)`;
+      row.priorityBtn.textContent = t(pri.icon);
+      row.priorityBtn.title = t(`Worker priority: ${pri.label} (click to change)`);
     }
   }
 

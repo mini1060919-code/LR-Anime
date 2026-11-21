@@ -1,3 +1,4 @@
+import {writeManualMode} from '../autonomy/control.js';
 // Pure game-state module: no three.js, no DOM. Safe to import in node tests.
 
 import { levelMultiplier, payCost } from './economy.js';
@@ -109,6 +110,7 @@ export function upgradeBuilding(state, b, def) {
 }
 
 export function addSurvivor(state) {
+  if (!Number.isSafeInteger(state.nextSurvivorId) || state.nextSurvivorId < 1 || state.nextSurvivorId >= Number.MAX_SAFE_INTEGER) throw new Error('Survivor ID allocator exhausted.');
   const survivor = {
     id: state.nextSurvivorId++,
     hunger: 0,
@@ -126,6 +128,7 @@ export function removeBuilding(state, id) {
   // Free any survivors who worked there.
   for (const s of state.survivors) {
     if (s.buildingId === id) s.buildingId = null;
+    if(state.characters?.records?.[s.id]?.autonomy?.targetBuildingId===id)writeManualMode(state,s.id,false);
   }
   return true;
 }

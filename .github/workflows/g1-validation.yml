@@ -1,0 +1,67 @@
+name: G1 validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - review/g1-unified-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: g1-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Unit tests and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Verify assets and production build
+        run: npm run build
+
+  browser-regression:
+    name: Complete Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CI: 'true'
+      E2E_SLOW_WEBGL: '1'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Install Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Full browser regression — one worker, zero retries
+        run: npx playwright test --workers=1 --retries=0 --reporter=list --trace=retain-on-failure
+      - name: Retain browser failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: g1-playwright-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -8,6 +8,11 @@
 
 import { test, expect } from '@playwright/test';
 
+// Keep the original English assertions; M2 has separate zh-TW coverage.
+test.use({ storageState: { cookies: [], origins: [{
+  origin: 'http://localhost:4173', localStorage: [{ name: 'lr-ui-locale', value: 'en' }],
+}] } });
+
 const BASE = '/city-builder-survival/';
 const SAVE_KEY = 'cbs-save';
 // HUD resource labels, in DOM order (src/ui/hud.js BALANCE_RESOURCES).
@@ -78,15 +83,15 @@ test('boots to the HUD with day 1, resources and a working build menu', async ({
     (key) => JSON.parse(localStorage.getItem(key)),
     SAVE_KEY
   );
-  expect(save?.version).toBe(4);
-  expect(save?.seed).toBe(42);
-  expect(save?.day).toBe(1);
+  expect(save?.version).toBe(6);
+  expect(save?.core?.seed).toBe(42);
+  expect(save?.core?.day).toBe(1);
 
   expect(errors).toEqual([]);
 });
 
 test('autosaves at dawn and restores the run after a reload', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(process.env.E2E_SLOW_WEBGL ? 360_000 : 180_000);
   const errors = watchConsoleErrors(page);
 
   // Tiny viewport: game time advances per rendered frame (MAX_DT clamp in
@@ -104,7 +109,7 @@ test('autosaves at dawn and restores the run after a reload', async ({ page }) =
   await page.keyboard.press('3');
   await expect(page.getByTitle('Speed 3x')).toHaveClass(/active/);
   await page.waitForFunction(() => window.__game?.state?.day >= 2, null, {
-    timeout: 150_000,
+    timeout: process.env.E2E_SLOW_WEBGL ? 300_000 : 150_000,
   });
   await expect(page.locator('.hud-day')).toHaveText('Day 2');
 
@@ -113,7 +118,7 @@ test('autosaves at dawn and restores the run after a reload', async ({ page }) =
     (key) => JSON.parse(localStorage.getItem(key)),
     SAVE_KEY
   );
-  expect(save?.day).toBe(2);
+  expect(save?.core?.day).toBe(2);
 
   // Reload without ?autostart: the title screen shows and the save loads
   // (autostart would force a fresh game instead). The restored run starts

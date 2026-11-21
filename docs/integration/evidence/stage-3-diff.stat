@@ -1,0 +1,81 @@
+docs/M3-ART-INSPECTION.json                        | 642 +++++++++++++++++++
+ docs/M3-ART-INTEGRATION.md                         |  71 +++
+ docs/M3-ARTWORK.md                                 |  22 +
+ docs/M3-CHANGED-FILES.md                           |  84 +++
+ docs/M3-IMPLEMENTATION.md                          |  55 ++
+ docs/M3-PR.md                                      |  30 +
+ docs/M3-TEST-RESULTS.md                            |  47 ++
+ docs/m3/01-technical-design.md                     | 152 +++++
+ docs/m3/02-data-contracts.md                       | 209 +++++++
+ docs/m3/03-work-plan-and-acceptance.md             | 131 ++++
+ docs/screenshots/m3-art-char_ren-1280.png          | Bin 0 -> 118664 bytes
+ docs/screenshots/m3-art-char_ren-390.png           | Bin 0 -> 63644 bytes
+ docs/screenshots/m3-art-char_rin-1280.png          | Bin 0 -> 119742 bytes
+ docs/screenshots/m3-art-char_rin-390.png           | Bin 0 -> 60919 bytes
+ docs/screenshots/m3-art-char_satsuki-1280.png      | Bin 0 -> 118844 bytes
+ docs/screenshots/m3-art-char_satsuki-390.png       | Bin 0 -> 63000 bytes
+ docs/screenshots/m3-art-char_yuma-1280.png         | Bin 0 -> 117373 bytes
+ docs/screenshots/m3-art-char_yuma-390.png          | Bin 0 -> 61113 bytes
+ e2e/m2-interface.spec.js                           |  14 +-
+ e2e/m3-art-integration.spec.js                     |  41 ++
+ e2e/m3-characters.spec.js                          | 109 ++++
+ e2e/save-protection.spec.js                        |  14 +-
+ e2e/smoke.spec.js                                  |   8 +-
+ package.json                                       |   5 +-
+ public/assets/anime/SOURCE-README.md               |  14 +
+ public/assets/anime/avatars/char_ren_avatar_v1.png | Bin 0 -> 510022 bytes
+ public/assets/anime/avatars/char_rin_avatar_v1.png | Bin 0 -> 514547 bytes
+ .../anime/avatars/char_satsuki_avatar_v1.png       | Bin 0 -> 491011 bytes
+ .../assets/anime/avatars/char_yuma_avatar_v1.png   | Bin 0 -> 475465 bytes
+ .../assets/anime/expressions/char_ren_alert_v1.png | Bin 0 -> 524132 bytes
+ .../assets/anime/expressions/char_ren_happy_v1.png | Bin 0 -> 523759 bytes
+ .../anime/expressions/char_ren_injured_v1.png      | Bin 0 -> 536686 bytes
+ .../anime/expressions/char_ren_neutral_v1.png      | Bin 0 -> 510022 bytes
+ .../assets/anime/expressions/char_ren_tired_v1.png | Bin 0 -> 530461 bytes
+ .../assets/anime/expressions/char_rin_alert_v1.png | Bin 0 -> 521386 bytes
+ .../assets/anime/expressions/char_rin_happy_v1.png | Bin 0 -> 521948 bytes
+ .../anime/expressions/char_rin_injured_v1.png      | Bin 0 -> 533892 bytes
+ .../anime/expressions/char_rin_neutral_v1.png      | Bin 0 -> 514547 bytes
+ .../assets/anime/expressions/char_rin_tired_v1.png | Bin 0 -> 518597 bytes
+ .../anime/expressions/char_satsuki_alert_v1.png    | Bin 0 -> 499997 bytes
+ .../anime/expressions/char_satsuki_happy_v1.png    | Bin 0 -> 498309 bytes
+ .../anime/expressions/char_satsuki_injured_v1.png  | Bin 0 -> 509307 bytes
+ .../anime/expressions/char_satsuki_neutral_v1.png  | Bin 0 -> 491011 bytes
+ .../anime/expressions/char_satsuki_tired_v1.png    | Bin 0 -> 496770 bytes
+ .../anime/expressions/char_yuma_alert_v1.png       | Bin 0 -> 482493 bytes
+ .../anime/expressions/char_yuma_happy_v1.png       | Bin 0 -> 474669 bytes
+ .../anime/expressions/char_yuma_injured_v1.png     | Bin 0 -> 487210 bytes
+ .../anime/expressions/char_yuma_neutral_v1.png     | Bin 0 -> 475465 bytes
+ .../anime/expressions/char_yuma_tired_v1.png       | Bin 0 -> 475755 bytes
+ public/assets/anime/manifest.json                  |  58 ++
+ public/assets/anime/portraits/char_ren_full_v1.png | Bin 0 -> 2344577 bytes
+ public/assets/anime/portraits/char_rin_full_v1.png | Bin 0 -> 2047623 bytes
+ .../anime/portraits/char_satsuki_full_v1.png       | Bin 0 -> 2193110 bytes
+ .../assets/anime/portraits/char_yuma_full_v1.png   | Bin 0 -> 1953073 bytes
+ .../anime/sheets/char_ren_expression_sheet_v1.png  | Bin 0 -> 2820100 bytes
+ .../anime/sheets/char_rin_expression_sheet_v1.png  | Bin 0 -> 2830462 bytes
+ .../sheets/char_satsuki_expression_sheet_v1.png    | Bin 0 -> 2680909 bytes
+ .../anime/sheets/char_yuma_expression_sheet_v1.png | Bin 0 -> 2734501 bytes
+ public/assets/portraits/manifest.v1.json           | 695 +++++++++++++++++++++
+ public/assets/portraits/rights.v1.json             |  22 +
+ scripts/verify-anime.mjs                           |  29 +
+ scripts/verify-portraits.mjs                       |  49 ++
+ src/characters/anime.js                            |   8 +
+ src/characters/catalog.js                          |  15 +
+ src/characters/hash.js                             |  34 +
+ src/characters/portraits.js                        |  96 +++
+ src/characters/state.js                            |  78 +++
+ src/main.js                                        |   3 +
+ src/persistence.js                                 | 107 +++-
+ src/sim/state.js                                   |   1 +
+ src/sim/survivors.js                               |   1 +
+ src/ui/anime-theme.css                             |  21 +
+ src/ui/characterpanel.js                           | 129 +++-
+ src/ui/i18n/zh-TW.js                               |  29 +
+ src/ui/savepanel.js                                |  11 +-
+ tests/anime-art.test.js                            |  62 ++
+ tests/characters.test.js                           | 159 +++++
+ tests/i18n.test.js                                 |   6 +-
+ tests/portraits.test.js                            | 110 ++++
+ tests/save-protection.test.js                      |  40 +-
+ 80 files changed, 3309 insertions(+), 102 deletions(-)

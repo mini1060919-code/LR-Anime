@@ -1,0 +1,16 @@
+import config from '/workspace/LR-Anime/playwright.config.js';
+export default {
+  ...config,
+  testDir: '/workspace/LR-Anime/e2e',
+  outputDir: '/workspace/LR-Anime/test-results',
+  workers: 1,
+  projects: config.projects.map(project => ({ ...project, use: { ...project.use, deviceScaleFactor: 0.5 } })),
+  use: {
+    ...config.use,
+    launchOptions: {
+      ...config.use.launchOptions,
+      executablePath: '/usr/bin/chromium',
+    },
+  },
+  webServer: { ...config.webServer, cwd: '/workspace/LR-Anime' },
+};

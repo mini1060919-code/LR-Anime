@@ -4,6 +4,7 @@
 // screen is visible at a time; the overlay sits above the rest of the UI
 // (z-index) and re-enables pointer events. No DOM access at import time.
 
+import { t } from './i18n/index.js';
 const TITLE = 'LAST REFUGE';
 
 const INSTRUCTIONS = [
@@ -18,7 +19,7 @@ const INSTRUCTIONS = [
 function h(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
-  if (text != null) node.textContent = text;
+  if (text != null) node.textContent = t(text);
   return node;
 }
 
@@ -166,7 +167,7 @@ export function createScreens(root) {
     panel.append(
       h('h1', 'screen-title', title),
       h('p', 'screen-subtitle', message),
-      makeButton(confirmLabel, onConfirm),
+      makeButton(t(confirmLabel), onConfirm),
       makeButton(cancelLabel, onCancel)
     );
     o.appendChild(panel);

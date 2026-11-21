@@ -1,0 +1,30 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--exit-code",
+    "origin/develop",
+    "origin/feature/m5b-survivor-autonomy",
+    "--",
+    "src/core",
+    "src/world",
+    "src/buildings/definitions.js",
+    "src/buildings/placement.js",
+    "src/game/phase-controller.js",
+    "src/sim/waves.js",
+    "LICENSE",
+    "package-lock.json"
+  ],
+  "exit": 0,
+  "diff": "",
+  "paths": [
+    "src/core",
+    "src/world",
+    "src/buildings/definitions.js",
+    "src/buildings/placement.js",
+    "src/game/phase-controller.js",
+    "src/sim/waves.js",
+    "LICENSE",
+    "package-lock.json"
+  ]
+}

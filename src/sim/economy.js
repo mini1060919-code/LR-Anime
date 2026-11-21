@@ -1,3 +1,5 @@
+import {crewEfficiency,abilityMultiplier,completeWork,logisticsMultiplier} from '../progression/work.js';
+import {buildingSkill} from '../progression/rules.js';
 // Economy tick: resource production, fuel consumption, energy storage grid,
 // build costs. Pure logic, no I/O.
 
@@ -79,7 +81,7 @@ function energyOutput(state, building, def, mods) {
   let mod = 1;
   if (def.energyDayOnly) mod = mods.solarProd;
   else if (building.defId === 'wind') mod = mods.windProd;
-  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level);
+  return def.produces.energy * staffingRatio(building, def) * mod * levelMultiplier(building.level) * abilityMultiplier(state,building,'engineering') * crewEfficiency(state,building);
 }
 
 // Effective storage caps: the base caps plus every building's capBonus
@@ -111,6 +113,7 @@ function productionMod(building, def, resource, mods) {
 // mods carries optional production modifiers ({ farmProd, rainProd,
 // solarProd, windProd }); it may be undefined, every modifier defaults to 1.
 export function tickEconomy(state, dt, DEFS, mods) {
+  if(!(dt>0) || !Number.isFinite(dt))return;
   const m = { ...DEFAULT_MODS, ...(mods ?? {}) };
   const caps = effectiveCaps(state, DEFS);
 
@@ -142,9 +145,15 @@ export function tickEconomy(state, dt, DEFS, mods) {
     if (running.get(b)) produced += energyOutput(state, b, def, m);
     if (def.requiresEnergy && b.enabled !== false) consumers += def.requiresEnergy;
   }
+  const energyBefore=state.resources.energy ?? 0;
   const stored =
     (state.resources.energy ?? 0) + ((produced - consumers) * dt) / CONFIG.dayLength;
   state.resources.energy = Math.min(caps.energy ?? Infinity, Math.max(0, stored));
+
+  const delivered=Math.min(produced*dt/CONFIG.dayLength,Math.max(0,(caps.energy ?? Infinity)-energyBefore)+consumers*dt/CONFIG.dayLength);
+  if(produced>0 && delivered>0)for(const b of state.buildings){
+    const def=DEFS[b.defId];if(running.get(b)&&def?.jobs>0)completeWork(state,b,'engineering',delivered*energyOutput(state,b,def,m)/produced);
+  }
 
   // 3. Power state: requiresEnergy buildings run while there is charge left;
   // switched-off buildings stay unpowered whatever the grid charge.
@@ -167,9 +176,12 @@ export function tickEconomy(state, dt, DEFS, mods) {
     for (const [resource, perDay] of Object.entries(def.produces)) {
       if (resource === 'energy') continue;
       const cap = caps[resource] ?? Infinity;
+      const before=state.resources[resource] ?? 0;
+      const skill=buildingSkill(b.defId,def);
       const gain =
-        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * dt) / CONFIG.dayLength;
-      state.resources[resource] = Math.min(cap, (state.resources[resource] ?? 0) + gain);
+        (perDay * ratio * productionMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,skill) * crewEfficiency(state,b) * dt) / CONFIG.dayLength;
+      state.resources[resource] = Math.min(cap, before + gain);
+      if(def.jobs>0)completeWork(state,b,skill,Math.max(0,state.resources[resource]-before));
     }
   }
 }
@@ -208,7 +220,7 @@ function balanceProdMod(building, def, resource, mods) {
 // site efficiency and building level folded in). Returns {} when the
 // building produces nothing (switched off, unstaffed, unpowered or no
 // `produces`). mods may be undefined.
-export function buildingDailyOutput(b, def, mods) {
+export function buildingDailyOutput(b, def, mods, state) {
   const m = { ...DEFAULT_MODS, ...(mods ?? {}) };
   const output = {};
   if (!def || b.enabled === false || b.powered === false) return output;
@@ -216,7 +228,7 @@ export function buildingDailyOutput(b, def, mods) {
   if (ratio <= 0) return output;
   const levelMul = levelMultiplier(b.level);
   for (const [resource, perDay] of Object.entries(def.produces ?? {})) {
-    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul;
+    output[resource] = perDay * ratio * balanceProdMod(b, def, resource, m) * levelMul * abilityMultiplier(state,b,buildingSkill(b.defId,def)) * crewEfficiency(state,b);
   }
   return output;
 }
@@ -254,7 +266,7 @@ export function computeResourceBalance(state, DEFS, mods, grid) {
     if (b.powered === false) continue;
     const ratio = staffingRatio(b, def);
     if (ratio <= 0) continue;
-    for (const [resource, rate] of Object.entries(buildingDailyOutput(b, def, m))) {
+    for (const [resource, rate] of Object.entries(buildingDailyOutput(b, def, m, state))) {
       add(resource, 'produced', b.defId, def.name, rate);
     }
     for (const [resource, perDay] of Object.entries(def.consumes ?? {})) {
@@ -265,7 +277,7 @@ export function computeResourceBalance(state, DEFS, mods, grid) {
       const resource = EXTRACT_RESOURCES[def.extracts];
       const depleted = grid && countNodesInRange(grid, b, def.extracts) === 0;
       if (resource && !depleted) {
-        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level);
+        const rate = def.extractRate * ratio * m.extractProd * levelMultiplier(b.level) * abilityMultiplier(state,b,'scavenging') * logisticsMultiplier(state) * crewEfficiency(state,b);
         add(resource, 'produced', b.defId, def.name, rate);
       }
     }

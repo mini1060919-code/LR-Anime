@@ -1,0 +1,2 @@
+dist/assets {"files":94,"bytes":39595301}
+public/assets/anime {"files":34,"bytes":31725169}
