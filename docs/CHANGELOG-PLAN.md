@@ -227,3 +227,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜E-02
 
 [E-02 交付](plans/E-02.md) 已補資訊層級、現行資料對應及缺圖備援。 前一提交 c7b524eb76220a8fe117907a5a7ac96150ecbf89。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-03
+
+[E-03 交付](plans/E-03.md) 已補安全區、事件所有權與畫布回歸要求。 前一提交 6e7735bbdade3c8e35d9db27933a03e14c24dd53。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
