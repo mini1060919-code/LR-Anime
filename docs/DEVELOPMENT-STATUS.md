@@ -269,3 +269,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-21（Asia/Taipei）｜A-06
 
 [A-06 交付](plans/A-AUDIT.md) 已記錄六個草稿槽與缺件，澪權利需獨立證據。 前一提交 7159fd145be4e62f034bce634ab55cdc4ff9a5b8。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-22（Asia/Taipei）｜A-RECOVERY-01
+
+[A-RECOVERY-01 交付](plans/A-RECOVERY-01.md) 澪原檔與權利仍未取得；已交付逐件缺項與補圖驗收。 前一提交 0c1218b353216bf7e1485d3cb444c815b1cd8bfb。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
