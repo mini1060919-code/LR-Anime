@@ -159,3 +159,16 @@
 `GET /branches/develop/protection` 及 `/protection/required_status_checks` 回 403 Resource not accessible by integration（需 administration:read）；GraphQL ref.branchProtectionRule 回 FORBIDDEN。兩者皆無法讀回 strict，故 Require branches to be up to date before merging 維持未獨立驗證。Rules API HTTP 200 空陣列，classic protection 的保存證據見上述分支摘要。Pages 與 environments/github-pages 端點均 404（分別標示 pages:read、actions:read）；停用與發布隔離沿用 Owner 聲明，未獨立驗證。權限限制不代表設定失敗。
 
 **G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**
+
+
+## 2026-11-21 20:42 Asia/Taipei｜G1-GOV-09｜設定與記名授權核證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `407deb4292f1aaaa52d17e722340da707744776f`。本輪只核證與追加文件。
+
+- [x] develop 強制兩 checks，App 15368；#12 兩項成功且匹配。
+- [ ] Owner 提供儲存後 strict 與單人規則。
+- [ ] Pages 隔離及 #12 最新 SHA 的記名授權。
+
+Pages 與 github-pages 環境端點 HTTP 404，分別標示 pages:read、actions:read；部署清單中 github-pages 為空。停用仍依 Owner 聲明，這些回應未獨立證實發布隔離。#12 無 review／留言，未取得綁定最新 SHA、記名決策人／操作人與範圍的授權。
+
+**G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**

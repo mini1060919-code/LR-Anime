@@ -147,3 +147,12 @@
 **G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**
 
 先重讀規則與 G1 放行清單。核對 #12 最新 SHA、CI、Owner 儲存後 strict 證據、Pages 隔離和記名授權。只追加治理紀錄並讀回 PR #10。保持 NO-GO，未授權不得合併或部署。
+
+
+## 2026-11-21 20:42 Asia/Taipei｜G1-GOV-09｜設定與記名授權核證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `407deb4292f1aaaa52d17e722340da707744776f`。本輪只核證與追加文件。
+
+**G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**
+
+收到證據後依 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 核證有效規則及授權。重查 #12 的實際候選與 CI，候選未變沿用既有證據。追加五份紀錄並讀回 Draft PR #10。

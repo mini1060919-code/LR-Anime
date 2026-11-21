@@ -151,3 +151,14 @@ PR #13 以 develop 為目標，保留 #11 的完整測試。#12 基線 Smoke 另
 #12 基線 416/416、2/2、建置成功；#11/#13 完整回歸保留。strict 詳情 403、#12 無記名授權，見 [G1](milestones/G1.md)。
 
 **G1 NO-GO。下一工程 G1-GOV-09：讀回 strict（Owner 可提供儲存後規則截圖或具權限結果），核對 #12 最新 SHA 記名整合授權及 Pages 隔離。企劃並行 B-04。**
+
+
+## 2026-11-21 20:42 Asia/Taipei｜G1-GOV-09｜設定與記名授權核證
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `407deb4292f1aaaa52d17e722340da707744776f`。本輪只核證與追加文件。
+
+[#12](https://github.com/mini1060919-code/LR-Anime/pull/12) Open Draft、未合併、CLEAN。Base develop `f6faebbb8096967854bacf0708b196ffac2712b9`、Head `af558e85afc3c32345ca000c423816358cfaba58`、實際 merge ref `63212337c730031496f15e0d0b3c7978cc30665b`、tree `805d17777e80e31b06910642b28a1928afe26e3d` 未變，父提交為 Base 與 Head，tree 同 Head。兩項 check 名稱及 App 15368 與強制規則相符且成功。[Run 44869606630](https://github.com/mini1060919-code/LR-Anime/actions/runs/44869606630) 沿用 416/416、建置及基線 Smoke 2/2。[#13 run 44882092433](https://github.com/mini1060919-code/LR-Anime/actions/runs/44882092433) 保留完整 701/701、建置、24/24（單 worker、零失敗／跳過／重試）與 v4/v5/v6、未知版拒寫、備份證據。本輪無候選變動，未重跑。
+
+兩項 Required Checks 持續生效；詳細保護 403、Pages／環境 404。
+
+**G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**
