@@ -39,6 +39,30 @@ try {
     await context.close();
     console.log(`UX-01 prototype ${width}px passed`);
   }
+  const short = await browser.newPage({ viewport: { width: 390, height: 320 }, hasTouch: true });
+  await short.goto(process.env.UX01_URL ?? 'http://127.0.0.1:8397/');
+  await short.locator('#select').tap();
+  const header = short.locator('.row');
+  const cancel = short.locator('#cancel');
+  for (const language of ['zh-TW', 'en']) {
+    assert.equal(await short.locator('html').getAttribute('lang'), language);
+    const before = await header.boundingBox();
+    const scrollTop = await short.locator('#content').evaluate(content => {
+      content.scrollTop = content.scrollHeight;
+      return content.scrollTop;
+    });
+    assert.ok(scrollTop > 0, `Expected scrollable content in ${language}`);
+    assert.deepEqual(await header.boundingBox(), before);
+    assert.equal(await cancel.evaluate(button => {
+      const { x, y, width, height } = button.getBoundingClientRect();
+      return document.elementFromPoint(x + width / 2, y + height / 2) === button;
+    }), true);
+    await short.locator('#locale').tap();
+  }
+  await cancel.tap();
+  assert.equal(await short.locator('#intent').textContent(), '');
+  assert.equal(await short.locator('#map').textContent(), '基地地圖 · 0');
+  console.log('UX-01 prototype 390x320 sticky controls passed');
 } finally {
   await browser.close();
 }

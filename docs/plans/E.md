@@ -29,3 +29,7 @@ E-01～E-06 補充設計、驗收矩陣和隔離原型已放入 Draft PR #17。�
 ## 設計審查
 
 [UX-01-DESIGN-REVIEW](UX-01-DESIGN-REVIEW.md) 記錄差異、原型實測及正式工程門檻。
+
+## 工程驗收拆分
+
+[UX-01-PREIMPLEMENTATION](UX-01-PREIMPLEMENTATION.md) 記錄五張工程驗收及短視窗隔離修正。

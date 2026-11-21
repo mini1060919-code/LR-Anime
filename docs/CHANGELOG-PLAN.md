@@ -247,3 +247,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-22（Asia/Taipei）｜UX-01-DESIGN-REVIEW
 
 [UX-01-DESIGN-REVIEW 交付](plans/UX-01-DESIGN-REVIEW.md) 差異表及前置審查完成；隔離 Chromium 兩組通過，短視窗模式列捲動待修。 前一提交 fcf134320d842e1112f49f92aa9488cb4d1232b9。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-22（Asia/Taipei）｜UX-01-PREIMPLEMENTATION
+
+[UX-01-PREIMPLEMENTATION 交付](plans/UX-01-PREIMPLEMENTATION.md) 五項工程驗收已拆分。短視窗先重現失敗再修正隔離原型，Chromium 3/3 通過。下一工作為待授權的 UX01-ENG-01。 前一提交 8e5de4fb9aa3e6d507fbfa2d1f5b64f838403f48。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。

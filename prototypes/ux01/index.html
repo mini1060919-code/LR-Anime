@@ -10,9 +10,10 @@ button{font:inherit;min-height:44px;padding:.45rem .7rem;border:1px solid #687d6
 button[aria-pressed=true]{background:#496b55;outline:2px solid #a9d9b4}
 button:focus-visible{outline:3px solid #ffdb86}
 #map{width:100%;height:100dvh;display:grid;place-items:center;touch-action:none;border:0;background:repeating-linear-gradient(45deg,#26352b 0 28px,#344539 28px 55px)}
-#panel{position:fixed;inset:auto .75rem max(.5rem,env(safe-area-inset-bottom)) .75rem;max-width:58rem;margin:auto;background:#1d2820;border:1px solid #809684;border-radius:9px;padding:.65rem;max-height:40dvh;overflow:auto}
-.row{display:flex;gap:.45rem;flex-wrap:wrap}
-#content{padding-top:.55rem}
+#panel{position:fixed;inset:auto .75rem max(.5rem,env(safe-area-inset-bottom)) .75rem;max-width:58rem;margin:auto;background:#1d2820;border:1px solid #809684;border-radius:9px;padding:.65rem;max-height:40dvh;display:flex;flex-direction:column;overflow:hidden}
+.row{flex:none;display:flex;gap:.45rem;flex-wrap:wrap}
+#content{min-height:0;overflow:auto;padding-top:.55rem}
+#intent{flex:none}
 p{margin:.45rem 0}
 @media(max-width:500px){#panel{inset-inline:.4rem}button{padding:.35rem .5rem}}
 </style>
