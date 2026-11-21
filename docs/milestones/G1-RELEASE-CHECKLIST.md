@@ -172,3 +172,14 @@
 Pages 與 github-pages 環境端點 HTTP 404，分別標示 pages:read、actions:read；部署清單中 github-pages 為空。停用仍依 Owner 聲明，這些回應未獨立證實發布隔離。#12 無 review／留言，未取得綁定最新 SHA、記名決策人／操作人與範圍的授權。
 
 **G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**
+
+
+## 2026-11-21 20:55 Asia/Taipei｜G1-GOV-10｜Owner 保護規則驗收歸檔
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0cfba7c070e826afd72a2beef79f4daa8c1de741`；本輪僅追加文件。
+
+- [x] 兩項 Required Checks 與 App 15368，API 直接確認。
+- [x] strict，Owner 畫面內容文字確認。原圖未歸檔，API 直接讀回仍受限。
+- [ ] 其他單人保護欄位、Pages 隔離及 #12 最新 SHA 記名授權。
+
+**G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**

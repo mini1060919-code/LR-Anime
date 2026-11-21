@@ -148,3 +148,14 @@
 重新確認 required checks everyone、App 15368、#12 CI 與原 merge ref；strict 詳情 403、Pages／環境 404、授權缺證。五份文件皆採追加。
 
 **G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**
+
+
+## 2026-11-21 20:55 Asia/Taipei｜G1-GOV-10｜Owner 保護規則驗收歸檔
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0cfba7c070e826afd72a2beef79f4daa8c1de741`；本輪僅追加文件。
+
+Owner 回報其 develop Branch Protection 設定畫面確認 Require status checks to pass before merging 與 Require branches to be up to date before merging 均勾選，Complete Playwright E2E 及 Unit tests and production build 皆為 Required Check，來源 GitHub Actions。strict 記為 Owner 畫面確認。本任務收到畫面內容的文字確認，沒有可存取的圖片附件，GitHub 只歸檔文字。
+
+核對 API 強制 checks 與 #12／#13 CI，未重跑。五份文件皆追加，保留歷史。
+
+**G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**

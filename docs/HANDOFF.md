@@ -156,3 +156,12 @@
 **G1 NO-GO。下一工程 G1-GOV-10：收到 Owner 的 strict／單人規則、Pages 隔離或 #12 記名授權證據後核證，不重複執行相同查核。企劃並行 B-04。**
 
 收到證據後依 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md) 核證有效規則及授權。重查 #12 的實際候選與 CI，候選未變沿用既有證據。追加五份紀錄並讀回 Draft PR #10。
+
+
+## 2026-11-21 20:55 Asia/Taipei｜G1-GOV-10｜Owner 保護規則驗收歸檔
+
+治理基準 [Draft PR #10](https://github.com/mini1060919-code/LR-Anime/pull/10) `0cfba7c070e826afd72a2beef79f4daa8c1de741`；本輪僅追加文件。
+
+**G1 NO-GO。下一工程 G1-GOV-11：收到 #12 最新 SHA 的明確記名授權或剩餘規則／Pages 隔離證據後核證。企劃並行 B-04。**
+
+strict 採 Owner 畫面文字確認，兩個 checks 由 API 驗證，原圖未歸檔。先讀 [G1](milestones/G1.md) 與 [放行清單](milestones/G1-RELEASE-CHECKLIST.md)。取得缺項後再核對 #12、#13 候選與 CI，追加五份文件並讀回 PR #10，G1 維持 NO-GO。
