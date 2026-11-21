@@ -219,3 +219,27 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-21（Asia/Taipei）｜E-01
+
+[E-01 交付](plans/E-01.md) 已補三模式、操作意圖及 UI 偏好契約。 前一提交 ddafe7e5e8d02be642f9387b4fc6ba447b548979。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-02
+
+[E-02 交付](plans/E-02.md) 已補資訊層級、現行資料對應及缺圖備援。 前一提交 c7b524eb76220a8fe117907a5a7ac96150ecbf89。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-03
+
+[E-03 交付](plans/E-03.md) 已補安全區、事件所有權與畫布回歸要求。 前一提交 6e7735bbdade3c8e35d9db27933a03e14c24dd53。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-04
+
+[E-04 交付](plans/E-04.md) 已鎖定真實效率／技能來源及產出限制。 前一提交 ad516d57a7f34ba003654b216f7df3be4fcd18f1。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-05
+
+[E-05 交付](plans/E-05.md) 已補選取、唯讀導航、派工及失效處理契約。 前一提交 61dd37b8c7ae1fd7768fe7c5219a6024a7be16ed。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-21（Asia/Taipei）｜E-06
+
+[E-06 交付](plans/E-06.md) 已交付驗收矩陣與隔離程式，Chromium 1000px／390px 均通過原型測試。 前一提交 2f5e9df23cf351aa21286c458a9f31ad20c9ebd6。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。

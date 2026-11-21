@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-TW">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UX-01 prototype</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;color:#eff5ec;background:#26352b;font:16px system-ui}
+button{font:inherit;min-height:44px;padding:.45rem .7rem;border:1px solid #687d6e;border-radius:6px;color:inherit;background:#35483c;overflow-wrap:anywhere}
+button[aria-pressed=true]{background:#496b55;outline:2px solid #a9d9b4}
+button:focus-visible{outline:3px solid #ffdb86}
+#map{width:100%;height:100dvh;display:grid;place-items:center;touch-action:none;border:0;background:repeating-linear-gradient(45deg,#26352b 0 28px,#344539 28px 55px)}
+#panel{position:fixed;inset:auto .75rem max(.5rem,env(safe-area-inset-bottom)) .75rem;max-width:58rem;margin:auto;background:#1d2820;border:1px solid #809684;border-radius:9px;padding:.65rem;max-height:40dvh;overflow:auto}
+.row{display:flex;gap:.45rem;flex-wrap:wrap}
+#content{padding-top:.55rem}
+p{margin:.45rem 0}
+@media(max-width:500px){#panel{inset-inline:.4rem}button{padding:.35rem .5rem}}
+</style>
+<button id="map" type="button"></button>
+<section id="panel" aria-label="建築選單">
+  <div class="row">
+    <button type="button" data-mode="full"></button>
+    <button type="button" data-mode="compact"></button>
+    <button type="button" data-mode="collapsed"></button>
+    <button id="cancel" type="button" hidden></button>
+    <button id="locale" type="button"></button>
+  </div>
+  <div id="content" hidden>
+    <button id="select" type="button"></button>
+    <p id="cost"></p>
+    <details id="detail"><summary id="summary"></summary><p id="detailCost"></p></details>
+  </div>
+  <output id="intent" aria-live="polite"></output>
+</section>
+<script type="module">
+const element = id => document.getElementById(id);
+const labels = {
+  'zh-TW': {full:'完整',compact:'精簡',collapsed:'收合',cancel:'取消建造',locale:'English',map:'基地地圖',panel:'建築選單',select:'⌂ 帳篷',cost:'木材 10',summary:'建築詳情',intent:'正在放置帳篷'},
+  en: {full:'Full',compact:'Compact',collapsed:'Collapsed',cancel:'Cancel placement',locale:'繁體中文',map:'Base map',panel:'Build menu',select:'⌂ Tent',cost:'10 wood',summary:'Building details',intent:'Placing tent'},
+};
+const buttons = [...document.querySelectorAll('[data-mode]')];
+const key = 'lr-prototype:ux01:menu';
+let mode = 'compact';
+let locale = 'zh-TW';
+let placing = false;
+let mapClicks = 0;
+try {
+  const saved = localStorage.getItem(key);
+  if (buttons.some(button => button.dataset.mode === saved)) mode = saved;
+} catch {}
+function render() {
+  const t = labels[locale];
+  document.documentElement.lang = locale;
+  element('panel').setAttribute('aria-label', t.panel);
+  for (const id of ['cancel','locale','select','cost','summary']) element(id).textContent = t[id];
+  element('map').textContent = `${t.map} · ${mapClicks}`;
+  element('detailCost').textContent = t.cost;
+  element('content').hidden = mode === 'collapsed';
+  element('detail').hidden = mode !== 'compact';
+  element('cost').hidden = mode !== 'full';
+  element('cancel').hidden = !placing;
+  element('intent').textContent = placing ? t.intent : '';
+  for (const button of buttons) {
+    button.textContent = t[button.dataset.mode];
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  }
+}
+for (const button of buttons) button.addEventListener('click', () => {
+  mode = button.dataset.mode;
+  try { localStorage.setItem(key, mode); } catch {}
+  render();
+});
+element('locale').addEventListener('click', () => { locale = locale === 'en' ? 'zh-TW' : 'en'; render(); });
+element('select').addEventListener('click', () => { placing = true; render(); });
+element('cancel').addEventListener('click', () => {
+  placing = false;
+  render();
+  buttons.find(button => button.dataset.mode === mode).focus();
+});
+element('panel').addEventListener('keydown', event => {
+  if (event.key === 'Escape' && placing) {
+    event.stopPropagation();
+    element('cancel').click();
+  }
+});
+element('map').addEventListener('click', () => { mapClicks++; render(); });
+render();
+</script>
+</html>
