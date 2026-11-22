@@ -235,3 +235,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-22（Asia/Taipei）｜Draft #23 遠端覆核
 
 遠端 #23 為 Open Draft，mergeable=true，留言及 review 皆空。從遠端 PR head 重算 11 張 PNG，全部符合清冊 SHA-256。未取得母版或八角方向決策，保留兩版母圖及樣稿待審，後續修圖、容器與 neutral 備援驗收待決策。 G1 NO-GO。此次只追加讀回證據。
+
+## 2026-11-22｜ART-INTAKE-02 樣稿審查
+
+[Owner 逐角審查清單](plans/D-ART-OWNER-REVIEW.md)已納入 Draft #23。11 張遠端 PNG 解碼及清冊核對通過。母版、修改範圍及權利待核。G1 NO-GO。
