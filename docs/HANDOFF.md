@@ -230,3 +230,19 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-22（Asia/Taipei）｜美術原檔接收與映射基線
+
+[ART-ASSET-INTAKE-01](plans/ART-ASSET-INTAKE-01.md)、[ART-ASSET-MAPPING-01](plans/ART-ASSET-MAPPING-01.md)、[A-ART-QA-01](plans/A-ART-QA-01.md) 由獨立美術 Draft PR 交接。已驗候選 32 PNG，28 個載入資產 SHA 與 manifest 相符，驗證器通過。紗月／蓮候選映射與同鍵頭像及人設相符，兩批 ZIP 交叉異常仍待原件。澪九件為 Owner 回報，實際 QA／權利待複核。下一步取回四份 ZIP，保留原件與歷史；無正式素材、程式或存檔異動。G1 NO-GO；工程仍待 G1-OWNER-DECISION-01。
+
+## 2026-11-22（Asia/Taipei）｜Draft #22 遠端覆核
+
+遠端 #22 為 Open Draft，mergeable=true，留言及 review 皆空。候選基線驗證器重跑為 28 approved／18 draft。附件只找到先前自製的 smoke ZIP，四份業主原件仍未取得。紗月／蓮原包映射及澪逐張 QA／權利待原件。 G1 NO-GO。此次只追加讀回證據。
+
+## 2026-11-22｜ART-INTAKE-02
+
+[實體素材接收結果](plans/ART-INTAKE-02.md)已記錄四件缺可讀原包。候選肖像驗證器通過，原包 QA、映射與授權仍待到件。G1 NO-GO。
+
+## 2026-11-22｜ART-INTAKE-02 四份原包已接收
+
+[四包實測與完整清冊](plans/ART-INTAKE-02.md)已追加至 Draft #22。整合包副本逐位元組相同，第一批紗月／蓮檔名互換，整合包及候選映射正確。澪九件符合所列 manifest 資料，授權及 UI 裁切驗收待核。#23 待 Owner 決策。G1 NO-GO。

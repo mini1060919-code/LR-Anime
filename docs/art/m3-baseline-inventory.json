@@ -1,0 +1,839 @@
+{
+  "baseline": [
+    {
+      "path": "assets/anime/SOURCE-README.md",
+      "bytes": 1233,
+      "sha256": "77f76ebc89a26c8ea77086a4a3040b45ac6f236b1650e54c6c8a371f227c3904"
+    },
+    {
+      "path": "assets/anime/avatars/char_ren_avatar_v1.png",
+      "bytes": 510022,
+      "sha256": "c033e223036cd1a334a13020728ee3f9f386758aabfee93fe12e110b62016547",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 89276,
+      "partial": 172868,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        6,
+        505,
+        507
+      ],
+      "manifest_asset_id": "char_ren.avatar.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/avatars/char_rin_avatar_v1.png",
+      "bytes": 514547,
+      "sha256": "cca8098fadc711ea2a10eb8185ae5d5da92fea400caa8dbb34ebc8b0d29df78d",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 72067,
+      "partial": 190077,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        32,
+        5,
+        503,
+        512
+      ],
+      "manifest_asset_id": "char_rin.avatar.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/avatars/char_satsuki_avatar_v1.png",
+      "bytes": 491011,
+      "sha256": "c4d19183871dc58507755c5cc76b5a375569e75d5a938f2b01d9791986e04cae",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 83789,
+      "partial": 178355,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        10,
+        9,
+        485,
+        505
+      ],
+      "manifest_asset_id": "char_satsuki.avatar.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/avatars/char_yuma_avatar_v1.png",
+      "bytes": 475465,
+      "sha256": "baf93d746e3b6946adc5980c5ae1d017227c04f829b1a7a585e2565a3078f5cb",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        246
+      ],
+      "transparent": 107125,
+      "partial": 155019,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        6,
+        8,
+        502,
+        505
+      ],
+      "manifest_asset_id": "char_yuma.avatar.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_ren_alert_v1.png",
+      "bytes": 524132,
+      "sha256": "accb2557df23f511793b30d02ac39e04688694f2935b999537c5a5ce5d490fc6",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 81076,
+      "partial": 181068,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        0,
+        7,
+        500,
+        507
+      ],
+      "manifest_asset_id": "char_ren.alert.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_ren_happy_v1.png",
+      "bytes": 523759,
+      "sha256": "c3c549dd0a0a9d4f35b09875ca279c414cded6b0791818cff887597e76da2446",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 83905,
+      "partial": 178239,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        3,
+        5,
+        503,
+        507
+      ],
+      "manifest_asset_id": "char_ren.happy.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_ren_injured_v1.png",
+      "bytes": 536686,
+      "sha256": "f6fd870d96eb7382db2740c62dc01e9f10f84d3c8bf9d0619d861c0f2db04955",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 71012,
+      "partial": 191132,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        3,
+        3,
+        510,
+        505
+      ],
+      "manifest_asset_id": "char_ren.injured.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_ren_neutral_v1.png",
+      "bytes": 510022,
+      "sha256": "c033e223036cd1a334a13020728ee3f9f386758aabfee93fe12e110b62016547",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 89276,
+      "partial": 172868,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        6,
+        505,
+        507
+      ],
+      "manifest_asset_id": "char_ren.neutral.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_ren_tired_v1.png",
+      "bytes": 530461,
+      "sha256": "5036d9842f1d539b685dd27362d521a51775dff74a278fb74cf14c47640e1384",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 76109,
+      "partial": 186035,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        4,
+        509,
+        505
+      ],
+      "manifest_asset_id": "char_ren.tired.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_rin_alert_v1.png",
+      "bytes": 521386,
+      "sha256": "792f264cf002a4a4974c192e028bfe3193f48c029b1b93c774e54dac857bc288",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 69544,
+      "partial": 192600,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        29,
+        4,
+        493,
+        512
+      ],
+      "manifest_asset_id": "char_rin.alert.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_rin_happy_v1.png",
+      "bytes": 521948,
+      "sha256": "29ce891a762d1f9579b83ecae361b6812cabb23265197e886dfa18cbcf190d4f",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 66684,
+      "partial": 195460,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        27,
+        5,
+        502,
+        512
+      ],
+      "manifest_asset_id": "char_rin.happy.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_rin_injured_v1.png",
+      "bytes": 533892,
+      "sha256": "f3a04ca3bfe50035b98c35c5f2765db754a140532725e2ec0730d4e4ddb3923d",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        253
+      ],
+      "transparent": 61623,
+      "partial": 200521,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        25,
+        0,
+        499,
+        512
+      ],
+      "manifest_asset_id": "char_rin.injured.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_rin_neutral_v1.png",
+      "bytes": 514547,
+      "sha256": "cca8098fadc711ea2a10eb8185ae5d5da92fea400caa8dbb34ebc8b0d29df78d",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 72067,
+      "partial": 190077,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        32,
+        5,
+        503,
+        512
+      ],
+      "manifest_asset_id": "char_rin.neutral.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_rin_tired_v1.png",
+      "bytes": 518597,
+      "sha256": "8da2ae9ebabe548f81eb2dde883aec1ba6e6c9b69c349ebd9e3484aa7ef4ce81",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        253
+      ],
+      "transparent": 71266,
+      "partial": 190878,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        33,
+        6,
+        512,
+        512
+      ],
+      "manifest_asset_id": "char_rin.tired.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_satsuki_alert_v1.png",
+      "bytes": 499997,
+      "sha256": "5b121b41fc748e5ce705305111c7bf29127b65cc85b8ea8d8380fe7360db9958",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 82818,
+      "partial": 179326,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        9,
+        485,
+        505
+      ],
+      "manifest_asset_id": "char_satsuki.alert.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_satsuki_happy_v1.png",
+      "bytes": 498309,
+      "sha256": "f59817249eb71b599e837cfc6b432f4af6f7f8e3b089e04adf1b01f92625a4b0",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 82812,
+      "partial": 179332,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        9,
+        485,
+        505
+      ],
+      "manifest_asset_id": "char_satsuki.happy.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_satsuki_injured_v1.png",
+      "bytes": 509307,
+      "sha256": "5d4487088794228a11112c90e21ac2bf10f43d9234a207606daebdbd4511caed",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 82722,
+      "partial": 179422,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        7,
+        484,
+        506
+      ],
+      "manifest_asset_id": "char_satsuki.injured.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_satsuki_neutral_v1.png",
+      "bytes": 491011,
+      "sha256": "c4d19183871dc58507755c5cc76b5a375569e75d5a938f2b01d9791986e04cae",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 83789,
+      "partial": 178355,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        10,
+        9,
+        485,
+        505
+      ],
+      "manifest_asset_id": "char_satsuki.neutral.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_satsuki_tired_v1.png",
+      "bytes": 496770,
+      "sha256": "dd24eadc39019e624ffc044469f7ee113c45f9cde1ac3ad8a5f73f7311df05e2",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 85812,
+      "partial": 176332,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        10,
+        8,
+        483,
+        505
+      ],
+      "manifest_asset_id": "char_satsuki.tired.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_yuma_alert_v1.png",
+      "bytes": 482493,
+      "sha256": "43add6a7f9232018ae17014548f168d95f300e03486e2c7d7d2a5745935a68f2",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        249
+      ],
+      "transparent": 105922,
+      "partial": 156222,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        4,
+        8,
+        503,
+        505
+      ],
+      "manifest_asset_id": "char_yuma.alert.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_yuma_happy_v1.png",
+      "bytes": 474669,
+      "sha256": "52709a5cafe52ea051a84517905488b315252f0a84075508f3abd7de5e0dea6a",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        246
+      ],
+      "transparent": 107208,
+      "partial": 154936,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        7,
+        9,
+        500,
+        505
+      ],
+      "manifest_asset_id": "char_yuma.happy.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_yuma_injured_v1.png",
+      "bytes": 487210,
+      "sha256": "ae947e0fd373ebe6a9bebcc3e7007a33fbcce10946d110f066bdb6d9ef1db8f5",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        249
+      ],
+      "transparent": 102138,
+      "partial": 160006,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        8,
+        5,
+        506,
+        504
+      ],
+      "manifest_asset_id": "char_yuma.injured.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_yuma_neutral_v1.png",
+      "bytes": 475465,
+      "sha256": "baf93d746e3b6946adc5980c5ae1d017227c04f829b1a7a585e2565a3078f5cb",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        246
+      ],
+      "transparent": 107125,
+      "partial": 155019,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        6,
+        8,
+        502,
+        505
+      ],
+      "manifest_asset_id": "char_yuma.neutral.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/expressions/char_yuma_tired_v1.png",
+      "bytes": 475755,
+      "sha256": "7c462ceb8f4d3087a7a6d0699da8e1b6641f431dd96c33fe88d247be3a073934",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        246
+      ],
+      "transparent": 106416,
+      "partial": 155728,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        10,
+        5,
+        505,
+        504
+      ],
+      "manifest_asset_id": "char_yuma.tired.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/manifest.json",
+      "bytes": 2120,
+      "sha256": "eb71a8740342250a70ca1288f1e5ba6fcd55f4e4ce53455bc92a646b8455ede3"
+    },
+    {
+      "path": "assets/anime/portraits/char_ren_full_v1.png",
+      "bytes": 2344577,
+      "sha256": "ff9e71e945f97184151c5982bd96ef9c9caceac79ee48a85d204165432dbf78f",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 959206,
+      "partial": 613658,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        141,
+        3,
+        840,
+        1530
+      ],
+      "manifest_asset_id": "char_ren.full.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/portraits/char_rin_full_v1.png",
+      "bytes": 2047623,
+      "sha256": "6e1c4901f9cdc6b4936c4803d58eea194f9efe93a6988b1ead3ef57c468e2e00",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 1060740,
+      "partial": 512124,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        228,
+        3,
+        753,
+        1531
+      ],
+      "manifest_asset_id": "char_rin.full.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/portraits/char_satsuki_full_v1.png",
+      "bytes": 2193110,
+      "sha256": "7294ea3083b16bf67b8bd83e54288cb030df1383e78a6250695d00b5ab1ac894",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 967967,
+      "partial": 604897,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        194,
+        5,
+        807,
+        1523
+      ],
+      "manifest_asset_id": "char_satsuki.full.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/portraits/char_yuma_full_v1.png",
+      "bytes": 1953073,
+      "sha256": "57470309970d5d33b9f6ae5dffb524004a65ace401a58469f059f517e343bd7e",
+      "size": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 1011146,
+      "partial": 561718,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        138,
+        4,
+        774,
+        1522
+      ],
+      "manifest_asset_id": "char_yuma.full.v001",
+      "manifest_sha_matches": true
+    },
+    {
+      "path": "assets/anime/sheets/char_ren_expression_sheet_v1.png",
+      "bytes": 2820100,
+      "sha256": "37278cad8a34966ccbfeb7ac014ebd9507aa31feaf0aaedeb41e6f9b7b7a2028",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 662659,
+      "partial": 910205,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        9,
+        5,
+        1524,
+        1017
+      ]
+    },
+    {
+      "path": "assets/anime/sheets/char_rin_expression_sheet_v1.png",
+      "bytes": 2830462,
+      "sha256": "0f34c81b6dcbdc06e4db776900c38ccf59ea1550f74e3b67fd2465c0260c525d",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 601612,
+      "partial": 971252,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        32,
+        4,
+        1517,
+        1024
+      ]
+    },
+    {
+      "path": "assets/anime/sheets/char_satsuki_expression_sheet_v1.png",
+      "bytes": 2680909,
+      "sha256": "abab81a7f8c502d33195743256852d7eaee69f3e325f0ceead3c9a73f674957f",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "transparent": 679565,
+      "partial": 893299,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        10,
+        9,
+        1509,
+        1018
+      ]
+    },
+    {
+      "path": "assets/anime/sheets/char_yuma_expression_sheet_v1.png",
+      "bytes": 2734501,
+      "sha256": "e25cf1b06b507480eb277c9067e7a02b0889d2b3581304c49c75ca1a973106a0",
+      "size": [
+        1536,
+        1024
+      ],
+      "mode": "RGBA",
+      "alpha_channel": true,
+      "alpha_range": [
+        63,
+        253
+      ],
+      "transparent": 0,
+      "partial": 1572864,
+      "opaque": 0,
+      "bbox_alpha_32": [
+        0,
+        0,
+        1536,
+        1024
+      ]
+    }
+  ],
+  "archives": []
+}
