@@ -227,3 +227,15 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-22（Asia/Taipei）｜D-ART-REVIEW-01
 
 [D-ART-REVIEW-01 交付](plans/D-ART-REVIEW-01.md) 已審八角規格、四角尺寸、裁切及正式製作順序；新角正式圖檔及授權待辦。 前一提交 7fad5422bdc872c94c62217163bffd2f6707c8cb。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-22（Asia/Taipei）｜D-ART-SAMPLE-01
+
+[八角配色剪影與雙機械師樣稿](plans/D-ART-SAMPLE-01.md) 含 PNG 技術清冊、來源與待驗收事項。樹／棗各有透明全身、半身、neutral 及頭像；送 Owner 審查後再發展表情與全套正式素材。G1 NO-GO。
+
+## 2026-11-22（Asia/Taipei）｜Draft #23 遠端覆核
+
+遠端 #23 為 Open Draft，mergeable=true，留言及 review 皆空。從遠端 PR head 重算 11 張 PNG，全部符合清冊 SHA-256。未取得母版或八角方向決策，保留兩版母圖及樣稿待審，後續修圖、容器與 neutral 備援驗收待決策。 G1 NO-GO。此次只追加讀回證據。
+
+## 2026-11-22｜ART-INTAKE-02 樣稿審查
+
+[Owner 逐角審查清單](plans/D-ART-OWNER-REVIEW.md)已納入 Draft #23。11 張遠端 PNG 解碼及清冊核對通過。母版、修改範圍及權利待核。G1 NO-GO。
