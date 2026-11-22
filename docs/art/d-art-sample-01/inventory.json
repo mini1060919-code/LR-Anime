@@ -1,0 +1,288 @@
+[
+  {
+    "path": "eight-survivors-concepts-v001.png",
+    "bytes": 1997858,
+    "sha256": "cdc9a7f4c47c178a6b75f45c3b31e0d55f85f3e46245c495f1c04e2ebf30c878",
+    "size": [
+      1774,
+      887
+    ],
+    "mode": "RGB",
+    "alpha_channel": false,
+    "alpha_range": [
+      255,
+      255
+    ],
+    "transparent": 0,
+    "partial": 0,
+    "opaque": 1573538,
+    "bbox_alpha_32": [
+      0,
+      0,
+      1774,
+      887
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "itsuki-avatar-v001.png",
+    "bytes": 253036,
+    "sha256": "6bba0c92f57ca624c4e071eefe7ce5b0293a88e56368a01b6af58535cb4ff984",
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 93635,
+    "partial": 168419,
+    "opaque": 90,
+    "bbox_alpha_32": [
+      0,
+      42,
+      512,
+      512
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "itsuki-full-v001.png",
+    "bytes": 767559,
+    "sha256": "069169c602651512eb4211ae9166a869704f6363999480721762fed7da5edad6",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 1192398,
+    "partial": 380160,
+    "opaque": 306,
+    "bbox_alpha_32": [
+      300,
+      190,
+      722,
+      1516
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "itsuki-half-v001.png",
+    "bytes": 1124630,
+    "sha256": "99efb66e7246fbfab690b43d70c63c2b70ba29fcbd5ef0ae2e4627960af96a9c",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 730175,
+    "partial": 842300,
+    "opaque": 389,
+    "bbox_alpha_32": [
+      71,
+      231,
+      987,
+      1536
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "itsuki-neutral-v001.png",
+    "bytes": 253036,
+    "sha256": "6bba0c92f57ca624c4e071eefe7ce5b0293a88e56368a01b6af58535cb4ff984",
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 93635,
+    "partial": 168419,
+    "opaque": 90,
+    "bbox_alpha_32": [
+      0,
+      42,
+      512,
+      512
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "mechanics-source-v001.png",
+    "bytes": 923519,
+    "sha256": "8e4aa9e12140890986ba8948b3dc358590293400482a620bb62bc92b8d50650c",
+    "size": [
+      1774,
+      887
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 1236930,
+    "partial": 336244,
+    "opaque": 364,
+    "bbox_alpha_32": [
+      358,
+      3,
+      1443,
+      880
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "mechanics-source-v002.png",
+    "bytes": 759155,
+    "sha256": "12544823ac3d7f382788676d19590b954fbd7a8383efa7cbe65a5b61e8674059",
+    "size": [
+      1774,
+      887
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 1306716,
+    "partial": 266000,
+    "opaque": 822,
+    "bbox_alpha_32": [
+      380,
+      70,
+      1417,
+      847
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "natsume-avatar-v001.png",
+    "bytes": 283354,
+    "sha256": "fbe20dfe2b25454660723d9f3cc050a2abed5326569e2bf2f94ab2cecbbabb74",
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 77509,
+    "partial": 184632,
+    "opaque": 3,
+    "bbox_alpha_32": [
+      32,
+      32,
+      512,
+      512
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "natsume-full-v001.png",
+    "bytes": 883420,
+    "sha256": "935030755631f29fe2c5dddb2c7f7e9c4f18640c64f94f42f5921d01e0d68b35",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 1142798,
+    "partial": 429847,
+    "opaque": 219,
+    "bbox_alpha_32": [
+      231,
+      194,
+      789,
+      1513
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "natsume-half-v001.png",
+    "bytes": 1021160,
+    "sha256": "2185c4a5c196541f445928340f62c63570cc4c46d9fd60bdf843152180f024aa",
+    "size": [
+      1024,
+      1536
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 899481,
+    "partial": 673277,
+    "opaque": 106,
+    "bbox_alpha_32": [
+      71,
+      403,
+      980,
+      1536
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  },
+  {
+    "path": "natsume-neutral-v001.png",
+    "bytes": 283354,
+    "sha256": "fbe20dfe2b25454660723d9f3cc050a2abed5326569e2bf2f94ab2cecbbabb74",
+    "size": [
+      512,
+      512
+    ],
+    "mode": "RGBA",
+    "alpha_channel": true,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "transparent": 77509,
+    "partial": 184632,
+    "opaque": 3,
+    "bbox_alpha_32": [
+      32,
+      32,
+      512,
+      512
+    ],
+    "status": "owner-review-pending",
+    "source": "OpenAI ImageGen; see D-ART-SAMPLE-01 for source and derivation"
+  }
+]

@@ -38,3 +38,7 @@ D。如需整合程式到 develop/main，必須先滿足 G1 及對應依賴，�
 ## 2026-11-22（Asia/Taipei）｜D-ART-REVIEW-01
 
 [D-ART-REVIEW-01 交付](../plans/D-ART-REVIEW-01.md) 已審八角規格、四角尺寸、裁切及正式製作順序；新角正式圖檔及授權待辦。 前一提交 7fad5422bdc872c94c62217163bffd2f6707c8cb。G1 NO-GO，工程維持 G1-OWNER-DECISION-01；正式程式及合併待辦。
+
+## 2026-11-22（Asia/Taipei）｜D-ART-SAMPLE-01
+
+[八角配色剪影與雙機械師樣稿](../plans/D-ART-SAMPLE-01.md) 含 PNG 技術清冊、來源與待驗收事項。樹／棗各有透明全身、半身、neutral 及頭像；送 Owner 審查後再發展表情與全套正式素材。G1 NO-GO。

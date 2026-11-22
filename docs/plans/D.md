@@ -29,3 +29,7 @@
 ## 美術規格審查
 
 [D-ART-REVIEW-01](D-ART-REVIEW-01.md) 追加八角辨識差異、尺寸基線與製作關卡。
+
+## 2026-11-22（Asia/Taipei）｜D-ART-SAMPLE-01
+
+[八角配色剪影與雙機械師樣稿](D-ART-SAMPLE-01.md) 含 PNG 技術清冊、來源與待驗收事項。樹／棗各有透明全身、半身、neutral 及頭像；送 Owner 審查後再發展表情與全套正式素材。G1 NO-GO。
