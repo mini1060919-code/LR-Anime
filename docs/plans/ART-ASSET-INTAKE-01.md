@@ -22,3 +22,7 @@
 ## 接續驗收
 
 在本檔同分支使用 `python docs/art/audit_assets.py --baseline /path/to/pinned/game /path/to/a.zip /path/to/b.zip /path/to/c.zip /path/to/d.zip > /path/to/intake.json`。先讀原件內 manifest、README、權利附錄，按完整 SHA 確認每件、跨包相同檔名的不同內容及跨名稱同 SHA。另存原件與收到日期。損壞檔或缺件保留錯誤及原包 SHA，另索正本。視覺與權利用表記接收、需修、補件、禁止覆蓋。基線命令及合計為實測，本輪無新遊戲或存檔測試。
+
+## 2026-11-22（Asia/Taipei）｜Draft #22 遠端覆核
+
+遠端 #22 為 Open Draft，mergeable=true，留言及 review 皆空。候選基線驗證器重跑為 28 approved／18 draft。附件只找到先前自製的 smoke ZIP，四份業主原件仍未取得。紗月／蓮原包映射及澪逐張 QA／權利待原件。 G1 NO-GO。此次只追加讀回證據。
