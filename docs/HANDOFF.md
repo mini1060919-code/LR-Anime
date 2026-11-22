@@ -238,3 +238,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 ## 2026-11-22（Asia/Taipei）｜Draft #22 遠端覆核
 
 遠端 #22 為 Open Draft，mergeable=true，留言及 review 皆空。候選基線驗證器重跑為 28 approved／18 draft。附件只找到先前自製的 smoke ZIP，四份業主原件仍未取得。紗月／蓮原包映射及澪逐張 QA／權利待原件。 G1 NO-GO。此次只追加讀回證據。
+
+## 2026-11-22｜ART-INTAKE-02
+
+[實體素材接收結果](plans/ART-INTAKE-02.md)已記錄四件缺可讀原包。候選肖像驗證器通過，原包 QA、映射與授權仍待到件。G1 NO-GO。
