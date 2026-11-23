@@ -219,3 +219,10 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-23 Asia/Taipei｜D-ART-OWNER-DECISION-01｜立石怜母版決策 GitHub 治理交接
+
+- 新增 [Owner 選定立石怜灰紫戰術研究服母版的決策紀錄](art/decisions/D-ART-OWNER-DECISION-01.md)，綁定八張實際 PNG 完整 SHA-256；白色研究外套保留歷史替代稿。
+- D28 ZIP SHA-256：`905649ad01005a533100e6c279c13d528ca1da016b686cbdcfa304eefa520103`；64/64 D28 素材與 manifest 重新核對一致。
+- **僅 docs-only 治理提案，不含遊戲檔案或核准狀態變更**：64 張仍 CANDIDATE、0 APPROVED，個別美術 Owner 審查待辦。
+- 禁止藉此合併、部署、修改 main/develop、強制推送、刪除既有分支或操作玩家存檔；G1 **NO-GO**。下一輪 `D-ART-OWNER-REVIEW-02`。
