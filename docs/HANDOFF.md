@@ -230,3 +230,11 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-23 Asia/Taipei｜D-ART-OWNER-DECISION-01｜立石怜母版決策 GitHub 治理交接
+
+- Repository Owner 明確選定 `chr_recruit_rei` 的**灰紫戰術研究服**為正式人物外觀母版；白色研究外套**保留歷史，暫不採用**。決策識別 `D-ART-OWNER-REI-MASTER-2026-11-23`。
+- 詳見 [正式決策／八張完整 SHA-256](art/decisions/D-ART-OWNER-DECISION-01.md)。D28 ZIP SHA-256：`905649ad01005a533100e6c279c13d528ca1da016b686cbdcfa304eefa520103`；D28 實際 PNG 64/64 與 manifest SHA 相符。
+- **僅選定外觀母版，不是 PNG 素材核准**：64 CANDIDATE、0 APPROVED。後續逐張依角色 ID、slot、版本、SHA、核准人和日期簽核；未核准不可作正式遊戲素材接線。
+- 本工作僅獨立 docs-only 分支與 Draft PR，**不合併、不部署、不修改 main/develop，不變更玩家 v4/v5/v6 存檔**。G1 **NO-GO**。
+- 下個工作：`D-ART-OWNER-REVIEW-02`（立石怜八張逐件審查，接續其餘 56 張）；工程 G1 仍待獨立放行決策。保留舊交接紀錄與 D28 歷史證據。
