@@ -230,3 +230,11 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-02｜Owner 試玩問題與新 Codex 接續
+
+新 Owner 回饋與下一輪規格已歸檔：[PLAYTEST-02 待辦與優先序](playtest/PLAYTEST-02-OWNER-FEEDBACK-AND-BACKLOG.md)、[驗收流程與回復](playtest/PLAYTEST-02-EXECUTION-AND-ACCEPTANCE-PLAN.md)、[新 Codex 對話入口](playtest/NEXT-CODEX-SESSION-HANDOFF.md)。
+
+最新試玩回饋：P0 教學指定資源建築但開局資源不足；P1 建築仍不明顯、中央選單無法收合、居民貢獻與派工不清楚、教學員未出現；建造／選取／取消／拆除 Owner 表示 OK；手機／桌面遮擋尚未測；P2 希望新增背景音樂。先核對 Owner 試玩版本是否包含 UX-BUILDING-VISIBILITY-02 修正版；先前條件視覺 PASS 不得覆蓋新實玩負面回饋。
+
+本輪只有 GitHub **docs-only Draft PR** 提案，未做遊戲修改或新測試。64 VISUAL_PASSED、0 正式 APPROVED；G1 NO-GO。新 Codex 先進行**只讀根因調查**及隔離修復計畫，取得獨立實作授權後才能改程式；未獲授權不得修改 main/develop、合併、部署或操作玩家 v4/v5/v6 存檔。
