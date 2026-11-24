@@ -245,3 +245,14 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-02｜新 Owner 試玩後修正隊列
+
+此段為 Owner 對話回饋的治理歸檔，非新測試或已完成修正。詳細 [回饋清單](playtest/PLAYTEST-02-OWNER-FEEDBACK-AND-BACKLOG.md)／[執行與驗收計畫](playtest/PLAYTEST-02-EXECUTION-AND-ACCEPTANCE-PLAN.md)。
+
+- **P0**：新手教學要求建造資源建築，開局資源不足，需復現並做最小平衡修正。
+- **P1**：基地建築實際仍不明顯（需先核試玩 patch/commit）；中央選單不能收合／取消；居民自主工作令貢獻不明，教學員未出現；桌面／手機遮擋尚未測。
+- **已由 Owner 確認 OK**：建造、選取、取消、拆除，後續修正須防退化。
+- **P2**：新增具適當使用權利之背景音樂需求，先做 Audio 設計與來源評估。
+- 前次 UX-BUILDING-VISIBILITY-02 隔離候選 701/701＋Playwright 24/24＋build 成功，不能視作本次實玩已通過。
+- D-ART：64 VISUAL_PASSED、0 APPROVED；G1 NO-GO。新 Codex 接續：[專用入口](playtest/NEXT-CODEX-SESSION-HANDOFF.md)。

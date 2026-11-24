@@ -219,3 +219,9 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 [B-06 v0.1](plans/B-06.md) 彙整 B-03～B-05 的雙語文案、穩定提案 ID、觸發及例外，新增八項待執行驗收。B-01／B-02 原稿仍待核，已留存索引與稽核來源。Draft PR #10，治理基準 cb5d21f27338a3729dedf47426cee5726ad317b3。本輪僅企劃與文件檢查，未實作或重跑 CI。
 
 下一企劃 **C-01**，定義快照欄位、黎明與遊戲進度識別、C 日報 ID、延遲及一次性寫入契約。工程 **G1-OWNER-DECISION-01／NO-GO** 等待 Owner 新證據或獨立記名決策。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-02｜Owner 試玩回饋永久記錄
+
+只增加文件：[PLAYTEST-02 七項原始回饋及狀態](playtest/PLAYTEST-02-OWNER-FEEDBACK-AND-BACKLOG.md)、[分期流程與驗收](playtest/PLAYTEST-02-EXECUTION-AND-ACCEPTANCE-PLAN.md)、[新 Codex 對話接續](playtest/NEXT-CODEX-SESSION-HANDOFF.md)。
+
+試玩結果：建築仍不明顯、居民/教學員不清楚、中央選單阻擋、新手建造資源不足；建造／選取／取消／拆除 OK；手機遮擋未測；背景音樂新需求。P0 教學阻塞、P1 建築/居民/中央選單、P2 BGM。優先比對試玩版本與歷史隔離補丁，再由 Owner 另行授權程式修正。本次無程式或 CI 更新、無素材 APPROVED、無合併或部署。G1 NO-GO。
