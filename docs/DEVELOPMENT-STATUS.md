@@ -256,3 +256,14 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 - **P2**：新增具適當使用權利之背景音樂需求，先做 Audio 設計與來源評估。
 - 前次 UX-BUILDING-VISIBILITY-02 隔離候選 701/701＋Playwright 24/24＋build 成功，不能視作本次實玩已通過。
 - D-ART：64 VISUAL_PASSED、0 APPROVED；G1 NO-GO。新 Codex 接續：[專用入口](playtest/NEXT-CODEX-SESSION-HANDOFF.md)。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-03｜Owner 遊戲實測新結論
+
+**可啟動試玩：YES；核心體驗人工驗收：NOT_ACCEPTED；G1 NO-GO。** 新 Owner 圖文證據及 7 項工作見 [PLAYTEST-03 紀錄](playtest/PLAYTEST-03-OWNER-REVIEW-20261125.md)；[修正與驗收方案](playtest/PLAYTEST-03-ACTION-PLAN-AND-ACCEPTANCE.md)。
+
+- P0 PT03-01：教學後資源收支負數，食水不足以持續生存（不同於 PT02-06 建築成本可過關）。
+- P1 PT03-02～06：建築仍難辨、教學遮擋、中央選單不能收合、居民/特殊角色派工價值不明、教學員未出現。
+- PT03-07：Owner 延後人工存讀檔，仍保持自動存檔相容門檻。
+- P2 PT02-07：背景音樂構想保留。
+- 舊隔離候選 701/701／Playwright 24/24 等數字是歷史測試，不代表本輪已修復。
+- 原始 A～E/M0～M11 順序不變；NEXT=PLAYTEST-03-ROOTCAUSE-01（唯讀），不得擅動正式分支及玩家存檔。
