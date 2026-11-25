@@ -225,3 +225,7 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 只增加文件：[PLAYTEST-02 七項原始回饋及狀態](playtest/PLAYTEST-02-OWNER-FEEDBACK-AND-BACKLOG.md)、[分期流程與驗收](playtest/PLAYTEST-02-EXECUTION-AND-ACCEPTANCE-PLAN.md)、[新 Codex 對話接續](playtest/NEXT-CODEX-SESSION-HANDOFF.md)。
 
 試玩結果：建築仍不明顯、居民/教學員不清楚、中央選單阻擋、新手建造資源不足；建造／選取／取消／拆除 OK；手機遮擋未測；背景音樂新需求。P0 教學阻塞、P1 建築/居民/中央選單、P2 BGM。優先比對試玩版本與歷史隔離補丁，再由 Owner 另行授權程式修正。本次無程式或 CI 更新、無素材 APPROVED、無合併或部署。G1 NO-GO。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-03｜新 GPT 交接與七項實測回饋
+
+文件-only 提案：新增 [PLAYTEST-03 Owner 驗收記錄](playtest/PLAYTEST-03-OWNER-REVIEW-20261125.md)、[分批修正與驗收](playtest/PLAYTEST-03-ACTION-PLAN-AND-ACCEPTANCE.md)、[新 GPT 接續入口](playtest/NEW-GPT-PLAYTEST-03-HANDOFF.md)。Owner 已可啟動遊戲，但資源生存 P0 未通過，建築視覺、教學面板、中央選單、角色派工/教學員 P1 未通過，人工存讀檔延後。須查真實試玩 ZIP 與 patch，歷史自動 3/3 不是本輪 Owner PASS。本次無遊戲修改、新 CI、合併或部署。G1 NO-GO。
