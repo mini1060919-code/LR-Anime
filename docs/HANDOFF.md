@@ -238,3 +238,11 @@ Draft PR #10，治理前次提交 `0d14d9e574b9a70cba9bdb0d9a18e769c65085f2`。B
 最新試玩回饋：P0 教學指定資源建築但開局資源不足；P1 建築仍不明顯、中央選單無法收合、居民貢獻與派工不清楚、教學員未出現；建造／選取／取消／拆除 Owner 表示 OK；手機／桌面遮擋尚未測；P2 希望新增背景音樂。先核對 Owner 試玩版本是否包含 UX-BUILDING-VISIBILITY-02 修正版；先前條件視覺 PASS 不得覆蓋新實玩負面回饋。
 
 本輪只有 GitHub **docs-only Draft PR** 提案，未做遊戲修改或新測試。64 VISUAL_PASSED、0 正式 APPROVED；G1 NO-GO。新 Codex 先進行**只讀根因調查**及隔離修復計畫，取得獨立實作授權後才能改程式；未獲授權不得修改 main/develop、合併、部署或操作玩家 v4/v5/v6 存檔。
+
+## 2026-11-25 Asia/Taipei｜PLAYTEST-03｜Owner 可試玩但核心體驗未通過；新 GPT 交接
+
+Owner 已實際啟動本地試玩並提交兩張遊戲截圖，回報 P0 教學完成後食物／水不足以繼續生存；P1 建築無可感知差異、教學說明遮擋施工、中央選單不能收合、派工與特殊角色價值無感、教學員未出現；人工存讀檔延後。原 PLAYTEST-02 低成本建造自動 3/3 不足以覆蓋新生存失敗。
+
+**新 GPT 首讀**：[PLAYTEST-03 Owner 原始回饋](playtest/PLAYTEST-03-OWNER-REVIEW-20261125.md)、[PLAYTEST-03 分批修正/驗收](playtest/PLAYTEST-03-ACTION-PLAN-AND-ACCEPTANCE.md)、[NEW-GPT-PLAYTEST-03-HANDOFF](playtest/NEW-GPT-PLAYTEST-03-HANDOFF.md)，再讀原始 MASTER-PLAN、A～E、M0～M11、G1。需先核 Owner 試玩 ZIP 是否含歷史建築補丁與 PT02-06 候選；未證明不宣告修好。
+
+本次文件-only 提案，無遊戲程式修改或新測試；保留 G1 **NO-GO**、D-ART 64 VISUAL_PASSED／0 APPROVED、v4/v5/v6 真實存檔保護。下一工作 **PLAYTEST-03-ROOTCAUSE-01**（唯讀根因與分批修正提案）；程式修復需 Owner 另行授權。
